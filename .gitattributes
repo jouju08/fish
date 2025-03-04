@@ -1,0 +1,16 @@
+*.tflite filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.data* filter=lfs diff=lfs merge=lfs -text
+*.shp filter=lfs diff=lfs merge=lfs -text
+*.zip filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+*.gif filter=lfs diff=lfs merge=lfs -text
+*.data-00000-of-00001 filter=lfs diff=lfs merge=lfs -text
+src/AI/tf_file/model.tflite filter=lfs diff=lfs merge=lfs -text
+src/AI/tf_file/model2.tflite filter=lfs diff=lfs merge=lfs -text
+frontend/thewater/assets/model2.tflite filter=lfs diff=lfs merge=lfs -text
+src/AI/model/variables/variables.data-00000-of-00001 filter=lfs diff=lfs merge=lfs -text
+src/AI/model_h5/three_fish_resnet/variables/variables.data-00000-of-00001 filter=lfs diff=lfs merge=lfs -text
+src/AI/tf_file/QAT_model.tflite filter=lfs diff=lfs merge=lfs -text
+src/AI/fish_Species_Classification/model/50model/QAT_50model_mixed/variables/variables.data-00000-of-00001 filter=lfs diff=lfs merge=lfs -text
+BE/fish_points/coastline_data/해안선데이터.shp filter=lfs diff=lfs merge=lfs -text
