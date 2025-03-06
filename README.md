@@ -20,7 +20,7 @@
 ㅤ
 
 ### 🐟기능소개 (1차 MVP)
-![fish tank](README_asset\fish_tank.png)
+![fish tank](docs/asset/fish_tank.png)
 
 #### 📖물고기 도감  
 - 잡은 물고기 판별
@@ -36,11 +36,11 @@
 ㅤ  
 ### 📱앱 컨셉
 - 흑백과 포인트 컬러의 조합  
-![app concept](README_asset\app_concept.png)
-![app color](README_asset\color.png)
+![app concept](docs/asset/app_concept.png)
+![app color](docs/asset/color.png)
 
 ㅤ  
 
 
 ### 💾ERD
-![erd](README_asset\erd.png)
+![erd](docs/asset/erd.png)
