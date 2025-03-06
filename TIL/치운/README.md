@@ -20,7 +20,7 @@ for '그물' PJT
 - Back-End Frame work란?\
 개발자에게 서버 측 애플리케이션 개발을 위한 데이터 액세스와 웹 서비스와 같은 백엔드 구성 요소를 제공\
  Ex) Spring boot, FastAPI, Django, NodeJS 같은 것들이 있다.
-
+- 3가지 종류의 사람이 있다. Giver, Matcher, Taker. Giver가 많아야 좋은 집단이 된다. 
 **🧐 회고**\
 이번 프로젝트는 Spring boot 프레임워크를 활용하기로 했다.
 선정한 이유는
