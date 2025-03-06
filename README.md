@@ -1,24 +1,23 @@
-# 그물 🎣
+# 그물 🎣🕸️
 
 **그** 때의  
 **물**</span> 고기...
 🐟🐠🐡🫧
 
-> *매일같이 출조出釣를 나가는 당신만의 물고기 도감*
+> *매일같이 출조出釣 나가는 당신만의 물고기 도감*
 
 ㅤ  ㅤ  
 ### 😊개발자 소개
 | developer  | role | git| etc.|
 |--------|----------|---|-----------|
 | 손재민 | FE       | - |     -     |
-| 이국건 | Infra    | - |     -     |
+| 이국건 | Infra/FE | - |     -     |
 | 이수정 | FE/BE    | - |     -     |
 | 정주하 | AI       | - |     -     |
 | 조윤장 | AI/Data  | - |     -     |
 | 황치운 | AI/BE    | - |     -     |
 
 ㅤ
-
 ### 🗃️기술스택
 ![flutter](https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white)
 ![spring boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=for-the-badge&logo=spring-boot&logoColor=white)
@@ -26,9 +25,8 @@
 ![jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=white)
 ![docker](https://img.shields.io/badge/Docker-2CA5E0?style=for-the-badge&logo=docker&logoColor=white)
 ![python](https://img.shields.io/badge/Python-FFD43B?style=for-the-badge&logo=python&logoColor=blue)
-ㅤ
-ㅤ
 
+ㅤ
 ### 🐟기능소개 (1차 MVP)
 ![fish tank](docs/asset/fish_tank.png)
 
