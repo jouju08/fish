@@ -1,5 +1,5 @@
-*<span style="font-size:250%">그</span> 때의*
-*<span style="font-size:250%">물</span> 물고기...*
+<span style="font-size:250%">그</span> 때의  
+<span style="font-size:250%">물</span> 고기...
 🐟🐠🐡🫧
 
 > *매일같이 출조出釣를 나가는 당신만의 물고기 도감*
@@ -18,8 +18,7 @@
 ㅤ
 
 ### 🐟기능소개 (1차 MVP)
-<p align="center">
-<img src="README_asset\fish_tank.png" alt="app color" width="500">
+![fish tank](README_asset\fish_tank.png)
 
 #### 📖물고기 도감  
 - 잡은 물고기 판별
@@ -36,14 +35,10 @@
 ### 📱앱 컨셉
 - 흑백과 포인트 컬러의 조합  
 ![app concept](README_asset\app_concept.png)
-<p align="center">
-<img src="README_asset\color.png" alt="app color" width="300">
-</p>
+![app color](README_asset\color.png)
 
 ㅤ  
 
 
 ### 💾ERD
-<p align="center">
-<img src="README_asset\erd.png" alt="app color" width="500">
-</p>
+![erd](README_asset\erd.png)
