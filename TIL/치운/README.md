@@ -5,11 +5,11 @@ for '그물' PJT
 
 ## 📅xxxx-xx-xx
 
-**📖오늘 배운 내용**
+### **📖오늘 배운 내용**
 
-**🧐 회고**
+### **🧐 회고**
 
-**🎯 내일 목표**
+### **🎯 내일 목표**
 
 ---
 
@@ -33,3 +33,23 @@ Spring boot 학습
 
 ---
 
+## 📅2025-03-07(FRY)
+
+### **📖오늘 배운 내용**
+- 만트라트
+![alt text](assets/image.png)
+
+### AI Tools
+- Amazone Q
+- TLDraw (내가 그린 그림을 AI가 보정해주는 것)
+
+### 오늘 한 것
+- [CUDA Set UP](https://www.notion.so/CUDA-SetUp-1afbcffe6c8f802593ade7c965b685ef?pvs=4)
+- [pytorch를 활용하여 이미지 분류 예제](https://tutorials.pytorch.kr/beginner/blitz/cifar10_tutorial.html)
+
+### **🧐 회고**
+오늘은 금요일이라 조금 붕뜬 느낌이였지만, 차근차근 할일을 해내가야겠다. 백엔드 지식을 학습할 필요가 있다.
+
+### **🎯 내일 목표**
+- 물고기 데이터를 학습하여, 테스트
+- 백엔드 학습
