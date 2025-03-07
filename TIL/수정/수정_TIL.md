@@ -158,9 +158,9 @@
 
 - 정보정리
 
-- PARA Method (Project Area Resource Archive)
-  - 정보를 네가지로 분류하여 정리
-      - Project: 데드라인이 있는 output이 있는 일
-      - Area: 내 삶과 일에서 가장 중요하고 관심사가 높은 것들
-      - Resource: 특정 주제나 정보에 대한 지식
-      - Archive: 현재는 주요 관심사가 아는 것들
+    - PARA Method (Project Area Resource Archive)
+      - 정보를 네가지로 분류하여 정리
+          - Project: 데드라인이 있는 output이 있는 일
+          - Area: 내 삶과 일에서 가장 중요하고 관심사가 높은 것들
+          - Resource: 특정 주제나 정보에 대한 지식
+          - Archive: 현재는 주요 관심사가 아는 것들
