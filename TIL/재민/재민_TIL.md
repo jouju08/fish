@@ -30,3 +30,20 @@
 
 ## Figma 로 어항구조를 잡았고, 앱 제작에있어 필요한 물고기들의 이미지를 AI를 활용해 제작함.
 - Adobe **FireFly 라는 AI 이미지 생성 페이지** 를 이용해 asset 제작 가능하다.
+
+<br><br>
+- 
+# TIL (Today I Learned) - 2025-03-07
+**Flutter 환경세팅**
+
+Flutter 3.29.0 • channel stable • https://github.com/flutter/flutter.git
+Framework • revision 35c388afb5 (3 weeks ago) • 2025-02-10 12:48:41 -0800
+Engine • revision f73bfc4522
+Tools • Dart 3.7.0 • DevTools 2.42.2
+
+처음 flutter 3.29.0 다운받고 documents 위치에 압축해제를 한 후 bin 폴더 들어가 경로를 복사 후 윈도우 환경변수 path 세팅에 들어가 새로만들기 후 주소를 붙여넣기 하였으나,
+
+설치가 완료되지않아, 문제 분석중 발견된 문제는 , OneDrive 가 실행되고있을 경우 환경변수 세팅에 영향을 끼치는것으로 보여, OneDrive 종료 후 재부팅 후 압축해제를 다시 해보니 해결이 되었다.
+
+Android Studio Meerkat 설치완료 후
+flutter 연결 완료
