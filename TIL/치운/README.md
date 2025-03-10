@@ -1,3 +1,4 @@
+```
 # 📚 Today I Learned
 for '그물' PJT
 
@@ -53,3 +54,20 @@ Spring boot 학습
 ### **🎯 내일 목표**
 - 물고기 데이터를 학습하여, 테스트
 - 백엔드 학습
+
+---
+
+### Form
+
+## 📅2025-03-10(MON)
+
+### **📖오늘 배운 내용**
+- [Ubuntu 22.04에서 Tensorflow 환경 세팅](https://lab.ssafy.com/s12-ai-image-sub1/S12P21C201/-/tree/develop/src/AI/env_setting?ref_type=heads)
+- ResNet에 대해 공부하고 직접 구현하였다.
+
+### **🧐 회고**
+- 욕심을 부리지말고 건실하게 살자.
+
+### **🎯 내일 목표**
+- 명세서 마무리
+- 백엔드 공부
