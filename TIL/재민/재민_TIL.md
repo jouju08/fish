@@ -47,3 +47,14 @@ Tools • Dart 3.7.0 • DevTools 2.42.2
 
 Android Studio Meerkat 설치완료 후
 flutter 연결 완료
+
+<br><br>
+# TIL (Today I Learned) 2025-03-10
+금일 피그마 프론트 화면 구성 진행했다.
+오랜만에 피그마 만지려니 매우매우 어색하여 구글링을 통해
+컨텐츠 배치부터 시작해 최대한 깔끔한 UI 를 만들려 노력했다.
+메인페이지 구상하는데 시간을 좀 많이 썼는데, 알고보니
+어항페이지가 메인페이지였다. 소통에 신경 많이 써야겠다.
+![image.png](./figma.png)
+<br><br>
+
