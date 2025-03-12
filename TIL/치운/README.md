@@ -87,3 +87,20 @@ Spring boot 학습
 ### **🎯 내일 목표**
 - 명세서 작성
 - 백엔드 공부
+
+---
+
+## 📅2025-03-12(WED)
+
+### **📖오늘 배운 내용**
+- API 명세서 작성
+    - Path Variable과 Query string에 대해 공부
+    - http status 학습
+    - Request Header, Params 학습습
+
+### **🧐 회고**
+- 정신 Cherry Go 살자
+
+### **🎯 내일 목표**
+- 명세서 작성
+- 백엔드 공부
