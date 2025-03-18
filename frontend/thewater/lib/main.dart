@@ -23,7 +23,7 @@ void main() async {
 
 class TheWater extends StatefulWidget {
   final List<CameraDescription> cameras;
-  const TheWater({super.key, required this.cameras});
+  const TheWater({Key? key, required this.cameras}) : super(key: key);
 
   @override
   State<TheWater> createState() => _TheWaterState();
@@ -45,9 +45,7 @@ class _TheWaterState extends State<TheWater> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder:
-                  (context) =>
-                      CameraPage(cameras: widget.cameras), // 🔥 카메라 페이지 이동 추가
+              builder: (context) => CameraPage(cameras: widget.cameras),
             ),
           );
         },
@@ -66,7 +64,7 @@ class _TheWaterState extends State<TheWater> {
         showUnselectedLabels: false,
         type: BottomNavigationBarType.fixed,
         backgroundColor: Colors.grey[100],
-        items: [
+        items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
         ],
@@ -76,20 +74,19 @@ class _TheWaterState extends State<TheWater> {
 }
 
 class FirstPage extends StatelessWidget {
-  const FirstPage({super.key});
-
+  const FirstPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/image/background.png'),
               fit: BoxFit.cover,
             ),
           ),
-          child: mainPage(),
+          child: const mainPage(),
         ),
       ),
     );
@@ -97,64 +94,154 @@ class FirstPage extends StatelessWidget {
 }
 
 class mainPage extends StatefulWidget {
-  const mainPage({super.key});
-
+  const mainPage({Key? key}) : super(key: key);
   @override
   _mainPageState createState() => _mainPageState();
 }
 
 class _mainPageState extends State<mainPage> {
-  double fish1X = 50; // 첫 번째 어획물 X 좌표
-  double fish2X = 100; // 두 번째 어획물 X 좌표
-  double fish3X = 150; // 세 번째 어획물 X 좌표
-
-  bool moveRight1 = true; // 첫 번째 어획물 이동 방향
-  bool moveRight2 = false; // 두 번째 어획물 이동 방향
-  bool moveRight3 = true; // 세 번째 어획물 이동 방향
-
-  double speed1 = 1.0; // 첫 번째 어획물 속도
-  double speed2 = 1.5; // 두 번째 어획물 속도
-  double speed3 = 1.2; // 세 번째 어획물 속도
-
+  // 위치 및 속도 변수
+  double fish1X = 50, fish2X = 100, fish3X = 150;
+  double fish1Y = 100, fish2Y = 200, fish3Y = 300;
+  bool moveRight1 = true, moveRight2 = false, moveRight3 = true;
+  double baseSpeed1 = 1.5, baseSpeed2 = 1.2, baseSpeed3 = 1.8;
+  double speed1 = 1.5, speed2 = 1.2, speed3 = 1.8;
+  double angle1 = 0, angle2 = 0, angle3 = 0;
+  bool isPaused1 = false, isPaused2 = false, isPaused3 = false;
   late Timer _timer;
+  double time = 0.0;
 
   @override
   void initState() {
     super.initState();
     _startFishMovement();
+    _randomPauseForFish1();
+    _randomPauseForFish2();
+    _randomPauseForFish3();
   }
 
   void _startFishMovement() {
-    _timer = Timer.periodic(Duration(milliseconds: 30), (timer) {
+    _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       setState(() {
         double screenWidth = MediaQuery.of(context).size.width;
+        time += 0.05;
 
-        // 첫 번째 어획물 이동
-        if (moveRight1) {
-          fish1X += speed1;
-          if (fish1X > screenWidth - 100)
-            moveRight1 = false; // 오른쪽 벽에 닿으면 방향 변경
-        } else {
-          fish1X -= speed1;
-          if (fish1X < 10) moveRight1 = true; // 왼쪽 벽에 닿으면 방향 변경
+        // Y축 업데이트: 부드러운 파동 효과
+        fish1Y = 100 + sin(time) * 20;
+        fish2Y = 200 + sin(time + pi / 2) * 25;
+        fish3Y = 300 + sin(time + pi) * 30;
+
+        // X축 업데이트: 좌우 움직임 (멈추지 않은 경우에만)
+        if (!isPaused1) {
+          fish1X += moveRight1 ? speed1 : -speed1;
+          angle1 = moveRight1 ? 0 : pi;
+          if (fish1X > screenWidth - 100 || fish1X < 10) {
+            moveRight1 = !moveRight1;
+          }
         }
-
-        // 두 번째 어획물 이동
-        if (moveRight2) {
-          fish2X += speed2;
-          if (fish2X > screenWidth - 100) moveRight2 = false;
-        } else {
-          fish2X -= speed2;
-          if (fish2X < 10) moveRight2 = true;
+        if (!isPaused2) {
+          fish2X += moveRight2 ? speed2 : -speed2;
+          angle2 = moveRight2 ? 0 : pi;
+          if (fish2X > screenWidth - 100 || fish2X < 10) {
+            moveRight2 = !moveRight2;
+          }
         }
+        if (!isPaused3) {
+          fish3X += moveRight3 ? speed3 : -speed3;
+          angle3 = moveRight3 ? 0 : pi;
+          if (fish3X > screenWidth - 100 || fish3X < 10) {
+            moveRight3 = !moveRight3;
+          }
+        }
+      });
+    });
+  }
 
-        // 세 번째 어획물 이동
-        if (moveRight3) {
-          fish3X += speed3;
-          if (fish3X > screenWidth - 100) moveRight3 = false;
-        } else {
-          fish3X -= speed3;
-          if (fish3X < 10) moveRight3 = true;
+  // 🐟 개별적으로 랜덤 멈추기
+  void _randomPauseForFish1() {
+    Timer.periodic(Duration(seconds: Random().nextInt(5) + 3), (timer) {
+      _pauseSmoothly(1);
+    });
+  }
+
+  void _randomPauseForFish2() {
+    Timer.periodic(Duration(seconds: Random().nextInt(6) + 4), (timer) {
+      _pauseSmoothly(2);
+    });
+  }
+
+  void _randomPauseForFish3() {
+    Timer.periodic(Duration(seconds: Random().nextInt(4) + 3), (timer) {
+      _pauseSmoothly(3);
+    });
+  }
+
+  // 🐟 부드럽게 멈추기: 감속 후 정지
+  void _pauseSmoothly(int fishNumber) {
+    double pauseDuration = Random().nextInt(3) + 1.0; // 1~3초 랜덤 멈춤
+    double deceleration = 0.05;
+
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      setState(() {
+        if (fishNumber == 1) {
+          if (speed1 > 0) {
+            speed1 -= deceleration;
+          } else {
+            timer.cancel();
+            Future.delayed(Duration(seconds: pauseDuration.toInt()), () {
+              _resumeSmoothly(1);
+            });
+          }
+        } else if (fishNumber == 2) {
+          if (speed2 > 0) {
+            speed2 -= deceleration;
+          } else {
+            timer.cancel();
+            Future.delayed(Duration(seconds: pauseDuration.toInt()), () {
+              _resumeSmoothly(2);
+            });
+          }
+        } else if (fishNumber == 3) {
+          if (speed3 > 0) {
+            speed3 -= deceleration;
+          } else {
+            timer.cancel();
+            Future.delayed(Duration(seconds: pauseDuration.toInt()), () {
+              _resumeSmoothly(3);
+            });
+          }
+        }
+      });
+    });
+  }
+
+  // 🐠 부드럽게 다시 이동: 가속하여 원래 속도로 복귀
+  void _resumeSmoothly(int fishNumber) {
+    double acceleration = 0.05;
+
+    Timer.periodic(const Duration(milliseconds: 50), (timer) {
+      setState(() {
+        if (fishNumber == 1) {
+          if (speed1 < baseSpeed1) {
+            speed1 += acceleration;
+          } else {
+            timer.cancel();
+            moveRight1 = Random().nextBool();
+          }
+        } else if (fishNumber == 2) {
+          if (speed2 < baseSpeed2) {
+            speed2 += acceleration;
+          } else {
+            timer.cancel();
+            moveRight2 = Random().nextBool();
+          }
+        } else if (fishNumber == 3) {
+          if (speed3 < baseSpeed3) {
+            speed3 += acceleration;
+          } else {
+            timer.cancel();
+            moveRight3 = Random().nextBool();
+          }
         }
       });
     });
@@ -169,8 +256,8 @@ class _mainPageState extends State<mainPage> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // ✅ 상단 유저 정보 추가 ✅
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
@@ -181,102 +268,81 @@ class _mainPageState extends State<mainPage> {
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: Colors.grey[300],
-                    child: Icon(Icons.person, size: 30, color: Colors.white),
+                    child: const Icon(Icons.person, size: 30, color: Colors.white),
                   ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "조태공",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        "이번달 누적 : n 마리",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
-                      ),
+                    children: const [
+                      Text("조태공", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      Text("이번달 누적 : 8마리", style: TextStyle(fontSize: 14, color: Colors.grey)),
                     ],
                   ),
                 ],
               ),
               Row(
-                children: [
-                  Text(
-                    "today",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  const SizedBox(width: 5),
-                  Text(
-                    "1",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(width: 10),
+                children: const [
+                  Text("today", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  SizedBox(width: 5),
+                  Text("1", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  SizedBox(width: 10),
                   Icon(Icons.favorite_border, color: Colors.red),
-                  const SizedBox(width: 5),
-                  Text(
-                    "5",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  SizedBox(width: 5),
+                  Text("5", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ],
               ),
             ],
           ),
         ),
-        Divider(color: Colors.grey[400]),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Text(
-            "어항 가치 : 3,600,000원",
-            style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+        const Divider(color: Colors.grey),
+        // ✅ 어항 가치 추가 ✅
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Center(
+            child: Text(
+              "어항 가치 : 3,600,000원",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+            ),
           ),
         ),
-
-        // 어획물 이동 애니메이션
         Expanded(
           child: Stack(
             children: [
-              Positioned(
-                left: fish1X,
-                top: 100,
-                child: Image.asset('assets/image/samchi.png', width: 80),
-              ),
-              Positioned(
-                left: fish2X,
-                top: 200,
-                child: Image.asset('assets/image/moona.png', width: 90),
-              ),
-              Positioned(
-                left: fish3X,
-                bottom: 150,
-                child: Image.asset('assets/image/gapojinga.png', width: 100),
-              ),
+              _buildFish(fish1X, fish1Y, angle1, 'assets/image/samchi.png', 80),
+              _buildFish(fish2X, fish2Y, angle2, 'assets/image/moona.png', 90),
+              _buildFish(fish3X, fish3Y, angle3, 'assets/image/gapojinga.png', 100),
             ],
           ),
         ),
-
-        Center(
-          child: Text(
-            "더 많은...",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SizedBox(height: 20),
       ],
+    );
+  }
+
+  Widget _buildFish(double x, double y, double angle, String imagePath, double size) {
+    return Positioned(
+      left: x,
+      top: y,
+      child: Transform(
+        alignment: Alignment.center,
+        transform: Matrix4.rotationY(angle),
+        child: Image.asset(imagePath, width: size),
+      ),
     );
   }
 }
 
 class SecondPage extends StatelessWidget {
-  const SecondPage({super.key});
-
+  const SecondPage({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(child: Text("포인트페이지", style: TextStyle(fontSize: 30))),
+        child: Center(
+          child: Text(
+            "포인트페이지",
+            style: TextStyle(fontSize: 30),
+          ),
+        ),
       ),
     );
   }
