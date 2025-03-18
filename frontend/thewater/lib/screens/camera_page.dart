@@ -98,23 +98,29 @@ class _CameraPageState extends State<CameraPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('카메라 페이지')),
       body: SingleChildScrollView(
-        child: Column(
+        child: Stack(
           children: [
             CameraPreview(_controller), // 카메라 미리보기
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                await _takePicture(); // 사진을 찍은 후 실행
-                // _imagePath가 제대로 설정된 경우만 이동
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => CameraResultPage(imagePath: _imagePath),
-                  ),
-                );
-              }, // 사진 찍기 버튼
-              child: const Text('사진 찍기'),
+            Image(image: AssetImage('assets/camera_guide.png')),
+            Positioned(
+              bottom: 30, // 하단에서 30픽셀 위에 위치
+              left: 30,
+              right: 30,
+              child: ElevatedButton(
+                onPressed: () async {
+                  await _takePicture(); // 사진을 찍은 후 실행
+                  // _imagePath가 제대로 설정된 경우만 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => CameraResultPage(imagePath: _imagePath),
+                    ),
+                  );
+                }, // 사진 찍기 버튼
+
+                child: const Text('사진 찍기'),
+              ),
             ),
           ],
         ),
