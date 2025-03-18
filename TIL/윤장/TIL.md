@@ -1,4 +1,4 @@
-# 🐟 TIL: 물고기 크롤링 진행 과정 (2025-03-04 ~ 2025-03-06)
+# 📝 TIL: (Today I Learned) (2025-03-04 ~ 2025-03-06)
 https://www.notion.so/1ae6458fd4ee805f91f2e4986a043956 진행과정 노션
 ## 🔹 오늘 한 일
 
@@ -44,7 +44,7 @@ https://www.notion.so/1ae6458fd4ee805f91f2e4986a043956 진행과정 노션
 
 //
 
-# TIL (Today I Learned) - 2025-03-07
+# 📝 TIL (Today I Learned) - 2025-03-07
 
 🚀 오늘 진행한 과정 요약
 
@@ -80,7 +80,7 @@ nvcc -V 명령어 실행 불가 → CUDA 관련 패키지 누락 문제 해결 �
 
 //
 
-# TIL (Today I Learned) - 2025-03-10
+# 📝 TIL (Today I Learned) - 2025-03-10
 
 ## 🐟 물고기 분류 모델 데이터 전처리
 
@@ -98,7 +98,7 @@ nvcc -V 명령어 실행 불가 → CUDA 관련 패키지 누락 문제 해결 �
 
 //
 
-# TIL (Today I Learned) - 2025-03-12
+# 📝 TIL (Today I Learned) - 2025-03-12
 
 🐟 물고기 분류 모델 데이터 전처리
 
@@ -119,7 +119,7 @@ nvcc -V 명령어 실행 불가 → CUDA 관련 패키지 누락 문제 해결 �
 
 //
 
-# TIL (Today I Learned) - 2025-03-13
+# 📝 TIL (Today I Learned) - 2025-03-13
 
 🐟 물고기 분류 모델 데이터 전처리
 
@@ -139,7 +139,7 @@ nvcc -V 명령어 실행 불가 → CUDA 관련 패키지 누락 문제 해결 �
 
 ![0313_이미지전처리.jpg](./0313_이미지전처리.jpg)
 
-# TIL (Today I Learned) - 2025-03-14
+# 📝 TIL (Today I Learned) - 2025-03-14
 
 🐟 물고기 분류 모델 데이터 전처리
 
@@ -159,7 +159,7 @@ nvcc -V 명령어 실행 불가 → CUDA 관련 패키지 누락 문제 해결 �
 
 ai 물고기 분류 모델 생성 및 테스트
 
-![Screenshot from 2025-03-14 17-59-41.png](./Screenshot from 2025-03-14 17-59-41.png)
+![0314_이미지전처리-1.png](./0314_이미지전처리-1.png)
 
 //
 
