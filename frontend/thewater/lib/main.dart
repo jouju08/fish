@@ -90,16 +90,27 @@ class FirstPage extends StatelessWidget {
           child: Container(
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage('assets/background.png'),
+                image: AssetImage('assets/image/background.png'),
                 fit: BoxFit.cover,
               ),
             ),
-            child: Center(
-              child: Text("aquarium page", style: TextStyle(fontSize: 30)),
-            ),
+            child: mainPage(),
           ), //여기 Text 대신에 원하는 대로 페이지 구성하면 됨.
         ),
       ),
+    );
+  }
+}
+
+class mainPage extends StatelessWidget {
+  const mainPage({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text("메인페이지", style: TextStyle(fontSize: 30)),
     );
   }
 }
@@ -114,24 +125,10 @@ class SecondPage extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: Center(
-            child: Text("fishing point page", style: TextStyle(fontSize: 30)),
+            child: Text("포인트페이지", style: TextStyle(fontSize: 30)),
           ), //여기 Text 대신에 원하는 대로 페이지 구성하면 됨.
         ),
       ),
     );
   }
 }
-
-// class CameraPage extends StatelessWidget {
-//   const CameraPage({super.key});
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(title: Text("Camera page")),
-//       body: Center(
-//         child: Text("camera page", style: TextStyle(fontSize: 30)),
-//       ), //여기도 Text 대신에 원하는 대로 카메라 페이지 구성하면 됨.
-//     );
-//   }
-// }
