@@ -2,7 +2,7 @@ name: thewater
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
 # The following defines the version and build number for your application.
 # A version number is three numbers separated by dots, like 1.2.43
@@ -30,7 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  camera: ^0.10.0+4
+  provider: ^6.0.3 # 상태 관리 패키지지
+  path_provider: ^2.0.9 # 사진을 저장할 경로를 얻기 위한 패키지
+  path: ^1.8.0 # 파일 경로를 다루기 위한 패키지
+  image_picker: ^0.8.5+3 # 이미지 선택을 위한 패키지 (옵션, 카메라 외에도 갤러리에서 선택할 수 있음)
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -51,12 +55,12 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
-
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
-
+  assets:
+    - assets/
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
