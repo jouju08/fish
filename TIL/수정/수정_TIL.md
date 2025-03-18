@@ -395,3 +395,153 @@
     - 수동적 공격성
         - (치졸한것)적개심, 불만을 품은 대상을 미묘하고 간접적인 방식으로 불편하거나 혼란스럽게 만드는 것
         - ex.이번에는 준비 많이 했나봐 지난번에는 엉망이더니~
+  
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 13일 🚩
+🎯spring boot 학습1
+### 파일구조
+
+- application properties: DB연결 경로 등 지정
+- test
+    - class를 test해보는 test 코드
+    - 내가 원하는 로직대로 동작하는지 확인
+- pom.xml
+    - maven 사용시 사용되는 pom 파일
+    - <parent> 폼 파일 상단 폼파일 정의
+        - dependency 상속
+    - <dependencies>
+        - 우리가 사용할 open api
+    - <build>
+        - 플러그인
+        
+
+### Maven과 Gradle
+
+자바 build 관리 도구
+
+- 프로젝트 파일 자동 인식하여 빌드
+- 소스코드 컴파일, 테스트, 정적 분석 등
+- 외부 라이브러리 참조 자동 다운 및 업데이트 관리
+
+- maven
+    - pom 파일로 외부 라이브러리 관리
+    - xml 기반 빌드 스크립트
+    - 라이프사이클(빌드) 도입
+
+- gradle
+    - 안드로이드 표준 빌드 시스템
+    - 빠른 처리속도
+    - 간결한 구성
+    - 용어
+        - repositories: 참조할 라이브러리, 라이브러리가 저장된 위치 설정
+            - mavenCentral: 기본 Maven Repository
+        - dependencies: 라이브러리 사요을 위한 의존성
+
+### rest api
+
+- rest 특징
+    - server-client구조
+    - stateless
+    - cacheable
+    - 계층화
+    - code on demand(optional)
+    - 인터페이스 일관성
+- 장점
+    - http 표준 프로토콜 사용하는 모든 플랫폼 호환 가능
+    - 서버 클라이언트 역할 명확히 분리
+    - 여러 서비스 생길 수 있는 문제 최소화
+- rest api
+    - rest 아키텍처 조건 준수하는 어플리케이션 프로그래밍 인터페이스
+    - rest 아키텍처를 구현하는 웹 서비스를 restful하다고 표현
+- 설계 규칙
+    - uri를 통해 자원 표현
+    - 자원 조작은 CRUD(http method)를 통해 표현
+    - 메세지를 통한 리소스 조작
+        - html, xml, json, text가 있음
+    - 소문자 사용
+    - -쓰기 _쓰지말기
+    - 파일확장자 표현하지 말기
+
+### pom.xml
+
+- 프로젝트 기본 정보
+    - <name>: 프로젝트 명
+    - <url>: 프로젝트 사이트 url
+    - <description>: 프로젝트에 대한 간단한 설명
+    - <organization>: 프로젝트 관리하는 단체 설명
+- 프로젝트 연관 정보
+    - <groupIId>: 프로젝트 그룹 아이디
+    - <artifactId>: 프로젝트 아티팩트 아이디
+    - <version>: 프로젝트 버전
+    - <package>: 패키징 타입
+        - jar: 자바 프로젝트 압축 파일
+        - war: 웹 어프리케이션 패키징
+- 프로젝트 의존 설정
+    - <dependencies>: 라이브러리 의존성 정보를 가지고 있는 dependency태그를 ㅂㅂㅁ묶은 태그
+    - <dependency>: 각 라이브러리의 정보 담는 태그
+    - <groupId>: 의존성 라이브러리의 그룹아이디
+    - <artifactId>: 의존성 라이브러리의 아티팩트 아이디
+    - <version>: 의존성 라이브러리의 버전
+    - <scope>: 해당 라이브러리의 이용 범위를 지정
+        - compile: 기본값, 모든 클래스 경로에서 dependency 사용 가능. 컴파일 배포 상황에 같이 제공
+        - provided: jdk, container 런타임시에만 제공. 배포시 빠짐
+        - runtime: 컴파일시사용하지 않고 실행상황에서만 사용
+        - test: 테스트 상황에만 사용. 실상황에서 안씀
+        - system: provided와 유사하나, 저장소에서 관리되지 않고 직접 관리하는 jar 추가. system path 추가
+    - <optional>: 다른 프로젝트에서 이 프로젝트를 의존성 설정을 할 경우 같이 따라가서 의존성 사용할지 결정
+
+### 라이브러리 설명
+
+- spring boot starter parent
+    - 프로젝트 사용 다양한 라이브러리간 버전 충돌 방지
+- spring boot starter web
+    - spring mvc를 사용한 rest 서비스 개발시 사용
+- spring boot starter test
+    - junit, hamcrest, mockito를 포함한 스프링 어플리케이션 테스트 기능 제공
+
+- lombok: annotation 대체
+
+### MVC 패턴
+
+- 디자인 패턴 중 하나
+- model, view, controller
+- 어플리케이션 구성시 그 구성요소 세가지의 역할로 구분한 패턴
+- 모든 사용자요청: controller
+    - 모델과 뷰 사이 브릿지
+    - 사용자 입력에 대한 응답으로 모델 및 뷰를 업데이트
+    - 컨트롤러로 들어온 요청은 어떻게 처리할지 결정해 모델로 요청 전달
+- 데이터베이스 처리: model
+    - 데이터 처리
+    - DAO(Data Access Object)및 DO(Data Object)로 구성됨
+- 업데이트: view
+    - 데이터 보여주는 화면 영역
+    - UI
+    - 데이터를 각 요소에 배치
+    - 별도 데이터 보관하지 않고 처리만함
+- 특징
+    - 서로간 의존성이 낮아짐
+    - 각 영역이 독립적으로 구성되어 분업, 협업 원활
+    - 한 영역 업데이트 하더라도 다른 곳에 영향을 주지 않음
+- 단점
+    - controller 역할 과중
+
+
+
+### Hello World
+
+- RestController
+    - 어노테이션
+    - view를 거치지 않고 http response body에 직접 return값을 담아 보냄
+- RequestMapping
+    - RequestMapping을 통해 url 매핑해 경로 설정, 해당 메소드에서 처리
+    - 대표
+    - value: url 설정
+    - method: GET, POST, DELETE, PUT, PATCH 등
+    - 메소드보다 간단히 어노테이션 사용
+        - @GetMapping
+        - @PostMapping
+        - …
