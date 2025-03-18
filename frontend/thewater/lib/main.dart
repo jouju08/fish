@@ -333,14 +333,17 @@ class _mainPageState extends State<mainPage> {
 
 class SecondPage extends StatelessWidget {
   const SecondPage({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Text(
-            "포인트페이지",
-            style: TextStyle(fontSize: 30),
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/image/map_mock.jpg'), // 🔥 배경 이미지 추가
+              fit: BoxFit.cover, // 화면 전체를 덮도록 설정
+            ),
           ),
         ),
       ),
