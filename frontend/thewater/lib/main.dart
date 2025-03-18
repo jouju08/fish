@@ -1,7 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart';
+import 'screens/camera_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // 카메라 리스트 가져오기
+  final cameras = await availableCameras();
   runApp(
     MaterialApp(
       theme: ThemeData(
@@ -11,13 +15,14 @@ void main() {
         ),
       ),
       debugShowCheckedModeBanner: false,
-      home: TheWater(),
+      home: TheWater(cameras: cameras),
     ),
   );
 }
 
 class TheWater extends StatefulWidget {
-  const TheWater({super.key});
+  final List<CameraDescription> cameras; // 카메라 리스트
+  const TheWater({super.key, required this.cameras});
 
   @override
   State<TheWater> createState() => _TheWaterState();
@@ -35,10 +40,12 @@ class _TheWaterState extends State<TheWater> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          print("클릭되었습니다");
+          print("카메라 클릭되었습니다");
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => CameraPage()),
+            MaterialPageRoute(
+              builder: (context) => CameraPage(cameras: widget.cameras),
+            ),
           );
         },
         child: const Icon(Icons.camera, color: Colors.white),
@@ -115,16 +122,16 @@ class SecondPage extends StatelessWidget {
   }
 }
 
-class CameraPage extends StatelessWidget {
-  const CameraPage({super.key});
+// class CameraPage extends StatelessWidget {
+//   const CameraPage({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text("Camera page")),
-      body: Center(
-        child: Text("camera page", style: TextStyle(fontSize: 30)),
-      ), //여기도 Text 대신에 원하는 대로 카메라 페이지 구성하면 됨.
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       appBar: AppBar(title: Text("Camera page")),
+//       body: Center(
+//         child: Text("camera page", style: TextStyle(fontSize: 30)),
+//       ), //여기도 Text 대신에 원하는 대로 카메라 페이지 구성하면 됨.
+//     );
+//   }
+// }
