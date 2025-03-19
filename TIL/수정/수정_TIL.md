@@ -682,3 +682,291 @@ https://goddaehee.tistory.com/331
     	return memberDTO.toString();
     }
     ```
+    @RequestBody를 붙이기
+    
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 19일 🚩
+🎯코드리뷰
+
+- 잘못된걸 개선하기만 하기 위해 하는건 아님
+- 코드리뷰는 배우는 과정
+- 잘한 부분을 칭찬하는 것도 좋은 리뷰다.
+- 코드리뷰 기다리는 시간
+    - 태스크를 병행하며 리듬 찾기
+- 리뷰어는 빠르게 응답
+    - 엉성한 리뷰가 아니라 초기 응답이라도 빠르게 해야함
+- 코드리뷰를 잘 받으려면?
+    - 코드를 짧게 유지하기: 500~800라인 정도가 적당
+        - feature하나를 끊어서
+    - 추상화 잘하기
+        - 복잡성을 단순함에 숨기기
+    - 여러 설명 수단 활용하기
+        - 필요하면 대면, UML, 스크린샷 등 리뷰어가 이해하기 쉽게
+- 코드리뷰 잘해주려면
+    - 모멸감을 주지 않는다
+    - 왜 이렇게 했는지 이해하려고 노력하기
+        - 그래도 모르겠으면 왜 이렇게 구현했는지 물어보기
+    - 코멘트에 이유가 필요
+        - 이 부분은 이래서 문제가 될 수 있다.
+    - 개선방향 제시
+- 팁
+    - 공통 브랜치 합칠땐 항상 코드리뷰하기
+    - PR/MR title에 이모지로 카테고리 표현
+    - comment에 카테고리 표시하기
+        - nit: 사소한 지적
+        - thinking out loud: 생각나는대로 써본거야
+        - optional: 꼭 이대로 하지 않아도 괜찮아
+        - question: 이건 궁금한건데
+    - 코드리뷰 타임박싱
+        - 우리팀은 코드리뷰 요청은 x시간 내로 응답한다.
+    - 코드리뷰  시간 정례화
+        - 우리팀은 오전에 전날 올라온 코드 리뷰 요청을 처리한다.
+  
+  
+🎯 Spring Boot2
+### Swagger
+
+- 협업을 위한 라이브러리
+- 서버로 요청되는 API 리스트를 HTML 화면으로 문서화하여 테스트할 수 있는 라이브러리
+- 서버가 가동되면서 @RestController를 읽어 API를 분석해 HTML 문서를 작성함
+- REST API 스펙 문서화
+- swagger 설정 방법
+    - @Configuration: 어노테이션 기반의 환경 구성을 돕는 어노테이션
+        - IoC Container에게 해당 클래스를 Bean 구성 Class임을 알려줌
+    - @Bean: 개발자가 직접 제어가 불가능한 외부 라이브러리 등을 Bean으로 만들 경우에 사용
+- Swagger 적용 방법
+    - pom.xml애 의존성 추가
+        
+        ```java
+        <dependency>
+          <groupId>org.springdoc</groupId>
+          <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+          <version>2.3.0</version>
+        </dependency>
+        ```
+        
+    - config 패키지 생성
+    - config 패키지 하위에 SwaggerConfig.java 파일 생성
+    - SwaggerConfig.java
+        
+        ```java
+        package com.example.demo.config;
+        
+        import io.swagger.v3.oas.models.OpenAPI;
+        import io.swagger.v3.oas.models.info.Info;
+        import org.springframework.context.annotation.Bean;
+        import org.springframework.context.annotation.Configuration;
+        
+        @Configuration
+        public class SwaggerConfig {
+            @Bean
+            public OpenAPI customOpenAPI() {
+                return new OpenAPI()
+                    .info(new Info()
+                        .title("Demo API")
+                        .version("1.0")
+                        .description("Spring Boot 3.x OpenAPI (Swagger) Documentation"));
+            }
+        }
+        
+        ```
+        
+    - Swagger 접속 url: http://localhost:8080/swagger-ui/index.html
+
+### PUT, DELETE API
+
+- PUT API
+    - 해당 리소스가 존재하면 갱신하고, 리소스가 없을 경우에는 새로 생성해주는 API
+    - 업데이트를 위한 메소드
+    - 기본적인 동작은 POST API와 동일
+        
+        ```java
+            @PutMapping(value = "/default")
+            public String putMethod(){return "Hello World!";}
+        
+            @PutMapping(value = "/member")
+            public String postMember(@RequestBody Map<String, Object> postData){
+                StringBuilder sb = new StringBuilder();
+        
+                postData.entrySet().forEach(map->{
+                    sb.append(map.getKey() + " : " + map.getValue() + "\n");
+                });
+                return sb.toString();
+            }
+        
+            @PutMapping(value = "/member1")
+            public String postMemberDto1(@RequestBody MemberDTO memberDTO){ return memberDTO.toString();}
+        
+            @PutMapping(value = "/member2")
+            public MemberDTO postMemberDto2(@RequestBody MemberDTO memberDTO){ return memberDTO;}
+        
+            @PutMapping(value = "/member3")
+            public ResponseEntity<MemberDTO> postMemberDto3(@RequestBody MemberDTO memberDTO){
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(memberDTO);
+        ```
+        
+- DELETE API
+    - 서버를 통해 리소스를 삭제하기 위해 사용되는 API
+    - @PathVariable을 통해 리소스 ID등을 받아 처리
+        
+        ```java
+            @DeleteMapping(value = "/delete/{variable}")
+            public String DeleteVariable(@PathVariable String variable){ return variable;  }
+        ```
+        
+- ResponseEntity
+    - Spring Framework 에서 제공하는 클래스 중 HttpEntity라는 클래스 상속받아 사용하는 클래스
+    - 사용자 HttpRequest에 대한 응답 데이터 포함
+    - 포함 클래스
+        - HttpStatus
+        - HttpHeaders
+        - HttpBody
+    - 200 401 등 Status를 디테일하게 수정할 때 사용
+    
+
+### Lombok
+
+- Lombok
+    - 반복되는 메소드 Annotation 사용해 자동 작성해주는 라이브러리
+    - VO,DTO,Model, Entity 등 데이터 클래스에서 주로 사용됨
+    - 대표 Annotation
+        - @Getter
+        - @Setter
+        - @NoArgConstructor
+        - @AllArgConstructor
+        - @Data
+        - @ToString
+    - dependency
+        
+        ```java
+          <dependency>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <optional>true</optional>
+          </dependency>
+        ```
+        
+    - Lombok 대표 어노테이션
+        - @Getter, @Setter
+            - getter, setter 자동 생성 어노테이션
+            - 해당 클래스에 선언되어 있는 필드를 기반으로 ‘getField’, ‘setFiled’와 같은 식으로 자동 메소드를 생성
+            - 아래와 같이 작성하면 자동으로 getter setter 만들어줌
+                
+                ```java
+                @Getterd
+                @Setter
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+        - @NoArgsContructor, @AllArgsConstructor, @RequireArgsContructor
+            - 생성자 자동 생성 어노테이션
+            - @NoArgsContructor: 파라미터가 없는 생성자를 생성
+            - @AllArgsConstructor: 모든 필드 값을 파라미터로 갖는 생성자를 생성
+            - @RequireArgsContructor: 필드값 중 final이나 @NotNull인 값을 갖는 생성자를 생성
+            - 아래와 같이 작성하면 자동으로 생성자 생성해줌
+                
+                ```java
+                @NoArgsConstructor
+                @RequiredArgsConstructor
+                @AllArgsContructor
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+        - @ToString
+            - toString 메소드 자동 생성 어노테이션
+            - @ToString 어노테이션에 exclude 속성을 하용해 특정 필드 toString에서 제외시킬 수 있음
+            - 아래와 같이 작성
+                
+                ```java
+                @ToString
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+                ```java
+                @ToString(exclude="email")
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+        - @EqualsAndHashCode
+            - equals, hashCode 메소드 자동 생성
+            - equals: 두 객체 내용 같은지 동등성(equality) 비교하는 연산자
+            - hashCode: 두 객체가 같은 객체인지 동일성(identity) 비교하는 연산자
+            - callSuper 속성을 통해 메소드 생성시 부모 클래스의 필드까지 고려할지 여부 설정 가능
+                - callSuper = true → 부모 클래스 필드 값들도 동일한지 체크
+            - 아래와 같이 작성
+                
+                ```java
+                @EqualsAndHashCode
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+                ```java
+                @EqualsAndHashCode(callSuper=true)
+                public class MemeberDTO{
+                	private String name;
+                	private String email;
+                	private String organization;
+                }
+                ```
+                
+        - @Data
+            - 해당 어노테이션을 작성하면, 앞서 나온 기능을 한번에 추가해줌
+                - @Getter, @Setter, @RequiredConstructor, @ToString, @EqualsAndHashcode
+                - 불필요한 메소드가 추가될 수 있다.
+    - 코드 확인하기
+        - `어노테이션 클릭 → Refactor → delombok → 원하는 어노테이션 클릭하기`
+
+### DB: Entity, DAO, Repository, DTO
+
+- Spring Boot 서비스 구조
+    
+    - Client: FE모듈, Web Browser
+    - Controller, Service, DAO: SpringBoot에서 코드 작성하는 영역
+        - Controller: DTO(회원가입정보)를 올바른 Service로 보내줌
+        - Service: 회원가입할 때 받은 내용말고 추가적인거 더 넣어주기 (가입일자, 등급 등)
+        - DAO(Repository): DB와 직접 통신, Entity 값 저장, 가져오기 등등
+    - DB: DataBase
+    - ServiceImpl: 인터페이스 상속받은 클래스
+    - DAOImpl:: 인터페이스 상속받은 클래스
+- Entity(Domain)
+    - 데이터베이스에 쓰일 컬럼과 엔티티간 연관관계
+    - 데이터베이스 테이블과 1:1 매핑됨
+    - Table column의미
+- Repository
+    - Entity에 의해 생성된 데이터베이스에 접근하는 메소드를 사용하기 위한 인터페이스
+    - Service와 DB 연결
+    - 데이터베이스에 적용하고자하는 CURD 정의하는 영역
+- DAO(Data Access Object)
+    - 데이터베이스에 접근하는 객체
+    - Service가 DB에 연결할 수 있게 해주는 역할
+    - DB를 사용해 데이터 조회하거나 조작하는 기능 전담
+- DTO(Data Transfer Object)
+    - VO(Value Object)로 불리기도 함
+    - 계층간 데이터 교환을 위한 객체 의미
+    - VO의 경우 Read Only 개념을 가짐
+    - Entity는 데이터베이스와 동일한 클래스이지만, DTO는 Entity와 완전 동일하지 않음
+        - DB Column과는 독립적임
