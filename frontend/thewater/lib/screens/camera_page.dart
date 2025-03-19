@@ -33,6 +33,7 @@ class _CameraPageState extends State<CameraPage> {
 
     try {
       await _controller.initialize(); // 카메라 초기화
+      await _controller.setFlashMode(FlashMode.off); // 플래시 끄기
       if (!mounted) return;
       setState(() {}); // 초기화 완료 후 화면 갱신
     } catch (e) {
