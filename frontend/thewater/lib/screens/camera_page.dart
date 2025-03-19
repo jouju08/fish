@@ -101,7 +101,7 @@ class _CameraPageState extends State<CameraPage> {
         child: Stack(
           children: [
             CameraPreview(_controller), // 카메라 미리보기
-            Image(image: AssetImage('assets/camera_guide.png')),
+            Image(image: AssetImage('assets/image/camera_guide.png')),
             Positioned(
               bottom: 30, // 하단에서 30픽셀 위에 위치
               left: 30,
