@@ -401,7 +401,7 @@
 </br>
 </br>
     
-## 3월 13일 🚩
+## 3월 18일 🚩
 🎯spring boot 학습1
 ### 파일구조
 
@@ -545,3 +545,140 @@
         - @GetMapping
         - @PostMapping
         - …
+    
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 19일 🚩
+🎯spring boot 학습2
+### Get API
+
+- @RequestMapping
+    - value와 method로 정의해 api 개발하는 방식
+    - @RequestMapping(value=”/hello”, method=RequestMethod.GET)
+    - 고전적인 방법
+- @GetMapping
+    - 별도 파라미터 없이 GET API 호출
+    
+    ```jsx
+    @GetMapping(value="/name")
+    public String getName(){
+    	return "Flature";
+    	}
+    ```
+    
+- @PathVariable
+    - GET 형식 요청에서 파라미터를 전달하기 위해 URL에 값을 담아 요청하는 방법
+    
+    ```java
+    @GetMapping(value="/variable1/{variavle}")
+    public String getVariable(@PathVariable String variable){
+    	return variable;
+    }
+    ```
+    
+    - {변수}의 이름과 이름 메소드 매개변수 일치시키기
+    - Get형식에서 파라미터 전달하는 또다른 방법
+    
+    ```java
+    @GetMapping(value="/variable2/{variable}")
+    public String getVariable2(@PathVariable("variable) String var){
+    	return var;
+    }
+    ```
+    
+- @RequestParam
+    - GET형식 요청에서 쿼리 문자열을 전달하기 위해 사용되는 방법
+    
+    ```java
+    @GetMapping(value="/request1")
+    public String getRequestParam1(
+    	@RequestParam String name,
+    	@RequestParam String email,
+    	@RequestParam String organization){
+    		return name + " " + email + "organization;
+    	}
+    ```
+    
+    - 어떤 요청값이 들어올지 모르는 경우
+    
+    ```java
+    @GetMapping(value="request2")
+    public String getRequestParam2(@RequestParam Map<String, String> param){
+    	StringBuilder sb = new StringBuilder();
+    	
+    	param.entrySet().forEach(map->{
+    	sb.append(map.getKey() + ":" + map.getValue() + "\n");});
+    	
+    	return sb.toString();
+    }
+    ```
+    
+- DTO 사용
+    - 별도 DataClass 만들어 활용
+    - GET형식 요청에서 쿼리 문자열 전달하기 위해 사용
+    - key, value 정해져있지만 받아야할 파라미터 많을 경우
+    
+    ```java
+    @GetMapping(value="/request3")
+    public String getRequestParam3(MemberDTO memberDTO){
+    	return memberDTO.toString();
+    }
+    
+    public class Member DTO{
+    	private String name;
+    	private String email;
+    	private String organization;
+    	...
+    }
+    ```
+    
+
+### MySQL 설치
+
+https://goddaehee.tistory.com/331
+
+- mysql 실행 명령어
+    
+    ```java
+    sudo mysql -u root -p
+    ```
+    
+- 22.04  workbench 설치
+    
+    https://ko.linux-console.net/?p=14987
+    
+    ```java
+    sudo snap install mysql-workbench-community
+    ```
+    
+
+### POST API
+
+- 리소스를 추가하기 위해 사용되는 API
+- @PostMapping: POST API를 제작하기 위해 사용되는 어노테이션
+- 일반적으로 추가하고자 하는 리소스를 HTTP BODY에 추가해 서버에 전송함
+    
+    ```java
+    @PostMapping(value="/member")
+    public String postMember(@RequestBody Map<String, Object> postData){
+    	StringBuilder sb = new StringBuilder();
+    	
+    	postData.entrySet().forEach(map->{
+    		sb.append(map.getKey() + ":" + map.getValue() + "\n");
+    	});
+    	
+    	return sb.toString();
+    }
+    ```
+    
+- DTO 사용
+    
+    ```java
+    @PostMapping(value="/member2")
+    public String postMember2(@RequestBody MemberDTO memberDTO){
+    	return memberDTO.toString();
+    }
+    ```
