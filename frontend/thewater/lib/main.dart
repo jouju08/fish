@@ -38,7 +38,7 @@ class _TheWaterState extends State<TheWater> {
     return Scaffold(
       body: IndexedStack(
         index: currentIndex,
-        children: [FirstPage(), SecondPage()],
+        children: [const FirstPage(), const SecondPage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -172,7 +172,7 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 🐟 개별적으로 랜덤 멈추기
+  // 🐟 개별적으로 랜덤 멈추기 (원래 랜덤 멈춤 기능)
   void _randomPauseForFish1() {
     Timer.periodic(Duration(seconds: Random().nextInt(5) + 3), (timer) {
       _pauseSmoothly(1);
@@ -257,6 +257,30 @@ class _mainPageState extends State<mainPage> {
             timer.cancel();
             moveRight3 = Random().nextBool();
           }
+        }
+      });
+    });
+  }
+
+  // 🔥 터치하면 1초간 정지: 해당 물고기의 isPaused 플래그를 켜고 1초 후 해제
+  void _pauseFishForOneSecond(int fishNumber) {
+    setState(() {
+      if (fishNumber == 1) {
+        isPaused1 = true;
+      } else if (fishNumber == 2) {
+        isPaused2 = true;
+      } else if (fishNumber == 3) {
+        isPaused3 = true;
+      }
+    });
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        if (fishNumber == 1) {
+          isPaused1 = false;
+        } else if (fishNumber == 2) {
+          isPaused2 = false;
+        } else if (fishNumber == 3) {
+          isPaused3 = false;
         }
       });
     });
@@ -349,14 +373,29 @@ class _mainPageState extends State<mainPage> {
         Expanded(
           child: Stack(
             children: [
-              _buildFish(fish1X, fish1Y, angle1, 'assets/image/samchi.png', 80),
-              _buildFish(fish2X, fish2Y, angle2, 'assets/image/moona.png', 90),
+              _buildFish(
+                fish1X,
+                fish1Y,
+                angle1,
+                'assets/image/samchi.png',
+                80,
+                1,
+              ),
+              _buildFish(
+                fish2X,
+                fish2Y,
+                angle2,
+                'assets/image/moona.png',
+                90,
+                2,
+              ),
               _buildFish(
                 fish3X,
                 fish3Y,
                 angle3,
                 'assets/image/gapojinga.png',
                 100,
+                3,
               ),
             ],
           ),
@@ -365,20 +404,27 @@ class _mainPageState extends State<mainPage> {
     );
   }
 
+  // _buildFish 함수 수정: 터치 시 _pauseFishForOneSecond() 호출
   Widget _buildFish(
     double x,
     double y,
     double angle,
     String imagePath,
     double size,
+    int fishNumber,
   ) {
     return Positioned(
       left: x,
       top: y,
-      child: Transform(
-        alignment: Alignment.center,
-        transform: Matrix4.rotationY(angle),
-        child: Image.asset(imagePath, width: size),
+      child: GestureDetector(
+        onTap: () {
+          _pauseFishForOneSecond(fishNumber);
+        },
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.rotationY(angle),
+          child: Image.asset(imagePath, width: size),
+        ),
       ),
     );
   }
@@ -386,7 +432,6 @@ class _mainPageState extends State<mainPage> {
 
 class SecondPage extends StatelessWidget {
   const SecondPage({Key? key}) : super(key: key);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -394,8 +439,8 @@ class SecondPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/map_mock.jpg'), // 🔥 배경 이미지 추가
-              fit: BoxFit.cover, // 화면 전체를 덮도록 설정
+              image: AssetImage('assets/image/map_mock.jpg'),
+              fit: BoxFit.cover,
             ),
           ),
         ),
