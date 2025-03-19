@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:thewater/screens/login.dart';
 import 'screens/camera_page.dart';
 import 'dart:async';
 import 'dart:math';
@@ -78,6 +79,20 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text("로그인 화면 테스트"),
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => login()),
+              );
+            },
+            icon: Icon(Icons.navigation),
+          ),
+        ],
+      ),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -292,27 +307,49 @@ class _mainPageState extends State<mainPage> {
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: Colors.grey[300],
-                    child: const Icon(Icons.person, size: 30, color: Colors.white),
+                    child: const Icon(
+                      Icons.person,
+                      size: 30,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: const [
-                      Text("조태공", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                      Text("이번달 누적 : 8마리", style: TextStyle(fontSize: 14, color: Colors.grey)),
+                      Text(
+                        "조태공",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        "이번달 누적 : 8마리",
+                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                      ),
                     ],
                   ),
                 ],
               ),
               Row(
                 children: const [
-                  Text("today", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text(
+                    "today",
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
                   SizedBox(width: 5),
-                  Text("1", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    "1",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                   SizedBox(width: 10),
                   Icon(Icons.favorite_border, color: Colors.red),
                   SizedBox(width: 5),
-                  Text("5", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                  Text(
+                    "5",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ],
               ),
             ],
@@ -325,16 +362,41 @@ class _mainPageState extends State<mainPage> {
           child: Center(
             child: Text(
               "어항 가치 : 3,600,000원",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
             ),
           ),
         ),
         Expanded(
           child: Stack(
             children: [
-              _buildFish(fish1X, fish1Y, angle1, 'assets/image/samchi.png', 80, 1),
-              _buildFish(fish2X, fish2Y, angle2, 'assets/image/moona.png', 90, 2),
-              _buildFish(fish3X, fish3Y, angle3, 'assets/image/gapojinga.png', 100, 3),
+              _buildFish(
+                fish1X,
+                fish1Y,
+                angle1,
+                'assets/image/samchi.png',
+                80,
+                1,
+              ),
+              _buildFish(
+                fish2X,
+                fish2Y,
+                angle2,
+                'assets/image/moona.png',
+                90,
+                2,
+              ),
+              _buildFish(
+                fish3X,
+                fish3Y,
+                angle3,
+                'assets/image/gapojinga.png',
+                100,
+                3,
+              ),
             ],
           ),
         ),
@@ -343,7 +405,14 @@ class _mainPageState extends State<mainPage> {
   }
 
   // _buildFish 함수 수정: 터치 시 _pauseFishForOneSecond() 호출
-  Widget _buildFish(double x, double y, double angle, String imagePath, double size, int fishNumber) {
+  Widget _buildFish(
+    double x,
+    double y,
+    double angle,
+    String imagePath,
+    double size,
+    int fishNumber,
+  ) {
     return Positioned(
       left: x,
       top: y,
