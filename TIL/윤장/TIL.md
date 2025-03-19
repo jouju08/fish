@@ -263,7 +263,7 @@ Instance Segmentation: 784장
 
 //
 
-# 📝 TIL (Today I Learned) - 2025-03-18
+# 📝 TIL (Today I Learned) - 2025-03-19
 물고기 윤곽 및 키포인트 검출 모델 라벨링 진행
 
 📌 1️⃣ YOLOv8 / DeepLabV3 → 물고기 윤곽 검출
