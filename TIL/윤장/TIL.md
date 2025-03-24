@@ -278,3 +278,27 @@ Instance Segmentation: 1446장
 
 📌 라벨링 마저 진행 예정 🚀
 ![0319_image_segmentation.jpg](./0319_image_segmentation.jpg)
+
+//
+# 📝 TIL (Today I Learned) - 2025-03-19
+발표자료 준비로 pass
+# 📝 TIL (Today I Learned) - 2025-03-20
+발표준비 및 발표로 pass
+
+//
+
+# 📝 TIL (Today I Learned) - 2025-03-24
+물고기 윤곽 및 키포인트 검출 모델 라벨링 진행
+
+📌 1️⃣ YOLOv8 / DeepLabV3 → 물고기 윤곽 검출
+이미지에서 물고기의 전체 윤곽을 인식하여 배경과 분리하는 역할
+Instance Segmentation 수행
+오늘 1091장의 이미지 라벨링 완료
+
+
+✅ 라벨링 현황
+Keypoint Detection: 1,096장
+Instance Segmentation: 2,537장
+
+📌 라벨링 마저 진행 예정 🚀
+![0324_image_segmentation.jpg](./0324_image_segmentation.jpg)
