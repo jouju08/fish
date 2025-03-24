@@ -5,16 +5,16 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart'; // 파일 경로 처리
 import 'package:thewater/screens/camera_result_page.dart';
 
-class CameraPage extends StatefulWidget {
+class CameraScreen extends StatefulWidget {
   final List<CameraDescription> cameras; // 카메라 리스트
 
-  const CameraPage({super.key, required this.cameras});
+  const CameraScreen({super.key, required this.cameras});
 
   @override
-  _CameraPageState createState() => _CameraPageState();
+  _CameraScreenState createState() => _CameraScreenState();
 }
 
-class _CameraPageState extends State<CameraPage> {
+class _CameraScreenState extends State<CameraScreen> {
   late CameraController _controller; // 카메라 컨트롤러
   String _imagePath = ''; // 초기값으로 빈 문자열 할당
 
@@ -97,33 +97,36 @@ class _CameraPageState extends State<CameraPage> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('카메라 페이지')),
-      body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            CameraPreview(_controller), // 카메라 미리보기
-            Image(image: AssetImage('assets/image/camera_guide.png')),
-            Positioned(
-              bottom: 30, // 하단에서 30픽셀 위에 위치
-              left: 30,
-              right: 30,
-              child: ElevatedButton(
-                onPressed: () async {
-                  await _takePicture(); // 사진을 찍은 후 실행
-                  // _imagePath가 제대로 설정된 경우만 이동
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder:
-                          (context) => CameraResultPage(imagePath: _imagePath),
-                    ),
-                  );
-                }, // 사진 찍기 버튼
+      appBar: AppBar(title: const Text('카메라')),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        child: Center(
+          child: Stack(
+            children: [
+              CameraPreview(_controller), // 카메라 미리보기
+              Image(image: AssetImage('assets/image/camera_guide.png')),
+              Positioned(
+                bottom: 30,
+                right: 0,
+                child: ElevatedButton(
+                  onPressed: () async {
+                    await _takePicture(); // 사진을 찍은 후 실행
+                    // _imagePath가 제대로 설정된 경우만 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder:
+                            (context) =>
+                                CameraResultScreen(imagePath: _imagePath),
+                      ),
+                    );
+                  }, // 사진 찍기 버튼
 
-                child: const Text('사진 찍기'),
+                  child: const Text('사진 찍기'),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
