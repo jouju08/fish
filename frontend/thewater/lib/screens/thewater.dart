@@ -137,8 +137,8 @@ class mainPage extends StatefulWidget {
   _mainPageState createState() => _mainPageState();
 }
 
-class _mainPageState extends State<mainPage> {
-  // 기존 물고기 이동/정지 관련 변수들
+class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
+  // --- 물고기 이동/정지 관련 ---
   double fish1X = 50, fish2X = 100, fish3X = 150;
   double fish1Y = 100, fish2Y = 200, fish3Y = 300;
   bool moveRight1 = true, moveRight2 = false, moveRight3 = true;
@@ -152,20 +152,40 @@ class _mainPageState extends State<mainPage> {
   // "더 많은.." 버튼 토글
   bool showMoreMenu = false;
 
+  // --- Staggered Animations ---
+  late AnimationController _menuController;
+  // 아이콘 5개 → Slide/Fade 각각 5개
+  late List<Animation<Offset>> _slideAnimations;
+  late List<Animation<double>> _fadeAnimations;
+
+  // 메뉴 아이템 (아이콘 + 라벨)
+  final List<Map<String, String>> menuItems = [
+    {"label": "어항", "icon": "assets/icon/어항.png"},
+    {"label": "도감", "icon": "assets/icon/도감.png"},
+    {"label": "방명록", "icon": "assets/icon/방명록.png"},
+    {"label": "랭킹", "icon": "assets/icon/랭킹.png"},
+    {"label": "공유", "icon": "assets/icon/카카오공유아이콘.png"},
+  ];
+
   @override
   void initState() {
     super.initState();
+    
+    // 메뉴 애니메이션 초기화
+    _initMenuAnimation();
+    
+    //물고기 이동 함수들 
     _startFishMovement();
     _randomPauseForFish1();
     _randomPauseForFish2();
     _randomPauseForFish3();
   }
 
-  // 물고기 이동 애니메이션
+  // --- 물고기 이동 애니메이션 ---
   void _startFishMovement() {
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       setState(() {
-        double screenWidth = MediaQuery.of(context).size.width;
+        final screenWidth = MediaQuery.of(context).size.width;
         time += 0.05;
 
         // Y축 파동 이동
@@ -176,21 +196,21 @@ class _mainPageState extends State<mainPage> {
         // X축 좌우 이동
         if (!isPaused1) {
           fish1X += moveRight1 ? speed1 : -speed1;
-          angle1 = moveRight1 ? 0 : pi;
+          angle1 = moveRight1 ? 0 : 3.14159; // pi
           if (fish1X > screenWidth - 100 || fish1X < 10) {
             moveRight1 = !moveRight1;
           }
         }
         if (!isPaused2) {
           fish2X += moveRight2 ? speed2 : -speed2;
-          angle2 = moveRight2 ? 0 : pi;
+          angle2 = moveRight2 ? 0 : 3.14159;
           if (fish2X > screenWidth - 100 || fish2X < 10) {
             moveRight2 = !moveRight2;
           }
         }
         if (!isPaused3) {
           fish3X += moveRight3 ? speed3 : -speed3;
-          angle3 = moveRight3 ? 0 : pi;
+          angle3 = moveRight3 ? 0 : 3.14159;
           if (fish3X > screenWidth - 100 || fish3X < 10) {
             moveRight3 = !moveRight3;
           }
@@ -199,7 +219,52 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 각 물고기 랜덤 멈춤 처리
+  // --- Staggered Animation 초기화 ---
+  void _initMenuAnimation() {
+    // 메뉴 전체 재생 시간 (600ms)
+    _menuController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    _slideAnimations = [];
+    _fadeAnimations = [];
+
+    // 아이콘 5개 → 0~1 구간을 5등분 (각 아이콘이 조금씩 시간차를 두고)
+    for (int i = 0; i < menuItems.length; i++) {
+      // 예: 5개면 각 아이템은 0.0~0.8 / 0.2~1.0 이런 식
+      double start = i * 0.15; // 0, 0.15, 0.3, 0.45, 0.6
+      double end = start + 0.4; // 각 아이템은 0.4 구간 사용
+      if (end > 1.0) end = 1.0;
+
+      // Slide (위에서 아래로) → Offset(0, -0.2) ~ Offset(0, 0)
+      final slideAnim = Tween<Offset>(
+        begin: const Offset(0, -0.2),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _menuController,
+          curve: Interval(start, end, curve: Curves.easeOut),
+        ),
+      );
+
+      // Fade (0 ~ 1)
+      final fadeAnim = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(
+        CurvedAnimation(
+          parent: _menuController,
+          curve: Interval(start, end, curve: Curves.easeIn),
+        ),
+      );
+
+      _slideAnimations.add(slideAnim);
+      _fadeAnimations.add(fadeAnim);
+    }
+  }
+
+  // --- 물고기 랜덤 멈춤 ---
   void _randomPauseForFish1() {
     Timer.periodic(Duration(seconds: Random().nextInt(5) + 3), (timer) {
       _pauseSmoothly(1);
@@ -218,10 +283,10 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 부드러운 멈춤
+  // --- 부드러운 멈춤 ---
   void _pauseSmoothly(int fishNumber) {
-    double pauseDuration = Random().nextInt(3) + 1.0; // 1~3초 랜덤
-    double deceleration = 0.05;
+    final pauseDuration = Random().nextInt(3) + 1.0;
+    const deceleration = 0.05;
 
     Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
@@ -257,9 +322,9 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 부드러운 재시작
+  // --- 부드러운 재시작 ---
   void _resumeSmoothly(int fishNumber) {
-    double acceleration = 0.05;
+    const acceleration = 0.05;
     Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
         if (fishNumber == 1) {
@@ -288,7 +353,7 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 물고기 터치 시 1초간 정지
+  // --- 물고기 터치 시 1초간 정지 ---
   void _pauseFishForOneSecond(int fishNumber) {
     setState(() {
       if (fishNumber == 1) {
@@ -315,15 +380,15 @@ class _mainPageState extends State<mainPage> {
   @override
   void dispose() {
     _timer.cancel();
+    _menuController.dispose();
     super.dispose();
   }
 
-  // --- 위젯 빌드 ---
   @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        // 1) 기존 UI는 Column으로
+        // 1) 기존 UI: 상단 정보, 수족관 가치, 물고기들
         Column(
           children: [
             // 상단 유저 정보
@@ -349,14 +414,11 @@ class _mainPageState extends State<mainPage> {
                         children: const [
                           Text(
                             "조태공",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           Text(
                             "이번달 누적 : n마리",
-                            style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 0, 0, 0)),
+                            style: TextStyle(fontSize: 14, color: Colors.black),
                           ),
                         ],
                       ),
@@ -364,22 +426,13 @@ class _mainPageState extends State<mainPage> {
                   ),
                   Row(
                     children: const [
-                      Text(
-                        "today",
-                        style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
-                      ),
+                      Text("today", style: TextStyle(fontSize: 12, color: Colors.black)),
                       SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      Text("n", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                       SizedBox(width: 10),
-                      Icon(Icons.favorite_border, color: Color.fromARGB(255, 14, 187, 255)),
+                      Icon(Icons.favorite_border, color: Colors.blue),
                       SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      ),
+                      Text("n", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ],
                   ),
                 ],
@@ -387,7 +440,7 @@ class _mainPageState extends State<mainPage> {
             ),
             const Divider(color: Colors.grey),
 
-            // 2) "수족관 가치" & "더 많은.." 한 줄
+            // 수족관 가치 & "더 많은.."
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
@@ -395,33 +448,29 @@ class _mainPageState extends State<mainPage> {
                 children: [
                   const Text(
                     "수족관 가치 : 3,600,000원",
-                    style: TextStyle(
-                      fontSize: 18,
-                      // fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                    style: TextStyle(fontSize: 18, color: Colors.black87),
                   ),
-                  // "더 많은.." 클릭 시 showMoreMenu 토글
                   GestureDetector(
                     onTap: () {
                       setState(() {
                         showMoreMenu = !showMoreMenu;
+                        if (showMoreMenu) {
+                          _menuController.forward();  // 펼치기
+                        } else {
+                          _menuController.reverse();  // 닫기
+                        }
                       });
                     },
                     child: const Text(
                       "더 많은..",
-                      style: TextStyle(
-                        fontSize: 19,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+                      style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
             ),
 
-            // 3) 물고기들
+            // 물고기 영역
             Expanded(
               child: Stack(
                 children: [
@@ -434,13 +483,17 @@ class _mainPageState extends State<mainPage> {
           ],
         ),
 
-        // 4) "더 많은.." 메뉴
-        if (showMoreMenu)
-          Positioned(
-            top: 120,  // "수족관 가치" 아래 정도로 조정
-            right: 16, // 화면 오른쪽 여백
-            child: _buildMoreMenu(),
+        // 2) 펼쳐지는 메뉴 (Staggered Animations)
+        // 만약 showMoreMenu가 false여도, 애니메이션 reverse 중일 수 있으므로 항상 배치
+        Positioned(
+          top: 120, // "수족관 가치" 아래 위치
+          right: 16,
+          child: IgnorePointer(
+            // 아이콘을 클릭할 수 있는지 여부 → false면 애니메이션 reverse 중에도 터치 막기
+            ignoring: !showMoreMenu,
+            child: _buildStaggeredMenu(),
           ),
+        ),
       ],
     );
   }
@@ -463,50 +516,51 @@ class _mainPageState extends State<mainPage> {
     );
   }
 
-  // --- "더 많은.." 메뉴 위젯 ---
-  Widget _buildMoreMenu() {
-    // 아이콘 4개 세로 배치
-    return Material(
-      color: Colors.transparent, // 배경 투명
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          _buildMenuIcon("어항", "assets/icon/어항.png"),
-          _buildMenuIcon("도감", "assets/icon/도감.png"),
-          _buildMenuIcon("방명록", "assets/icon/방명록.png"),
-          _buildMenuIcon("랭킹", "assets/icon/랭킹.png"),
-          _buildMenuIcon("공유", "assets/icon/카카오공유아이콘.png"),
-        ],
-      ),
+  // --- Staggered Menu (아이콘 여러 개) ---
+  Widget _buildStaggeredMenu() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: List.generate(menuItems.length, (i) {
+        return _buildStaggeredMenuItem(i);
+      }),
     );
   }
 
-  // --- 개별 메뉴 아이콘 ---
-  Widget _buildMenuIcon(String label, String iconPath) {
-    double iconSize = (label == "공유") ? 43 : 60;
-    return GestureDetector(
-      onTap: () {
-        debugPrint("$label 메뉴 클릭");
-        // TODO: 여기서 원하는 페이지 이동 or 기능 실행
+  // --- 각 아이콘에 SlideTransition + FadeTransition 적용 ---
+  Widget _buildStaggeredMenuItem(int index) {
+    final label = menuItems[index]["label"]!;
+    final iconPath = menuItems[index]["icon"]!;
 
-        // 메뉴 닫기
-        setState(() {
-          showMoreMenu = false;
-        });
-      },
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 10),
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.5),
-          shape: BoxShape.circle,
-        ),
-        child: Center(
-          child: Image.asset(
-            iconPath,
-            width: iconSize,
-            height: iconSize,
+    // 카카오 공유 아이콘만 작게 필터링
+    double iconSize = (label == "공유") ? 43 : 60;
+
+    return SlideTransition(
+      position: _slideAnimations[index],
+      child: FadeTransition(
+        opacity: _fadeAnimations[index],
+        child: GestureDetector(
+          onTap: () {
+            debugPrint("$label 메뉴 클릭");
+            setState(() {
+              showMoreMenu = false;
+              _menuController.reverse();
+            });
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 10),
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Image.asset(
+                iconPath,
+                width: iconSize,
+                height: iconSize,
+              ),
+            ),
           ),
         ),
       ),
