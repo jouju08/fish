@@ -149,7 +149,10 @@ class _mainPageState extends State<mainPage> {
   late Timer _timer;
   double time = 0.0;
 
+  bool showMoreMenu = false; // 더많은 탭 관리 boolean
+
   @override
+  // 랜덤 멈춤 관련 함수
   void initState() {
     super.initState();
     _startFishMovement();
@@ -158,6 +161,7 @@ class _mainPageState extends State<mainPage> {
     _randomPauseForFish3();
   }
 
+  // 물고기 애니메이션처리
   void _startFishMovement() {
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       setState(() {
@@ -348,8 +352,8 @@ class _mainPageState extends State<mainPage> {
                         ),
                       ),
                       Text(
-                        "이번달 누적 : 8마리",
-                        style: TextStyle(fontSize: 14, color: Colors.grey),
+                        "이번달 누적 : n마리",
+                        style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 0, 0, 0)),
                       ),
                     ],
                   ),
@@ -359,18 +363,18 @@ class _mainPageState extends State<mainPage> {
                 children: const [
                   Text(
                     "today",
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
                   ),
                   SizedBox(width: 5),
                   Text(
-                    "1",
+                    "n",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(width: 10),
-                  Icon(Icons.favorite_border, color: Colors.red),
+                  Icon(Icons.favorite_border, color: Color.fromARGB(255, 14, 187, 255)),
                   SizedBox(width: 5),
                   Text(
-                    "5",
+                    "n",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ],
@@ -382,17 +386,26 @@ class _mainPageState extends State<mainPage> {
         // ✅ 어항 가치 추가 ✅
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Center(
-            child: Text(
-              "어항 가치 : 3,600,000원",
+          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              "수족관 가치 : 3,600,000원",
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: Colors.black87,
               ),
+            ),Text(
+              "더 많은..",
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
             ),
-          ),
+          ],
         ),
+      ),
         Expanded(
           child: Stack(
             children: [
