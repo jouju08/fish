@@ -24,35 +24,35 @@ class _TheWaterState extends State<TheWater> {
       endDrawer: Drawer(
         child: ListView(
           children: [
-            DrawerHeader(
+            const DrawerHeader(
               decoration: BoxDecoration(color: Colors.blue),
               child: Text("Header"),
             ),
             ListTile(
-              title: Text("물고기 판별하러 가기"),
+              title: const Text("물고기 판별하러 가기"),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ModelScreen()),
+                  MaterialPageRoute(builder: (context) => const ModelScreen()),
                 );
               },
             ),
             ListTile(
-              title: Text("모델 화면 2"),
+              title: const Text("모델 화면 2"),
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ModelScreen2()),
+                  MaterialPageRoute(builder: (context) => const ModelScreen2()),
                 );
               },
             ),
-            ListTile(title: Text("view 3"), onTap: () {}),
+            ListTile(title: const Text("view 3"), onTap: () {}),
           ],
         ),
       ),
       body: IndexedStack(
         index: currentIndex,
-        children: [const FirstPage(), const SecondPage()],
+        children: const [FirstPage(), SecondPage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -97,19 +97,19 @@ class FirstPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("로그인 화면 테스트"),
+        title: const Text("로그인 화면 테스트"),
         actions: [
           IconButton(
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => login()),
+                MaterialPageRoute(builder: (context) => const login()),
               );
             },
-            icon: Icon(Icons.navigation),
+            icon: const Icon(Icons.navigation),
           ),
           IconButton(
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
             onPressed: () {
               Scaffold.of(context).openEndDrawer(); // 직접 Drawer 열기
             },
@@ -138,7 +138,7 @@ class mainPage extends StatefulWidget {
 }
 
 class _mainPageState extends State<mainPage> {
-  // 위치 및 속도 변수
+  // 기존 물고기 이동/정지 관련 변수들
   double fish1X = 50, fish2X = 100, fish3X = 150;
   double fish1Y = 100, fish2Y = 200, fish3Y = 300;
   bool moveRight1 = true, moveRight2 = false, moveRight3 = true;
@@ -149,10 +149,10 @@ class _mainPageState extends State<mainPage> {
   late Timer _timer;
   double time = 0.0;
 
-  bool showMoreMenu = false; // 더많은 탭 관리 boolean
+  // "더 많은.." 버튼 토글
+  bool showMoreMenu = false;
 
   @override
-  // 랜덤 멈춤 관련 함수
   void initState() {
     super.initState();
     _startFishMovement();
@@ -161,19 +161,19 @@ class _mainPageState extends State<mainPage> {
     _randomPauseForFish3();
   }
 
-  // 물고기 애니메이션처리
+  // 물고기 이동 애니메이션
   void _startFishMovement() {
     _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
       setState(() {
         double screenWidth = MediaQuery.of(context).size.width;
         time += 0.05;
 
-        // Y축 업데이트: 부드러운 파동 효과
+        // Y축 파동 이동
         fish1Y = 100 + sin(time) * 20;
         fish2Y = 200 + sin(time + pi / 2) * 25;
         fish3Y = 300 + sin(time + pi) * 30;
 
-        // X축 업데이트: 좌우 움직임 (멈추지 않은 경우에만)
+        // X축 좌우 이동
         if (!isPaused1) {
           fish1X += moveRight1 ? speed1 : -speed1;
           angle1 = moveRight1 ? 0 : pi;
@@ -199,7 +199,7 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 🐟 개별적으로 랜덤 멈추기 (원래 랜덤 멈춤 기능)
+  // 각 물고기 랜덤 멈춤 처리
   void _randomPauseForFish1() {
     Timer.periodic(Duration(seconds: Random().nextInt(5) + 3), (timer) {
       _pauseSmoothly(1);
@@ -218,9 +218,9 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 🐟 부드럽게 멈추기: 감속 후 정지
+  // 부드러운 멈춤
   void _pauseSmoothly(int fishNumber) {
-    double pauseDuration = Random().nextInt(3) + 1.0; // 1~3초 랜덤 멈춤
+    double pauseDuration = Random().nextInt(3) + 1.0; // 1~3초 랜덤
     double deceleration = 0.05;
 
     Timer.periodic(const Duration(milliseconds: 50), (timer) {
@@ -257,10 +257,9 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 🐠 부드럽게 다시 이동: 가속하여 원래 속도로 복귀
+  // 부드러운 재시작
   void _resumeSmoothly(int fishNumber) {
     double acceleration = 0.05;
-
     Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
         if (fishNumber == 1) {
@@ -289,7 +288,7 @@ class _mainPageState extends State<mainPage> {
     });
   }
 
-  // 🔥 터치하면 1초간 정지: 해당 물고기의 isPaused 플래그를 켜고 1초 후 해제
+  // 물고기 터치 시 1초간 정지
   void _pauseFishForOneSecond(int fishNumber) {
     setState(() {
       if (fishNumber == 1) {
@@ -319,136 +318,135 @@ class _mainPageState extends State<mainPage> {
     super.dispose();
   }
 
+  // --- 위젯 빌드 ---
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        // ✅ 상단 유저 정보 추가 ✅
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
+        // 1) 기존 UI는 Column으로
+        Column(
+          children: [
+            // 상단 유저 정보
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.grey[300],
-                    child: const Icon(
-                      Icons.person,
-                      size: 30,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      Text(
-                        "조태공",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: Colors.grey[300],
+                        child: const Icon(
+                          Icons.person,
+                          size: 30,
+                          color: Colors.white,
                         ),
                       ),
+                      const SizedBox(width: 10),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            "조태공",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            "이번달 누적 : n마리",
+                            style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 0, 0, 0)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: const [
                       Text(
-                        "이번달 누적 : n마리",
-                        style: TextStyle(fontSize: 14, color: Color.fromARGB(255, 0, 0, 0)),
+                        "today",
+                        style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        "n",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      SizedBox(width: 10),
+                      Icon(Icons.favorite_border, color: Color.fromARGB(255, 14, 187, 255)),
+                      SizedBox(width: 5),
+                      Text(
+                        "n",
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
                 ],
               ),
-              Row(
-                children: const [
-                  Text(
-                    "today",
-                    style: TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
+            ),
+            const Divider(color: Colors.grey),
+
+            // 2) "수족관 가치" & "더 많은.." 한 줄
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "수족관 가치 : 3,600,000원",
+                    style: TextStyle(
+                      fontSize: 18,
+                      // fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
                   ),
-                  SizedBox(width: 5),
-                  Text(
-                    "n",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  SizedBox(width: 10),
-                  Icon(Icons.favorite_border, color: Color.fromARGB(255, 14, 187, 255)),
-                  SizedBox(width: 5),
-                  Text(
-                    "n",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  // "더 많은.." 클릭 시 showMoreMenu 토글
+                  GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        showMoreMenu = !showMoreMenu;
+                      });
+                    },
+                    child: const Text(
+                      "더 많은..",
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-        const Divider(color: Colors.grey),
-        // ✅ 어항 가치 추가 ✅
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              "수족관 가치 : 3,600,000원",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),Text(
-              "더 많은..",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.black54,
+            ),
+
+            // 3) 물고기들
+            Expanded(
+              child: Stack(
+                children: [
+                  _buildFish(fish1X, fish1Y, angle1, 'assets/image/samchi.png', 80, 1),
+                  _buildFish(fish2X, fish2Y, angle2, 'assets/image/moona.png', 90, 2),
+                  _buildFish(fish3X, fish3Y, angle3, 'assets/image/gapojinga.png', 100, 3),
+                ],
               ),
             ),
           ],
         ),
-      ),
-        Expanded(
-          child: Stack(
-            children: [
-              _buildFish(
-                fish1X,
-                fish1Y,
-                angle1,
-                'assets/image/samchi.png',
-                80,
-                1,
-              ),
-              _buildFish(
-                fish2X,
-                fish2Y,
-                angle2,
-                'assets/image/moona.png',
-                90,
-                2,
-              ),
-              _buildFish(
-                fish3X,
-                fish3Y,
-                angle3,
-                'assets/image/gapojinga.png',
-                100,
-                3,
-              ),
-            ],
+
+        // 4) "더 많은.." 메뉴
+        if (showMoreMenu)
+          Positioned(
+            top: 120,  // "수족관 가치" 아래 정도로 조정
+            right: 16, // 화면 오른쪽 여백
+            child: _buildMoreMenu(),
           ),
-        ),
       ],
     );
   }
 
-  // _buildFish 함수 수정: 터치 시 _pauseFishForOneSecond() 호출
-  Widget _buildFish(
-    double x,
-    double y,
-    double angle,
-    String imagePath,
-    double size,
-    int fishNumber,
-  ) {
+  // --- 물고기 위젯 ---
+  Widget _buildFish(double x, double y, double angle, String imagePath, double size, int fishNumber) {
     return Positioned(
       left: x,
       top: y,
@@ -460,6 +458,56 @@ class _mainPageState extends State<mainPage> {
           alignment: Alignment.center,
           transform: Matrix4.rotationY(angle),
           child: Image.asset(imagePath, width: size),
+        ),
+      ),
+    );
+  }
+
+  // --- "더 많은.." 메뉴 위젯 ---
+  Widget _buildMoreMenu() {
+    // 아이콘 4개 세로 배치
+    return Material(
+      color: Colors.transparent, // 배경 투명
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          _buildMenuIcon("어항", "assets/icon/어항.png"),
+          _buildMenuIcon("도감", "assets/icon/도감.png"),
+          _buildMenuIcon("방명록", "assets/icon/방명록.png"),
+          _buildMenuIcon("랭킹", "assets/icon/랭킹.png"),
+          _buildMenuIcon("공유", "assets/icon/카카오공유아이콘.png"),
+        ],
+      ),
+    );
+  }
+
+  // --- 개별 메뉴 아이콘 ---
+  Widget _buildMenuIcon(String label, String iconPath) {
+    double iconSize = (label == "공유") ? 43 : 60;
+    return GestureDetector(
+      onTap: () {
+        debugPrint("$label 메뉴 클릭");
+        // TODO: 여기서 원하는 페이지 이동 or 기능 실행
+
+        // 메뉴 닫기
+        setState(() {
+          showMoreMenu = false;
+        });
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        width: 60,
+        height: 60,
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.5),
+          shape: BoxShape.circle,
+        ),
+        child: Center(
+          child: Image.asset(
+            iconPath,
+            width: iconSize,
+            height: iconSize,
+          ),
         ),
       ),
     );
