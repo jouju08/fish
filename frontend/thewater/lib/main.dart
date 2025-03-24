@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       child: MaterialApp(
         theme: ThemeData(
           primarySwatch: Colors.blue,
+          fontFamily: 'GrandifloraOne-Regular',
           floatingActionButtonTheme: FloatingActionButtonThemeData(
             backgroundColor: Colors.blue, // FAB 색상
           ),
