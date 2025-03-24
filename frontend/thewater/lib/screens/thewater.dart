@@ -224,7 +224,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     // 메뉴 전체 재생 시간 (600ms)
     _menuController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: 350),
     );
 
     _slideAnimations = [];
