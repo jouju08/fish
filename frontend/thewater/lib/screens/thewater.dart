@@ -6,10 +6,10 @@ import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
+import 'package:thewater/screens/fish_point.dart';
 
 class TheWater extends StatefulWidget {
-  final List<CameraDescription> cameras;
-  const TheWater({Key? key, required this.cameras}) : super(key: key);
+  const TheWater({super.key});
 
   @override
   State<TheWater> createState() => _TheWaterState();
@@ -21,7 +21,7 @@ class _TheWaterState extends State<TheWater> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      endDrawer: Drawer(
+      drawer: Drawer(
         child: ListView(
           children: [
             const DrawerHeader(
@@ -46,7 +46,12 @@ class _TheWaterState extends State<TheWater> {
                 );
               },
             ),
-            ListTile(title: const Text("view 3"), onTap: () {}),
+            ListTile(
+              title: Text("로그인하러 가기"),
+              onTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
+            ),
           ],
         ),
       ),
@@ -59,9 +64,7 @@ class _TheWaterState extends State<TheWater> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => CameraScreen(cameras: widget.cameras),
-            ),
+            MaterialPageRoute(builder: (context) => CameraScreen()),
           );
         },
         child: const Icon(
@@ -103,7 +106,7 @@ class FirstPage extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const login()),
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
               );
             },
             icon: const Icon(Icons.navigation),
@@ -170,11 +173,11 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    
+
     // 메뉴 애니메이션 초기화
     _initMenuAnimation();
-    
-    //물고기 이동 함수들 
+
+    //물고기 이동 함수들
     _startFishMovement();
     _randomPauseForFish1();
     _randomPauseForFish2();
@@ -249,10 +252,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
       );
 
       // Fade (0 ~ 1)
-      final fadeAnim = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).animate(
+      final fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(
         CurvedAnimation(
           parent: _menuController,
           curve: Interval(start, end, curve: Curves.easeIn),
@@ -414,7 +414,10 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                         children: const [
                           Text(
                             "조태공",
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                           Text(
                             "이번달 누적 : n마리",
@@ -426,13 +429,28 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                   ),
                   Row(
                     children: const [
-                      Text("today", style: TextStyle(fontSize: 12, color: Colors.black)),
+                      Text(
+                        "today",
+                        style: TextStyle(fontSize: 12, color: Colors.black),
+                      ),
                       SizedBox(width: 5),
-                      Text("n", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        "n",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       SizedBox(width: 10),
                       Icon(Icons.favorite_border, color: Colors.blue),
                       SizedBox(width: 5),
-                      Text("n", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                      Text(
+                        "n",
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -455,15 +473,18 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                       setState(() {
                         showMoreMenu = !showMoreMenu;
                         if (showMoreMenu) {
-                          _menuController.forward();  // 펼치기
+                          _menuController.forward(); // 펼치기
                         } else {
-                          _menuController.reverse();  // 닫기
+                          _menuController.reverse(); // 닫기
                         }
                       });
                     },
                     child: const Text(
                       "더 많은..",
-                      style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        fontSize: 19,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -474,9 +495,30 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             Expanded(
               child: Stack(
                 children: [
-                  _buildFish(fish1X, fish1Y, angle1, 'assets/image/samchi.png', 80, 1),
-                  _buildFish(fish2X, fish2Y, angle2, 'assets/image/moona.png', 90, 2),
-                  _buildFish(fish3X, fish3Y, angle3, 'assets/image/gapojinga.png', 100, 3),
+                  _buildFish(
+                    fish1X,
+                    fish1Y,
+                    angle1,
+                    'assets/image/samchi.png',
+                    80,
+                    1,
+                  ),
+                  _buildFish(
+                    fish2X,
+                    fish2Y,
+                    angle2,
+                    'assets/image/moona.png',
+                    90,
+                    2,
+                  ),
+                  _buildFish(
+                    fish3X,
+                    fish3Y,
+                    angle3,
+                    'assets/image/gapojinga.png',
+                    100,
+                    3,
+                  ),
                 ],
               ),
             ),
@@ -499,7 +541,14 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   }
 
   // --- 물고기 위젯 ---
-  Widget _buildFish(double x, double y, double angle, String imagePath, double size, int fishNumber) {
+  Widget _buildFish(
+    double x,
+    double y,
+    double angle,
+    String imagePath,
+    double size,
+    int fishNumber,
+  ) {
     return Positioned(
       left: x,
       top: y,
@@ -555,30 +604,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
               shape: BoxShape.circle,
             ),
             child: Center(
-              child: Image.asset(
-                iconPath,
-                width: iconSize,
-                height: iconSize,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SecondPage extends StatelessWidget {
-  const SecondPage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/image/map_mock.jpg'),
-              fit: BoxFit.cover,
+              child: Image.asset(iconPath, width: iconSize, height: iconSize),
             ),
           ),
         ),

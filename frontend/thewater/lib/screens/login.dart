@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:thewater/services/auth_api.dart';
 
-class login extends StatefulWidget {
-  const login({super.key});
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
   @override
-  State<login> createState() => _loginState();
+  State<LoginScreen> createState() => _loginScreenState();
 }
 
-class _loginState extends State<login> {
+class _loginScreenState extends State<LoginScreen> {
   final TextEditingController _idController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
