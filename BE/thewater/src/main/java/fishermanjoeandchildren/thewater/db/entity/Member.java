@@ -40,7 +40,8 @@ public class Member extends Common {
     private Character loginType;
 
     @Column(nullable = false)
-    private Boolean isDeleted=false;
+
+    private Boolean has_deleted=false;
 
     @OneToOne
     @JoinColumn(name="aquarium_id")
@@ -48,8 +49,5 @@ public class Member extends Common {
 
     @OneToMany(mappedBy = "member")
     private List<FishCard> card;
-
-
-
 
 }
