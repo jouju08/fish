@@ -312,11 +312,17 @@ Instance Segmentation: 2,537장
 이미지에서 물고기의 전체 윤곽을 인식하여 배경과 분리하는 역할
 Instance Segmentation 수행
 물고기 윤곽 검출 모델 테스트 성능 높음
-![image.png](attachment:cfe7097c-8462-4d9d-ae58-f21044a5c3a7:image.png)
+
+
+![image-2.png](./image-2.png)
+
 ![Screenshot from 2025-03-25 17-54-05.png](./Screenshot from 2025-03-25 17-54-05.png)
+
 돌돔에서만 몇 장의 이미지 윤곽검출실패 - > 돌돔만 추가로 이미지 증강, 정확도 높이는 방법 연구필요
+
 ![윤곽검출실패1.png](./윤곽검출실패1.png)
 ![윤곽검출실패2.png](./윤곽검출실패2.png)
+
 
 ✅ 라벨링 현황
 Keypoint Detection: 1,096장
