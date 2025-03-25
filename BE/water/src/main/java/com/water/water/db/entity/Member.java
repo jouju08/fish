@@ -1,4 +1,4 @@
-package fishermanjoeandchildren.thewater.db.entity;
+package com.water.water.db.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -40,8 +40,7 @@ public class Member extends Common {
     private Character loginType;
 
     @Column(nullable = false)
-
-    private Boolean has_deleted=false;
+    private Boolean isDeleted=false;
 
     @OneToOne
     @JoinColumn(name="aquarium_id")
@@ -49,5 +48,8 @@ public class Member extends Common {
 
     @OneToMany(mappedBy = "member")
     private List<FishCard> card;
+
+
+
 
 }
