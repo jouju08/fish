@@ -7,6 +7,7 @@ import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
+import 'package:thewater/screens/collection.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -16,7 +17,22 @@ class TheWater extends StatefulWidget {
 }
 
 class _TheWaterState extends State<TheWater> {
-  int currentIndex = 0;
+  int bottomNavIndex = 0;
+  int pageIndex = 0;
+  
+  void onBottomNavTap(int newIndex){
+    setState(() {
+      bottomNavIndex = newIndex;
+      pageIndex = newIndex;
+    });
+  }
+
+  void showCollectionPage() {
+    setState(() {
+      pageIndex = 2;
+
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +72,8 @@ class _TheWaterState extends State<TheWater> {
         ),
       ),
       body: IndexedStack(
-        index: currentIndex,
-        children: const [FirstPage(), SecondPage()],
+        index: pageIndex,
+        children: const [FirstPage(), SecondPage(),CollectionPage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -73,12 +89,8 @@ class _TheWaterState extends State<TheWater> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        onTap: (newIndex) {
-          setState(() {
-            currentIndex = newIndex;
-          });
-        },
+        currentIndex: bottomNavIndex,
+        onTap: onBottomNavTap,
         selectedItemColor: Colors.blue,
         unselectedItemColor: Colors.grey,
         showSelectedLabels: false,
@@ -589,8 +601,15 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
         opacity: _fadeAnimations[index],
         child: GestureDetector(
           onTap: () {
+
+            if(label == "도감") { // 아이콘 탭하면 이동시켜주는
+              final parentState = context.findAncestorStateOfType<_TheWaterState>();
+              parentState?.showCollectionPage();
+            }
+
             debugPrint("$label 메뉴 클릭");
-            setState(() {
+
+            setState(() { // 메뉴닫기
               showMoreMenu = false;
               _menuController.reverse();
             });
