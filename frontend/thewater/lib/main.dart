@@ -28,6 +28,8 @@ class MyApp extends StatelessWidget {
             secondary: Colors.blueAccent, // 보조 색상
           ),
           useMaterial3: true, // 최신 Material3 스타일 적용
+          primarySwatch: Colors.blue,
+          fontFamily: 'GrandifloraOne-Regular',
           floatingActionButtonTheme: FloatingActionButtonThemeData(
             backgroundColor: Colors.blue, // FAB 색상
           ),
