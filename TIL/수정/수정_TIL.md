@@ -970,3 +970,185 @@ https://goddaehee.tistory.com/331
     - VO의 경우 Read Only 개념을 가짐
     - Entity는 데이터베이스와 동일한 클래스이지만, DTO는 Entity와 완전 동일하지 않음
         - DB Column과는 독립적임
+      
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 20일, 21일 🚩
+🎯 Spring Boot3
+
+### ORM, JPA, Spring Data JPA
+
+- ORM (Object Relational Mapping)    
+    - 어플리케이션 객체와 관계형 데이터베이스의 데이터를 자동으로 매핑해주는 것
+        - Java의 데이터 클래스와 관계형 데이터베이스의 테이블을 매핑
+    - 객체지향 프로그래밍과 관계형 데이터베이스의 차이로 인해 발생하는 제약사항을 해결해주는 역할
+    - Ex. JPA, Hibernate 등 (Persistent API)
+    - 장점
+        - SQL 쿼리가 아닌 직관적 코드로 데이터 조작 가능
+        - 재사용 및 유지 보수가 편리
+            - ORM이 하나의 Class로 존재.
+        - DBMS에 대한 종속성이 줄어듬
+    - 단점
+        - 복잡성이 커질 경우, ORM만으로 구현하기 어려움
+        - 잘못 구현할 경우 속도 저하 발생
+        - 대형 쿼리는 별도 튜닝이 필요할 수 있음
+- JPA(Java Persistance API)
+    - ORM과 관련된 인터페이스의 모음
+    - Java진영 표준 ORM
+    - ORM(더 큰 개념) >> JPA (더 구체화시킨 스펙을 포함)
+- Hibernate
+    - ORM Framework 중 하나
+    - JPA의 실제 구현체 중 하나이며, JPA 구현체 중 가장 많이 사용됨
+- Spring Data JPA    
+    - Spring Framework에서 JPA를 편리하게 사용할 수 있게 지원하는 라이브러리
+        - CRUD 처리용 인터페이스 제공
+        - Repository 개발 시 인터페이스만 작성하면 구현 객체를 동적으로 생성해서 주입
+        - 데이터 접근 계층 개발시 인터페이스만 작성해도 됨
+    - Hibernate에서 자주 사용되는 기능을 조금 더 쉽게 사용할 수 있게 구현
+- loose coupling: interface와 impl를 나누어 개발하는 것.
+    - 의존성을 낮출 수 있음
+
+### Logback
+
+- Logback
+    - Log4J를 기반으로 개발된 로깅 라이브러리
+    - log4j비하면 10배 빠른 퍼포먼스, 메모리 효율성 증대
+    - 특징
+        - 로그에 특정 레벨 설정 가능 (Trace → Debug → Info → Warn → Error)
+        - 실운영과 테스트 상황에서 각각 다른 출력 레벨 설정해 로그 확인 가능
+        - 출력 방식 설정 가능
+        - 설정 파일을 일정 시간마다 스캔해 어플리케이션 중단 없이 설정 변경 가능
+        - 별도 프로그램 없이 자체적으로 로그 압축 지원
+        - 로그 보관 기간 설정 가능
+    - 구조        
+    - 설정        
+        - Classpath에 있는 logback 설정 파일 참조
+            - Java Legacy, Spring: logback.xml 참조
+            - Spring boot: logback-spring.xml참조
+    - Appender
+        - Log의 형태 및 어디에 출력할지 설정하기 위한 영억
+        - 대표적인 형식
+            - ConsoleAppender: 콘솔에 로그 출력
+            - FileAppender: 파일에 로그 저장
+            - RollingFileAppender: 여러 파일을 순회하며 로그 저장 (가장 많이 사용)
+            - SMTPAppender: 로그를 메일로 전송
+            - DBAppender: 데이터베이스에 로그를 저장
+            - 태그 정리
+                - <filter>: 임계값
+                - <file>: 어떤 위치에 어떤 파일명으로 저장
+                - <append>: 뒤에 붙이는 의미
+                - <rollingPolicy>
+                    - <fileNamePattern>: 파일 이름 형식
+                    - <maxHistory>: 최대 저장 기간 (일)
+        - encoder
+            - Appender에 포함되는 항목
+            - pattern을 사용해 원하는 혀식으로 로그 표현 가능
+                
+                ```java
+                <encoder>
+                	<pattern>[%d{yyy-MM-dd HH:mm:ss.SSS}][%-5level][%thread] %logger %msg%n</pattern>
+                	</encoder>
+                ```
+                
+        - root
+            - 설정한 Appender를 참조해 로그 레벨 설정 가능
+            - root는 전역설정이며, 지역 설정은 logger 사용 (package)
+            
+            ```java
+            <root level="DEBUG">
+            	<appender-ref ref="INFO_LOG"/>
+            </root>
+            ```
+            
+            - “INFO_LOG”: Appender 이름
+        - 로그 레벨
+            - TRACE → DEBUG → INFO → WARN → ERROR
+                - ERROR: 로직 수행중 오류가 발생한 경우, 시스템적으로 심각한 문제가 발생해 작동이 불가한 경우
+                - WARN: 시스템 에러의 원인이 될 수 있는 경고레벨, 처리 가능한 사항
+                - INFO: 상태 변경과 같은 정보성 메세지
+                - DEBUG: 어플리케이션의 디버깅을 위한 메세지 레벨
+                - TRACE: DEBUG 레벨보다 더 디테일한 메세지를 표현하기 위한 레벨
+        - pattern            
+            - `<pattern>[%d{yyy-MM-dd HH:mm:ss.SSS}][%-5level][%thread] %logger %msg%n</pattern>`
+    - logback-spring.xml
+      
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 24일 25일 🚩
+🎯 Spring Boot4
+### 유효성 검사/ 데이터 검증
+
+- 유효성 검사
+    - 서비스 비즈니스 로직이 올바르게 동작하기 위해 사용되는 데이터 사전 검증
+    - Validation
+    - 데이터 검증은 여러 계층에서 발생하는 흔한 작업
+    - Validation은 들어오는 데이터에 대해 의도한 형식 값이 제대로 들어오는지 체크하는 과정 의미
+- 일반적 validation 문제
+    - 어플리케이션 전체적으로 분산되어 존재
+    - 코드 중복이 심함
+    - 비즈니스 로직에 섞여있어 검사 로직 추적이 어려움
+- Bean Validation / Hibernate Validator
+    - 유효성 검사 프레임워크
+    - Bean Validation은 어노테이션을 통해 데이터 검증 가능
+    - Hibernate Validator는 Bean Validation 명세에 대한 구현체
+    - Spring boot 유효성 검사 표준 : Hibernate Validator
+    - 이전에는 starter-web에 validation이 포함됨 but
+        - 2.3버전 이후 starter-validation을 추가해야함
+    - 대표 어노테이션
+                
+- dependency 설정
+    
+    ```java
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+            </dependency>
+    ```
+    
+
+### 예외처리
+
+- spring boot 예외 처리 방식
+    - 크게 2가지가 존재
+        - @ControllerAdvice를 통한 모든 Controller에서 발생할 수 있는 예외 처리
+        - @ExceptionHandler를 통한 특정 Controller의 예외 처리
+    - ControllerAdvice로 모든 컨트롤러 발생할 예외를 정의하고, ExceptionHandler를 통해 발생하는 예외마다 처리할 메소드를 정의
+- Exception 클래스    
+    - 모든 Exception(예외) 클래스는 Throwable 클래스를 상속받고있음
+    - RuntimeException은 Unchecked Exception이며, 그 외 Exception은 Checked Exception이다.
+                
+- Spring boot의 예외 처리 방식
+    - @ControllerAdvice, @RestControllerAdvice
+        - @ControllerAdvice는 Spring에서 제공하는 어노테이션
+        - @Controller나 @RestController에서 발생하는 예외를 한 곳에서 관리하고 처리할 수 있게 하는 어노테이션
+            - 설정을 통해 범위 지정 가능
+                - @RestControllerAdvice(basePackages=”aroundhub.thinkground.studio”)와 같이 패키지 범위 설정 가능
+            - Default값으로 모든 Controller에 대해 예외 처리를 관리함
+        - 예외 발생시 json 형태로 결과 반환하기 위해서는 @RestControllerAdvice를 사용하면된다.
+    - @ExceptionHandler
+        - 예외 처리 상황 발생시 해당 Handler로 처리하겠다 명시하는 어노테이션
+        - 어노테이션 뒤 괄호를 붙여 어떤 ExceptionClass를 처리할지 설정 가능
+            - @ExceptionHandler(00Exception.class)
+        - Exception.class는 최상위 클래스로 하위 세부 예외 처리 클래스로 설정한 핸들러가 존재하면, 그 핸들러가 우선처리
+            - 처리되지 못하는 예외처리에 대해 ExceptionClass에서 핸들링
+        - @ControllerAdvice로 설정된 클래스 내에서 메소드로 정의 가능하나, 각 Controller 안에 설정도 가능하다.
+        - 전역설정(@ControllerAdvice)보다 지역설정(Controller)으로 정의한 Handler가 우선순위를 가진다.
+        - 우선순위 도식화
+
+---
+
+### Property 암호화
+
+- Jasypt
+    - 개발자가 암호화 작동 방식에 대한 깊은 지식이 없어도 최소한 노력으로 자신 프로젝트에 기본 암호화 기능을 추가할 수 있도록 하는 Java 라이브러리
+    - 특징
+        - 간편하게 단방향, 양방향 암호화 기술 제공
+        - 스레드로부터 안전
+        - 원본 문자 집합에 대한 제약 없이 사용 가능 (한국어, 일본어 등 언어 지원)
+    - 라이브러리
