@@ -8,7 +8,8 @@ plugins {
 android {
     ndkVersion = "27.0.12077973"
     namespace = "com.example.thewater"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 35
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -24,8 +25,8 @@ android {
         applicationId = "com.example.thewater"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 21
+        targetSdk = 34
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -56,3 +57,6 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite-gpu:2.9.0")
     implementation("org.tensorflow:tensorflow-lite-support:0.4.2")
 }
+
+
+
