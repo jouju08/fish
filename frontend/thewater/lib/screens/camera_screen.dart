@@ -6,9 +6,7 @@ import 'package:path/path.dart'; // 파일 경로 처리
 import 'package:thewater/screens/camera_result_page.dart';
 
 class CameraScreen extends StatefulWidget {
-  final List<CameraDescription> cameras; // 카메라 리스트
-
-  const CameraScreen({super.key, required this.cameras});
+  const CameraScreen({super.key});
 
   @override
   _CameraScreenState createState() => _CameraScreenState();
@@ -16,6 +14,7 @@ class CameraScreen extends StatefulWidget {
 
 class _CameraScreenState extends State<CameraScreen> {
   late CameraController _controller; // 카메라 컨트롤러
+  bool _isCameraInitialized = false;
   String _imagePath = ''; // 초기값으로 빈 문자열 할당
 
   @override
@@ -26,21 +25,23 @@ class _CameraScreenState extends State<CameraScreen> {
 
   // 카메라 초기화 함수
   Future<void> _initializeCamera() async {
-    _controller = CameraController(
-      widget.cameras[0], // 첫 번째 카메라 사용
-      ResolutionPreset.high, // 높은 해상도 설정
-    );
-
     try {
-      await _controller.initialize(); // 카메라 초기화
-      await _controller.setFlashMode(FlashMode.off); // 플래시 끄기
-      if (!mounted) return;
-      setState(() {}); // 초기화 완료 후 화면 갱신
-    } catch (e) {
-      if (e is CameraException) {
-        // 오류 처리
-        _showErrorDialog('카메라 오류: ${e.description}');
+      final cameras = await availableCameras(); // 사용 가능한 카메라 가져오기
+      if (cameras.isEmpty) {
+        debugPrint("카메라를 찾을 수 없습니다.");
+        return;
       }
+
+      _controller = CameraController(
+        cameras[0], // 후면 카메라 사용
+        ResolutionPreset.high,
+      );
+
+      await _controller!.initialize();
+      await _controller.setFlashMode(FlashMode.off); // 플래시 끄기
+      setState(() => _isCameraInitialized = true);
+    } catch (e) {
+      debugPrint("카메라 초기화 오류: $e");
     }
   }
 
@@ -90,44 +91,57 @@ class _CameraScreenState extends State<CameraScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (!_controller.value.isInitialized) {
+    if (!_isCameraInitialized) {
       return const Center(
         child: CircularProgressIndicator(),
       ); // 초기화가 안되었을 때 로딩 화면
     }
 
     return Scaffold(
-      appBar: AppBar(title: const Text('카메라')),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        child: Center(
-          child: Stack(
-            children: [
-              CameraPreview(_controller), // 카메라 미리보기
-              Image(image: AssetImage('assets/image/camera_guide.png')),
-              Positioned(
-                bottom: 30,
-                right: 0,
-                child: ElevatedButton(
-                  onPressed: () async {
-                    await _takePicture(); // 사진을 찍은 후 실행
-                    // _imagePath가 제대로 설정된 경우만 이동
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder:
-                            (context) =>
-                                CameraResultScreen(imagePath: _imagePath),
-                      ),
-                    );
-                  }, // 사진 찍기 버튼
-
-                  child: const Text('사진 찍기'),
-                ),
-              ),
-            ],
+      appBar: AppBar(
+        centerTitle: true,
+        iconTheme: IconThemeData(color: Colors.white),
+        title: const Text('물고기를 찍어주세요!', style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.grey[700],
+      ),
+      backgroundColor: Colors.grey[600],
+      body: Column(
+        children: [
+          Center(
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: CameraPreview(_controller),
+                ), // 카메라 미리보기
+                Image(image: AssetImage('assets/image/camera_guide.png')),
+              ],
+            ),
           ),
-        ),
+          Positioned(
+            bottom: 30,
+            right: 0,
+            left: 0,
+            child: Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  await _takePicture(); // 사진을 찍은 후 실행
+                  // _imagePath가 제대로 설정된 경우만 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) =>
+                              CameraResultScreen(imagePath: _imagePath),
+                    ),
+                  );
+                }, // 사진 찍기 버튼
+
+                child: Icon(Icons.camera),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
