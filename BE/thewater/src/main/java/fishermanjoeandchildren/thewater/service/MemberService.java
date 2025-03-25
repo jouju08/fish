@@ -17,14 +17,17 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final AquariumRepository aquariumRepository;
+    private final EmailService emailService;
 
     @Autowired
     public MemberService(MemberRepository memberRepository,
                          PasswordEncoder passwordEncoder,
-                         AquariumRepository aquariumRepository) {
+                         AquariumRepository aquariumRepository,
+                         EmailService emailService) {
         this.memberRepository = memberRepository;
         this.passwordEncoder = passwordEncoder;
         this.aquariumRepository = aquariumRepository;
+        this.emailService = emailService;
     }
 
     public boolean checkLoginIdDuplicate(String login_id) {
@@ -50,6 +53,10 @@ public class MemberService {
         }
         if (checkNicknameDuplicate(request.getNickname())) {
             throw new RuntimeException("이미 존재하는 닉네임입니다.");
+        }
+        // 이메일 인증 여부 확인
+        if (!emailService.isEmailVerified(request.getEmail())) {
+            throw new RuntimeException("이메일 인증이 필요합니다.");
         }
 
         // 비밀번호 암호화
