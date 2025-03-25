@@ -32,15 +32,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String username = null;
         String jwt = null;
-        System.out.println("== [JWT FILTER 1] Authorization header: " + authorizationHeader);
-        System.out.println("== [JWT FILTER 1] Username extracted: " + username);
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
-                System.out.println("== [JWT FILTER] Authorization header: " + authorizationHeader);
-                System.out.println("== [JWT FILTER] Username extracted: " + username);
 
             } catch (Exception e) {
                 logger.error("JWT token is invalid: ", e);
