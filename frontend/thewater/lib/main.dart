@@ -9,14 +9,11 @@ import 'package:thewater/screens/thewater.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final cameras = await availableCameras();
-  runApp(MyApp(cameras: cameras));
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key, required this.cameras});
-
-  final List<CameraDescription> cameras;
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +21,13 @@ class MyApp extends StatelessWidget {
       providers: [ChangeNotifierProvider(create: (_) => FishProvider())],
       child: MaterialApp(
         theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: Colors.blue, // 기본 테마 색상을 파란색으로 고정
+            primary: Colors.blue, // 주요 색상
+            onPrimary: Colors.white, // 버튼 내부 텍스트 색상
+            secondary: Colors.blueAccent, // 보조 색상
+          ),
+          useMaterial3: true, // 최신 Material3 스타일 적용
           primarySwatch: Colors.blue,
           fontFamily: 'GrandifloraOne-Regular',
           floatingActionButtonTheme: FloatingActionButtonThemeData(
@@ -32,9 +36,10 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => TheWater(cameras: cameras),
-          '/camera': (context) => CameraScreen(cameras: cameras),
+          '/': (context) => TheWater(),
+          '/camera': (context) => CameraScreen(),
           '/model': (context) => ModelScreen(),
+          '/login': (context) => LoginScreen(),
         },
         initialRoute: '/',
       ),

@@ -1,5 +1,6 @@
 package fishermanjoeandchildren.thewater.config;
 
+
 import fishermanjoeandchildren.thewater.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-
 public class SecurityConfig {
 
     @Autowired
@@ -27,10 +27,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup", "/api/users/check-id",
-                                "/api/users/check-email", "/api/users/check-nickname",
-                                "/api/users/request-verification", "/api/users/verify-code").permitAll()
+                        .requestMatchers("/api/users/signup", "/api/users/check-id", "/api/users/check-email", "/api/users/check-nickname").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
+
+                        // Aquarium 관련 경로
+                        .requestMatchers("/api/aquarium/stats/**").authenticated()
+
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
