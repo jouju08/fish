@@ -302,3 +302,25 @@ Instance Segmentation: 2,537장
 
 📌 라벨링 마저 진행 예정 🚀
 ![0324_image_segmentation.jpg](./0324_image_segmentation.jpg)
+
+//
+
+# 📝 TIL (Today I Learned) - 2025-03-25
+물고기 윤곽  검출 모델 라벨링 완료
+
+📌 1️⃣ YOLOv8  → 물고기 윤곽 검출
+이미지에서 물고기의 전체 윤곽을 인식하여 배경과 분리하는 역할
+Instance Segmentation 수행
+물고기 윤곽 검출 모델 테스트 성능 높음
+![image.png](attachment:cfe7097c-8462-4d9d-ae58-f21044a5c3a7:image.png)
+![Screenshot from 2025-03-25 17-54-05.png](./Screenshot from 2025-03-25 17-54-05.png)
+돌돔에서만 몇 장의 이미지 윤곽검출실패 - > 돌돔만 추가로 이미지 증강, 정확도 높이는 방법 연구필요
+![윤곽검출실패1.png](./윤곽검출실패1.png)
+![윤곽검출실패2.png](./윤곽검출실패2.png)
+
+✅ 라벨링 현황
+Keypoint Detection: 1,096장
+Instance Segmentation: 3,191장
+
+📌 라벨링 마저 진행 예정 🚀
+꼬리-머리 길이 측정 모델 개발
