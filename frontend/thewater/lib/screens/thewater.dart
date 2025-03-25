@@ -6,10 +6,10 @@ import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
+import 'package:thewater/screens/fish_point.dart';
 
 class TheWater extends StatefulWidget {
-  final List<CameraDescription> cameras;
-  const TheWater({Key? key, required this.cameras}) : super(key: key);
+  const TheWater({super.key});
 
   @override
   State<TheWater> createState() => _TheWaterState();
@@ -21,7 +21,7 @@ class _TheWaterState extends State<TheWater> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      endDrawer: Drawer(
+      drawer: Drawer(
         child: ListView(
           children: [
             DrawerHeader(
@@ -46,7 +46,12 @@ class _TheWaterState extends State<TheWater> {
                 );
               },
             ),
-            ListTile(title: Text("view 3"), onTap: () {}),
+            ListTile(
+              title: Text("로그인하러 가기"),
+              onTap: () {
+                Navigator.pushNamed(context, '/login');
+              },
+            ),
           ],
         ),
       ),
@@ -59,9 +64,7 @@ class _TheWaterState extends State<TheWater> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => CameraScreen(cameras: widget.cameras),
-            ),
+            MaterialPageRoute(builder: (context) => CameraScreen()),
           );
         },
         child: const Icon(
@@ -96,26 +99,6 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("로그인 화면 테스트"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => login()),
-              );
-            },
-            icon: Icon(Icons.navigation),
-          ),
-          IconButton(
-            icon: Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openEndDrawer(); // 직접 Drawer 열기
-            },
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -447,25 +430,6 @@ class _mainPageState extends State<mainPage> {
           alignment: Alignment.center,
           transform: Matrix4.rotationY(angle),
           child: Image.asset(imagePath, width: size),
-        ),
-      ),
-    );
-  }
-}
-
-class SecondPage extends StatelessWidget {
-  const SecondPage({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/image/map_mock.jpg'),
-              fit: BoxFit.cover,
-            ),
-          ),
         ),
       ),
     );
