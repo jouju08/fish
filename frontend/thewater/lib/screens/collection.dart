@@ -28,6 +28,12 @@ class CollectionPage extends StatelessWidget {
     return Scaffold(
       // 상단 AppBar
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          ),
         title: const Text("도감"),
         centerTitle: true,
       ),
@@ -45,7 +51,7 @@ class CollectionPage extends StatelessWidget {
             // 상단에 이번달 포획한 횟수 표시
             const SizedBox(height: 16),
             const Text(
-              "이번달 포획한 횟수 : 8마리",
+              "이번달 포획한 횟수 : n마리",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
