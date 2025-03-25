@@ -1,10 +1,12 @@
 package fishermanjoeandchildren.thewater.controller;
 
+import fishermanjoeandchildren.thewater.data.ResponseMessage;
+import fishermanjoeandchildren.thewater.data.ResponseStatus;
+import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
 import fishermanjoeandchildren.thewater.data.dto.LoginRequest;
 import fishermanjoeandchildren.thewater.data.dto.LoginResponse;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -25,7 +27,7 @@ public class AuthLoginController {
     private JwtUtil jwtUtil;
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ApiResponse<?> login(@RequestBody LoginRequest loginRequest) {
         try {
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(loginRequest.getLoginId(), loginRequest.getPassword())
@@ -33,10 +35,22 @@ public class AuthLoginController {
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
             final String jwt = jwtUtil.generateToken(userDetails);
-//            return ResponseEntity.ok(new LoginResponse(true, "로그인 성공", jwt));
-            return ResponseEntity.ok(new LoginResponse(true, "로그인 성공", jwt));
+
+            LoginResponse loginResponse = new LoginResponse(true, "로그인 성공", jwt);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(loginResponse)
+                    .build();
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(new LoginResponse(false, "아이디 또는 비밀번호가 올바르지 않습니다.", null));
+            LoginResponse errorResponse = new LoginResponse(false, "아이디 또는 비밀번호가 올바르지 않습니다.", null);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)  // 인증 실패에 적합한 상태 코드
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)  // 인증 실패에 적합한 메시지
+                    .data(errorResponse)
+                    .build();
         }
     }
 }
