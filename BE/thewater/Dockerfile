@@ -14,7 +14,7 @@ FROM openjdk:17-jdk-slim
 
 # Step 5: 빌드된 애플리케이션 JAR 파일을 복사
 WORKDIR /app
-COPY --from=build /app/build/libs/*.jar /app/app.jar
+COPY --from=build /app/build/libs/*.jar /app/
 
 # Step 6: 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
