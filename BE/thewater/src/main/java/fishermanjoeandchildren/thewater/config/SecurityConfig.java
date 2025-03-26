@@ -32,7 +32,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/login").permitAll()
 
                         // Aquarium 관련 경로
-                        .requestMatchers("/api/aquarium/stats/**").authenticated()
+                        .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
 
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
