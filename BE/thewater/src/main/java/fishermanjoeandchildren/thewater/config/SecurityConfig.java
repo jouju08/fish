@@ -1,6 +1,5 @@
 package fishermanjoeandchildren.thewater.config;
 
-
 import fishermanjoeandchildren.thewater.security.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +34,8 @@ public class SecurityConfig {
                         // Aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**").authenticated()
 
+                        // member 관련 정보
+                        .requestMatchers("/api/users/me").authenticated()
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
