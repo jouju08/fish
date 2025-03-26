@@ -46,11 +46,13 @@ public class AquariumDto {
     @NotNull
     private Long member_id;
 
-    private List<Long> fishCardIds;
+    private List<FishCard> fishCards;
 
-    private List<Long> aquariumLikeMemberIds;
+//    private List<Long> aquariumLikeMemberIds;
+    @NotNull
+    private boolean likedByMe;
 
-    public Aquarium toEntity(Member owner, List<FishCard> fishCards, List<Member> likeMembers){
+    public Aquarium toEntity(Member owner){
         Aquarium aquarium = Aquarium.builder()
                 .id(id)
                 .visitorCnt(visitorCnt)
@@ -60,23 +62,14 @@ public class AquariumDto {
                 .member(owner)
                 .fishCard(fishCards)
                 .build();
-
-        if (likeMembers != null) {
-            List<AquariumLike> likes = likeMembers.stream()
-                    .map(member -> AquariumLike.builder()
-                            .aquariumId(aquarium.getId()) // 아직 저장 전이면 0일 수 있음 → setter 필요
-                            .memberId(member.getId())
-                            .aquarium(aquarium)
-                            .member(member)
-                            .build())
-                    .collect(Collectors.toList());
-
-            aquarium.setAquariumLikes(likes);
-        }
         return aquarium;
     }
 
-    public static AquariumDto fromEntity(Aquarium aquarium) {
+    public static AquariumDto fromEntity(Aquarium aquarium, Long currentMemberId) {
+        boolean likedByMe = aquarium.getAquariumLikes() != null &&
+                aquarium.getAquariumLikes().stream()
+                        .anyMatch(like -> like.getMemberId().equals(currentMemberId));
+
         return AquariumDto.builder()
                 .id(aquarium.getId())
                 .visitorCnt(aquarium.getVisitorCnt())
@@ -84,20 +77,8 @@ public class AquariumDto {
                 .fishCnt(aquarium.getFishCnt())
                 .totalPrice(aquarium.getTotalPrice())
                 .member_id(aquarium.getMember().getId())
-                .fishCardIds(
-                        aquarium.getFishCard() != null ?
-                                aquarium.getFishCard().stream()
-                                        .map(FishCard::getId)
-                                        .collect(Collectors.toList()) :
-                                null
-                )
-                .aquariumLikeMemberIds(
-                        aquarium.getAquariumLikes() != null ?
-                                aquarium.getAquariumLikes().stream()
-                                        .map(AquariumLike::getMemberId)
-                                        .collect(Collectors.toList()) :
-                                null
-                )
+                .fishCards(aquarium.getFishCard())
+                .likedByMe(likedByMe)
                 .build();
     }
 
