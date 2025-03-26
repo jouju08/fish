@@ -28,6 +28,12 @@ public class JwtUtil {
         return extractClaim(token, Claims::getSubject);
     }
 
+     // 토큰에서 사용자 ID 추출
+    public Long extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Long.class);
+    }
+
     // 토큰에서 만료 일자 추출
     public Date extractExpiration(String token) {
         return extractClaim(token, Claims::getExpiration);
@@ -52,6 +58,14 @@ public class JwtUtil {
     // 토큰 만료 여부 확인
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    // 사용자 상세 정보와 ID를 기반으로 JWT 토큰을 생성합니다.
+    public String generateToken(UserDetails userDetails, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        // 사용자 ID를 claims에 추가
+        claims.put("userId", userId);
+        return createToken(claims, userDetails.getUsername());
     }
 
     // 토큰 생성
