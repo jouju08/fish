@@ -5,16 +5,20 @@ import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
 import fishermanjoeandchildren.thewater.data.dto.LoginRequest;
 import fishermanjoeandchildren.thewater.data.dto.LoginResponse;
+import fishermanjoeandchildren.thewater.db.entity.Member;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -25,6 +29,9 @@ public class AuthLoginController {
 
     @Autowired
     private JwtUtil jwtUtil;
+    
+    @Autowired
+    private MemberRepository memberRepository;
 
     @PostMapping("/login")
     public ApiResponse<?> login(@RequestBody LoginRequest loginRequest) {
@@ -34,7 +41,11 @@ public class AuthLoginController {
             );
 
             UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            final String jwt = jwtUtil.generateToken(userDetails);
+            // 로그인한 사용자의 정보를 DB에서 조회하여 ID 가져오기
+            Member member = memberRepository.findByLoginId(userDetails.getUsername())
+                    .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+
+            final String jwt = jwtUtil.generateToken(userDetails, member.getId());
 
             LoginResponse loginResponse = new LoginResponse(true, "로그인 성공", jwt);
 
