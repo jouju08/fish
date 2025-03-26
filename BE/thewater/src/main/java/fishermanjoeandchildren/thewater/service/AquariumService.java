@@ -1,6 +1,7 @@
 package fishermanjoeandchildren.thewater.service;
 
 
+import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.AquariumDto;
 import fishermanjoeandchildren.thewater.db.entity.Aquarium;
 import fishermanjoeandchildren.thewater.db.entity.Fish;
@@ -20,26 +21,34 @@ public class AquariumService {
 
     private final AquariumRepository aquariumRepository;
     private final MemberRepository memberRepository;
-    private  final FishCardRepository fishCardRepository;
 
-    public AquariumDto saveAquarium(AquariumDto aquariumDto){
+    public AquariumDto saveAquarium(AquariumDto aquariumDto, Long currentMemberId){
 
         Member member = memberRepository.findById(aquariumDto.getMember_id()).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 멤버입니다."));
-        List<FishCard> fishCards = fishCardRepository.findAllById(aquariumDto.getFishCardIds());
-        List<Member> likeMembers = aquariumDto.getAquariumLikeMemberIds() != null? memberRepository.findAllById(aquariumDto.getAquariumLikeMemberIds()): List.of();
 
-        Aquarium aquarium = aquariumDto.toEntity(member,fishCards, likeMembers);
+        Aquarium aquarium = aquariumDto.toEntity(member);
         Aquarium savedAquarium = aquariumRepository.save(aquarium);
 
 
-        return AquariumDto.fromEntity(savedAquarium);
+        return AquariumDto.fromEntity(savedAquarium, currentMemberId);
     }
 
 
-    public AquariumDto getAquarium(Long id){
+    public AquariumDto getAquarium(Long id, Long currentMemberId){
         Aquarium aquarium = aquariumRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 어항입니다."));
 
 
-        return AquariumDto.fromEntity(aquarium);
+        return AquariumDto.fromEntity(aquarium,currentMemberId);
+    }
+
+    public String updateVisitorCount(Long aquariumId){
+        Aquarium aquarium = aquariumRepository.findById(aquariumId).orElse(null);
+        if(aquarium == null){
+            return ResponseStatus.NOT_FOUND;
+        }
+
+        aquarium.incrementVisitors();
+        aquariumRepository.save(aquarium);
+        return ResponseStatus.SUCCESS;
     }
 }
