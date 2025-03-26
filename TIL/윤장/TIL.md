@@ -330,3 +330,29 @@ Instance Segmentation: 3,191장
 
 📌 라벨링 마저 진행 예정 🚀
 꼬리-머리 길이 측정 모델 개발
+
+//
+
+# 📝 TIL (Today I Learned) - 2025-03-26
+물고기 윤곽  검출 모델 변환
+
+변환 순서:
+PyTorch → ONNX → TensorFlow → TFLite
+
+변환 이유:
+Flutter+ARCore 앱에서 사용하기 위해 TFLite 필요
+자동 윤곽 탐지 기반 길이 측정 기능 구현 목적
+
+💥 TFLite 변환 중 문제 발생
+문제 현상:
+PyTorch에서는 정상 작동
+![Screenshot from 2025-03-26 11-27-49.png](./Screenshot from 2025-03-26 11-27-49.png)
+
+TFLite에서는 윤곽 못 찾음 (정확도 처참)
+![Screenshot from 2025-03-26 13-48-46.png](./Screenshot from 2025-03-26 13-48-46.png)
+
+8시간 동안 구른 이유:
+TFLite 정확도 낮음 → sigmoid 미적용 때문!
+변환 시 내부 코드 수정 필요
+
+📌 내일 할 일 : 길이 측정 모델 개발🚀
