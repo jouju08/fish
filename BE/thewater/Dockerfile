@@ -17,7 +17,7 @@ WORKDIR /app
 COPY --from=build /app/build/libs/*.jar /app/
 
 # Step 6: 애플리케이션 실행
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/thewater-0.0.1-SNAPSHOT.jar"]
 
 # Step 7: 컨테이너가 사용할 포트 설정 (여기서는 8080 포트를 예시로 사용)
 EXPOSE 8080
