@@ -1152,3 +1152,32 @@ https://goddaehee.tistory.com/331
         - 스레드로부터 안전
         - 원본 문자 집합에 대한 제약 없이 사용 가능 (한국어, 일본어 등 언어 지원)
     - 라이브러리
+        
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 26일 🚩
+🎯 Clean code
+
+- clean  code
+    - Readable
+    - Maintainable
+    - Efficient & Simple
+    - Coinsistent
+    - self-documenting
+    - Well-tested
+- 클린코드가 잘 와닿지 않는 이유
+    - 클린코드가 무엇인가에 대한 명확한 정의가 없다. (위는 추상적인 기준)
+    - 클린코드 시작
+        - 악취가 나는 코드를 느끼는 것에서 시작
+            - 클린한 코드를 자고 싶다.
+            - 코드 악취는 어떻게 배우나?
+                - 경험과 삽질
+- 필독서
+    - clean code
+    - Refactoring
+    - 읽기 좋은 코드가 좋은 코드다
+    - 좋은 코드, 나쁜 코드
+    - 내 코드가 그렇게 이상한가요?
