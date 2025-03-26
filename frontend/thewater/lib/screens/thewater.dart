@@ -36,7 +36,18 @@ class _TheWaterState extends State<TheWater> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return WillPopScope(
+      onWillPop: () async {
+        if(pageIndex != 0) {
+          setState(() {
+            pageIndex = 0;
+            bottomNavIndex = 0;
+          });
+          return false;
+        }
+        return true;
+      },
+      child: Scaffold(
       drawer: Drawer(
         child: ListView(
           children: [
@@ -102,7 +113,9 @@ class _TheWaterState extends State<TheWater> {
           BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
         ],
       ),
-    );
+    ),
+  );
+     
   }
 }
 
