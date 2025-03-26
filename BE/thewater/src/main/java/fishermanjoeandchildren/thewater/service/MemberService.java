@@ -110,7 +110,7 @@ public class MemberService {
         // 응답 객체 구성
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("user", MemberDto.fromEntity(member));
-        userInfo.put("aquarium", aquarium != null ? AquariumDto.fromEntity(aquarium) : null);
+        userInfo.put("aquarium", aquarium != null ? AquariumDto.fromEntity(aquarium, userId) : null);
         userInfo.put("fish_cards", fishCards != null ?
                 fishCards.stream().map(FishCardDto::fromEntity).collect(Collectors.toList()) :
                 Collections.emptyList());

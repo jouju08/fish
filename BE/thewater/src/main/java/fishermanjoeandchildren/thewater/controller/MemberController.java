@@ -8,7 +8,9 @@ import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.EmailService;
 import fishermanjoeandchildren.thewater.service.MemberService;
 import fishermanjoeandchildren.thewater.db.entity.Member;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -154,15 +156,16 @@ public class MemberController {
     }
 
     // 사용자 정보 불러오기
+    @SecurityRequirement(name="BearerAuth")
     @GetMapping("/me")
-    public ApiResponse<?> getMyInfo(@RequestHeader("Authorization") String authHeader) {
+    public ApiResponse<?> getMyInfo(HttpServletRequest request) {
         try {
             // Bearer 토큰에서 JWT 부분만 추출
-            String token = authHeader.substring(7);
-            String loginId = jwtUtil.extractUsername(token);
+            String token = jwtUtil.resolveToken(request);
+            Long memberId = jwtUtil.extractUserId(token);
 
             // 로그인 ID로 사용자 정보 조회
-            Member member = memberRepository.findByLoginId(loginId)
+            Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             // 사용자 전체 정보 조회
