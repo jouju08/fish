@@ -279,10 +279,14 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   }
 
   void _animateFishFall(FallingFish fish) {
+    const double targetY = 400;
+    const double baseSpeed = 20;
     Timer.periodic(const Duration(milliseconds: 16), (timer) {
       setState(() {
-        if (fish.top < 400) {
-          fish.top += 10;
+        double progress = (fish.top / targetY).clamp(0.0, 1.0);
+        double currentSpeed = baseSpeed * (1 - progress); // 감속
+        if (fish.top <= targetY-2) { // 떨어지는 값 맞춤 수영로직 연결 조건
+          fish.top += currentSpeed;
         } else {
           fish.landed = true;
           timer.cancel();
