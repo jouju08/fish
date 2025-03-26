@@ -33,7 +33,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/login").permitAll()
 
                         // Aquarium 관련 경로
-                        .requestMatchers("/api/aquarium/stats/**").authenticated()
+                        .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
 
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
