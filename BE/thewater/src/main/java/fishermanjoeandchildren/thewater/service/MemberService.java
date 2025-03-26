@@ -1,15 +1,22 @@
 package fishermanjoeandchildren.thewater.service;
 
+import fishermanjoeandchildren.thewater.data.dto.*;
 import fishermanjoeandchildren.thewater.db.entity.Aquarium;
+import fishermanjoeandchildren.thewater.db.entity.Fish;
+import fishermanjoeandchildren.thewater.db.entity.FishCard;
 import fishermanjoeandchildren.thewater.db.entity.Member;
 import fishermanjoeandchildren.thewater.db.repository.AquariumRepository;
 import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
-import fishermanjoeandchildren.thewater.data.dto.SignupRequest;
-import fishermanjoeandchildren.thewater.data.dto.SignupResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class MemberService {
@@ -87,5 +94,27 @@ public class MemberService {
         memberRepository.save(member);
 
         return new SignupResponse(true, "회원가입이 완료되었습니다.", member.getId());
+    }
+
+    public Map<String, Object> getFullUserInfo(Long userId) {
+        // 사용자 기본 정보 조회
+        Member member = memberRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 어항 정보 조회
+        Aquarium aquarium = member.getAquarium();
+
+        // 물고기 카드 정보 조회
+        List<FishCard> fishCards = member.getCard();
+
+        // 응답 객체 구성
+        Map<String, Object> userInfo = new HashMap<>();
+        userInfo.put("user", MemberDto.fromEntity(member));
+        userInfo.put("aquarium", aquarium != null ? AquariumDto.fromEntity(aquarium) : null);
+        userInfo.put("fish_cards", fishCards != null ?
+                fishCards.stream().map(FishCardDto::fromEntity).collect(Collectors.toList()) :
+                Collections.emptyList());
+
+        return userInfo;
     }
 }
