@@ -27,7 +27,9 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup", "/api/users/check-id", "/api/users/check-email", "/api/users/check-nickname").permitAll()
+                        .requestMatchers("/api/users/signup", "/api/users/check-id",
+                                "/api/users/check-email", "/api/users/check-nickname",
+                                "/api/users/request-verification", "/api/users/verify-code").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
 
                         // Aquarium 관련 경로
