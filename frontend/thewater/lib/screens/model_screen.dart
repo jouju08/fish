@@ -75,28 +75,35 @@ class _ModelScreenState extends State<ModelScreen> {
     }
   }
 
-  modelrun() async {
-    final interpreter = await Interpreter.fromAsset('assets/model.tflite');
+  // modelrun() async {
+  //   final interpreter = await Interpreter.fromAsset(
+  //     'assets/model2_with_preprocessing.tflite',
+  //   );
 
-    List<List<List<double>>> imageArray = await convertImageToArray(
-      'assets/갑오징어.png',
-    );
+  //   // 이미지 바로 불러오기 (리사이징 및 정규화 필요 없음)
+  //   String assetPath = 'assets/갑오징어.png';
+  //   ByteData byteData = await rootBundle.load(assetPath);
+  //   Uint8List bytes = byteData.buffer.asUint8List();
 
-    List<List<double>> output = [
-      [0, 0, 0],
-    ];
+  //   // TensorImage로 바로 이미지 로드 (TensorFlow Lite Flutter Plugin 활용 권장)
+  //   TensorImage tensorImage = TensorImage.fromFile(
+  //     File(await getAssetFilePath(assetPath)),
+  //   );
 
-    interpreter.run([imageArray], output);
+  //   // 입력 텐서 자동 구성 (모델에서 처리)
+  //   var input = tensorImage.buffer;
 
-    List<double> model_result = output[0];
+  //   // 출력 배열 (클래스 수에 맞게)
+  //   var output = List.filled(1 * 26, 0).reshape([1, 26]);
 
-    print(output);
-    print(model_result);
+  //   interpreter.run(input, output);
 
-    setState(() {
-      result = model_result.toString();
-    });
-  }
+  //   print(output);
+
+  //   setState(() {
+  //     result = output[0].toString();
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -106,7 +113,7 @@ class _ModelScreenState extends State<ModelScreen> {
         child: Column(
           children: [
             Image(image: AssetImage('assets/갈치.png')),
-            ElevatedButton(onPressed: modelrun, child: Text("모델 실행하기")),
+            ElevatedButton(onPressed: () {}, child: Text("모델 실행하기")),
             Text(result, style: TextStyle(fontSize: 20)),
           ],
         ),
