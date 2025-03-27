@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface FishCardRepository extends JpaRepository<FishCard, Long> {
-    @Query("SELECT fc FROM FishCard fc where fc.hasDeleted=false")
-    List<FishCardDto>findFishCardExceptDeleted();
+    @Query("SELECT fc FROM FishCard fc where fc.hasDeleted=false AND fc.member=:memberId")
+    List<FishCardDto>findFishCardExceptDeleted(Long memberId);
 
 }
