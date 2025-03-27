@@ -648,34 +648,51 @@ class FishSelectModal extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: MediaQuery.of(context).size.width,
+      padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        spacing: 20,
-        runSpacing: 10,
-        children:
-            fishImages.map((path) {
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // 👉 핸들바
+          Container(
+            width: 40,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.grey[400],
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          const SizedBox(height: 12), // 핸들과 콘텐츠 사이 간격
+
+          // 👉 물고기 리스트
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 20,
+            runSpacing: 10,
+            children: fishImages.map((path) {
               return GestureDetector(
                 onTap: () {
                   Navigator.pop(context);
                   onFishSelected(path);
                 },
                 child: Container(
-                  width: 70,
-                  height: 70,
+                  width: 90,
+                  height: 90,
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.blue),
+                    border: Border.all(color: const Color.fromARGB(255, 225, 225, 225)),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Image.asset(path),
                 ),
               );
             }).toList(),
+          ),
+        ],
       ),
     );
   }
