@@ -108,74 +108,47 @@ class _ModelScreen2State extends State<ModelScreen2> {
   }
 
   modelrun(File file) async {
-    final interpreter = await Interpreter.fromAsset('assets/model2.tflite');
+    final interpreter = await Interpreter.fromAsset(
+      'assets/quantization_model.tflite',
+    );
     List<List<List<double>>> imageArray = await convertFileToArray(file);
-    List<List<double>> output = [
-      [
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-        0,
-      ],
-    ];
+    List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
     interpreter.run([imageArray], output);
     List<double> model_result = output[0];
     print(model_result);
     int result_index = model_result.indexOf(
       model_result.reduce((a, b) => a > b ? a : b),
     );
-    Map<int, String> label = {
-      0: "감성돔",
-      1: "광어",
-      2: "우럭",
-      3: "돌돔",
-      4: "참돔",
-      5: "복섬",
-      6: "양태",
-      7: "성대",
-      8: "망상어",
-      9: "독가시치",
-      10: "문절망둑",
-      11: "벵에돔",
-      12: "고등어",
-      13: "숭어",
-      14: "볼락",
-      15: "학공치",
-      16: "전갱이",
-      17: "주꾸미",
-      18: "문어",
-      19: "무늬오징어",
-      20: "갑오징어",
-      21: "노래미",
-      22: "붕장어",
-      23: "농어",
-      24: "갈치",
-      25: "삼치",
-    };
+    List fishList = [
+      '감성돔',
+      '벵에돔',
+      '참돔',
+      '복섬',
+      '문어',
+      '돌돔',
+      '주꾸미',
+      '성대',
+      '문절망둑',
+      '갑오징어',
+      '노래미',
+      '독가시치',
+      '전갱이',
+      '망상어',
+      '고등어',
+      '무늬오징어',
+      '볼락',
+      '광어',
+      '우럭',
+      '붕장어',
+      '갈치',
+      '양태',
+      '숭어',
+      '삼치',
+      '학공치',
+      '농어',
+    ];
     setState(() {
-      result = label[result_index]!;
+      result = fishList[result_index]!;
     });
   }
 

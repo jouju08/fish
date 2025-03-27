@@ -19,8 +19,8 @@ class TheWater extends StatefulWidget {
 class _TheWaterState extends State<TheWater> {
   int bottomNavIndex = 0;
   int pageIndex = 0;
-  
-  void onBottomNavTap(int newIndex){
+
+  void onBottomNavTap(int newIndex) {
     setState(() {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
@@ -30,7 +30,6 @@ class _TheWaterState extends State<TheWater> {
   void showCollectionPage() {
     setState(() {
       pageIndex = 2;
-
     });
   }
 
@@ -68,12 +67,18 @@ class _TheWaterState extends State<TheWater> {
                 Navigator.pushNamed(context, '/login');
               },
             ),
+            ListTile(
+              title: Text("물고기 목록"),
+              onTap: () {
+                Navigator.pushNamed(context, '/fish_cards');
+              },
+            ),
           ],
         ),
       ),
       body: IndexedStack(
         index: pageIndex,
-        children: const [FirstPage(), SecondPage(),CollectionPage()],
+        children: const [FirstPage(), SecondPage(), CollectionPage()],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
@@ -111,26 +116,6 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("로그인 화면 테스트"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-            icon: const Icon(Icons.navigation),
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openEndDrawer(); // 직접 Drawer 열기
-            },
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -601,15 +586,17 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
         opacity: _fadeAnimations[index],
         child: GestureDetector(
           onTap: () {
-
-            if(label == "도감") { // 아이콘 탭하면 이동시켜주는
-              final parentState = context.findAncestorStateOfType<_TheWaterState>();
+            if (label == "도감") {
+              // 아이콘 탭하면 이동시켜주는
+              final parentState =
+                  context.findAncestorStateOfType<_TheWaterState>();
               parentState?.showCollectionPage();
             }
 
             debugPrint("$label 메뉴 클릭");
 
-            setState(() { // 메뉴닫기
+            setState(() {
+              // 메뉴닫기
               showMoreMenu = false;
               _menuController.reverse();
             });
