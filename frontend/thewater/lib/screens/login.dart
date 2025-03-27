@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:thewater/services/auth_api.dart';
+import 'dart:math';
+
+
+String generateNickname(String prefix) {
+      final random = Random();
+      final randomNumber = random.nextInt(9000) + 1000; // 1000~9999
+      return '$prefix\_$randomNumber';
+}
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,12 +28,14 @@ class _loginScreenState extends State<LoginScreen> {
       TextEditingController();
   String? _idCheckMessage;
 
+  bool _isEmailVerified = false;
+
   void _checkIdAvailability() async {
     debugPrint("아이디 중복체크 버튼 클릭");
-    // bool isValid = await AuthApi().checkIdAvailability(
-    //   _idController.text.trim(),
-    // );
-    bool isValid = true;
+    bool isValid = await AuthApi().checkIdAvailability(
+      _idController.text.trim(),
+    );
+    // bool isValid = true;
     setState(() {
       _idCheckMessage = isValid ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다.";
     });
@@ -32,18 +43,100 @@ class _loginScreenState extends State<LoginScreen> {
     print("아이디 중복 확인: ${_idController.text}");
   }
 
-  void _sendVerificationCode() {
-    // 이메일 인증번호 발송 기능 (추후 API 연결 가능)
-    print("이메일 인증번호 발송: ${_emailController.text}");
+  void _sendVerificationCode() async {
+    final email = _emailController.text.trim();
+
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('이메일을 입력해주세요')));
+      return;
+    }
+
+    final isSent = await AuthApi().sendVerificationCode(email);
+
+    if (isSent) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('인증번호가 전송되었습니다')));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('인증번호 전송에 실패했습니다')));
+    }
   }
 
-  void _verifyCode() {
+  void _verifyCode() async {
     // 인증번호 확인 기능 (추후 API 연결 가능)
+    final email = _emailController.text.trim();
+    final code = _verificationCodeController.text.trim();
+
+    if (email.isEmpty || code.isEmpty) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('이메일과 인증번호를 모두 입력해주세요')));
+      return;
+    }
+
+    final isVerified = await AuthApi().verifyEmailCode(
+      email: email,
+      code: code,
+    );
+
+    if (isVerified) {
+      setState(() {
+        _isEmailVerified = true;
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('이메일 인증이 완료되었습니다')));
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('인증번호가 틀렸습니다')));
+    }
     print("인증번호 확인: ${_verificationCodeController.text}");
   }
 
-  void _nextStep() {
-    // 다음 버튼 클릭 시 동작 (회원가입 진행)
+  void _nextStep() async {
+    final loginId = _idController.text.trim();
+    final password = _passwordController.text.trim();
+    final confirmPassword = _confirmPasswordController.text.trim();
+    final email = _emailController.text.trim();
+
+    if (!_isEmailVerified) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('이메일 인증을 완료해주세요')));
+      return;
+    }
+
+    if (password != confirmPassword) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('비밀번호가 일치하지 않습니다')));
+      return;
+    }
+
+    
+
+    final isSuccess = await AuthApi().signUp(
+      loginId: loginId,
+      password: password,
+      email: _emailController.text.trim(),
+      nickname: generateNickname('강태공'), // 임시 닉네임
+    );
+
+    if (isSuccess) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('회원가입이 완료되었습니다')));
+      Navigator.pop(context); // 이전 화면으로 이동
+    } else {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('회원가입 실패. 다시 시도해주세요')));
+    }
     print("회원가입 진행");
   }
 
