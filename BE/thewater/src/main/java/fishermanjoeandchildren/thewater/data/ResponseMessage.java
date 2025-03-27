@@ -21,9 +21,13 @@ public interface ResponseMessage {
     // HTTP Status 403
     String NO_PERMISSION = "Do not have permission.";
 
+    // HTTP Status 409
+    String CONFLICT = "Conflict occur";
+
     // HTTP Status 500
     String DATABASE_ERROR = "Database error";
 
     String SERVER_ERROR = "Server error";
+
 
 }
