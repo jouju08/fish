@@ -145,26 +145,6 @@ class FirstPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("로그인 화면 테스트"),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const LoginScreen()),
-              );
-            },
-            icon: const Icon(Icons.navigation),
-          ),
-          IconButton(
-            icon: const Icon(Icons.menu),
-            onPressed: () {
-              Scaffold.of(context).openEndDrawer(); // 직접 Drawer 열기
-            },
-          ),
-        ],
-      ),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -285,7 +265,8 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
       setState(() {
         double progress = (fish.top / targetY).clamp(0.0, 1.0);
         double currentSpeed = baseSpeed * (1 - progress); // 감속
-        if (fish.top <= targetY-2) { // 떨어지는 값 맞춤 수영로직 연결 조건
+        if (fish.top <= targetY - 2) {
+          // 떨어지는 값 맞춤 수영로직 연결 조건
           fish.top += currentSpeed;
         } else {
           fish.landed = true;
@@ -667,30 +648,32 @@ class FishSelectModal extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12), // 핸들과 콘텐츠 사이 간격
-
           // 👉 물고기 리스트
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 20,
             runSpacing: 10,
-            children: fishImages.map((path) {
-              return GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                  onFishSelected(path);
-                },
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: const Color.fromARGB(255, 225, 225, 225)),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset(path),
-                ),
-              );
-            }).toList(),
+            children:
+                fishImages.map((path) {
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      onFishSelected(path);
+                    },
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: const Color.fromARGB(255, 225, 225, 225),
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset(path),
+                    ),
+                  );
+                }).toList(),
           ),
         ],
       ),
