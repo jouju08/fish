@@ -40,7 +40,6 @@ public class Member extends Common {
     private Character loginType;
 
     @Column(nullable = false)
-
     private Boolean has_deleted=false;
 
     @OneToOne

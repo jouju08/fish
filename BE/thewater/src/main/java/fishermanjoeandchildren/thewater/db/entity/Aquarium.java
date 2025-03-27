@@ -41,4 +41,8 @@ public class Aquarium extends Common {
     @OneToMany(mappedBy = "aquarium", cascade = CascadeType.ALL)
     private List<AquariumLike> aquariumLikes=new ArrayList<>();
 
+    public void incrementVisitors(){
+        this.visitorCnt += 1;
+    }
+
 }
