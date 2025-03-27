@@ -93,28 +93,16 @@ public class MemberService {
 
         memberRepository.save(member);
 
+
+
         return new SignupResponse(true, "회원가입이 완료되었습니다.", member.getId());
     }
 
-    public Map<String, Object> getFullUserInfo(Long userId) {
+    public MemberDto getUserInfo(Long userId) {
         // 사용자 기본 정보 조회
         Member member = memberRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 어항 정보 조회
-        Aquarium aquarium = member.getAquarium();
-
-        // 물고기 카드 정보 조회
-        List<FishCard> fishCards = member.getCard();
-
-        // 응답 객체 구성
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("user", MemberDto.fromEntity(member));
-        userInfo.put("aquarium", aquarium != null ? AquariumDto.fromEntity(aquarium, userId) : null);
-        userInfo.put("fish_cards", fishCards != null ?
-                fishCards.stream().map(FishCardDto::fromEntity).collect(Collectors.toList()) :
-                Collections.emptyList());
-
-        return userInfo;
+        return MemberDto.fromEntity(member);
     }
 }
