@@ -13,10 +13,8 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FishCardDto {
-    private long id;
     private String fishName;
     private Double realSize;
-    private Date collectDate;
     private Integer sky;
     private Double temperature;
     private Double waterTemperature;
@@ -25,16 +23,14 @@ public class FishCardDto {
     private String comment;
     private String cardImg;
 
-    public static FishCardDto fromEntity(FishCard fishCard) {
-        return FishCardDto.builder()
-                .id(fishCard.getId())
-                .fishName(fishCard.getFish().getFishName())
-                .realSize(fishCard.getRealSize())
-                .temperature(fishCard.getTemperature())
-                .waterTemperature(fishCard.getWaterTemperature())
-                .tide(fishCard.getTide())
-                .comment(fishCard.getComment())
-                .cardImg(fishCard.getCardImg())
+    public FishCard toEntity() {
+        return FishCard.builder()
+                .realSize(this.realSize)
+                .temperature(this.temperature)
+                .waterTemperature(this.waterTemperature)
+                .tide(this.tide)
+                .comment(this.comment)
+                .cardImg(this.cardImg)
                 .build();
     }
 }
