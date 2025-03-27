@@ -177,13 +177,6 @@ class FallingFish {
 class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   // --- 물고기 이동/정지 관련 ---
   List<SwimmingFish> swimmingFishes = [];
-  double fish1X = 50;
-  double fish1Y = 100;
-  bool moveRight1 = true;
-  double baseSpeed1 = 1.5;
-  double speed1 = 1.5;
-  double angle1 = 0;
-  bool isPaused1 = false;
   late Timer _timer;
   double time = 0.0;
 
@@ -208,7 +201,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     super.initState();
     _initMenuAnimation();
     _startFishMovement();
-    _randomPauseForFish1();
   }
 
   void _startFishMovement() {
@@ -216,18 +208,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
       setState(() {
         final screenWidth = MediaQuery.of(context).size.width;
         time += 0.05;
-
-        // Y축 파동 이동
-        fish1Y = 100 + sin(time) * 20;
-
-        // X축 이동
-        if (!isPaused1) {
-          fish1X += moveRight1 ? speed1 : -speed1;
-          angle1 = moveRight1 ? 0 : 3.14159;
-          if (fish1X > screenWidth - 100 || fish1X < 10) {
-            moveRight1 = !moveRight1;
-          }
-        }
 
         for (var fish in swimmingFishes) {
           // 테스트코드 확인후 지우길바람
@@ -347,64 +327,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     }
   }
 
-  void _randomPauseForFish1() {
-    Timer.periodic(Duration(seconds: Random().nextInt(5) + 3), (timer) {
-      _pauseSmoothly();
-    });
-  }
-
-  void _pauseSmoothly() {
-    final pauseDuration = Random().nextInt(3) + 1;
-    const deceleration = 0.05;
-
-    Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      setState(() {
-        if (speed1 > 0) {
-          speed1 -= deceleration;
-        } else {
-          timer.cancel();
-          Future.delayed(Duration(seconds: pauseDuration), () {
-            _resumeSmoothly();
-          });
-        }
-      });
-    });
-  }
-
-  void _resumeSmoothly() {
-    const acceleration = 0.05;
-    Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      setState(() {
-        if (speed1 < baseSpeed1) {
-          speed1 += acceleration;
-        } else {
-          timer.cancel();
-          moveRight1 = Random().nextBool();
-        }
-      });
-    });
-  }
-
-  void _pauseFishForOneSecond() {
-    setState(() {
-      isPaused1 = true;
-    });
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        isPaused1 = false;
-      });
-    });
-  }
-
-  // void _openFishSelectModal() {
-  //   showModalBottomSheet(
-  //     context: context,
-  //     backgroundColor: Colors.transparent,
-  //     isScrollControlled: true,
-  //     builder: (_) => const FishSelectModal(onFishSelect)
-  //     )
-  // }
-
   @override
   void dispose() {
     _timer.cancel();
@@ -508,20 +430,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
               ),
             ),
 
-            // 물고기 영역
-            Expanded(
-              child: Stack(
-                children: [
-                  _buildFish(
-                    fish1X,
-                    fish1Y,
-                    angle1,
-                    'assets/image/samchi.png',
-                    80,
-                  ),
-                ],
-              ),
-            ),
+
           ],
         ),
 
@@ -540,26 +449,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildFish(
-    double x,
-    double y,
-    double angle,
-    String imagePath,
-    double size,
-  ) {
-    return Positioned(
-      left: x,
-      top: y,
-      child: GestureDetector(
-        onTap: _pauseFishForOneSecond,
-        child: Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.rotationY(angle),
-          child: Image.asset(imagePath, width: size),
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildStaggeredMenu() {
     return Column(
