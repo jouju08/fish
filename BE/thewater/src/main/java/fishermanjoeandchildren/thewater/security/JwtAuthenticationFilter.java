@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -31,12 +33,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authorizationHeader = request.getHeader("Authorization");
 
         String username = null;
+        Long userId = null;
         String jwt = null;
+
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             try {
                 username = jwtUtil.extractUsername(jwt);
+                // userId도 추출
+                userId = jwtUtil.extractClaim(jwt, claims -> claims.get("userId", Long.class));
 
             } catch (Exception e) {
                 logger.error("JWT token is invalid: ", e);
@@ -49,7 +55,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (jwtUtil.validateToken(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                // 추가 정보로 userId 넣기
+                if (userId != null) {
+                    Map<String, Object> details = new HashMap<>();
+                    details.put("userId", userId);
+                    authenticationToken.setDetails(details);
+                }
+
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
             }
         }

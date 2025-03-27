@@ -3,13 +3,19 @@ package fishermanjoeandchildren.thewater.controller;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.dto.*;
+import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
+import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.EmailService;
 import fishermanjoeandchildren.thewater.service.MemberService;
+import fishermanjoeandchildren.thewater.db.entity.Member;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -21,7 +27,12 @@ public class MemberController {
     private EmailService emailService;
 
     @Autowired
+    private JwtUtil jwtUtil;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
+    @Autowired
     public MemberController(MemberService memberService,
                             EmailService emailService) {
         this.emailService = emailService;
@@ -141,6 +152,36 @@ public class MemberController {
                     .status(ResponseStatus.VALIDATION_FAILED)
                     .message(ResponseMessage.VALIDATION_FAILED)
                     .data(new SignupResponse(false, e.getMessage(), null)).build();
+        }
+    }
+
+    // 사용자 정보 불러오기
+    @SecurityRequirement(name="BearerAuth")
+    @GetMapping("/me")
+    public ApiResponse<?> getMyInfo(HttpServletRequest request) {
+        try {
+            // Bearer 토큰에서 JWT 부분만 추출
+            String token = jwtUtil.resolveToken(request);
+            Long memberId = jwtUtil.extractUserId(token);
+
+            // 로그인 ID로 사용자 정보 조회
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // 사용자 전체 정보 조회
+            Map<String, Object> fullUserInfo = memberService.getFullUserInfo(member.getId());
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(fullUserInfo)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("사용자 인증에 실패했습니다: " + e.getMessage())
+                    .build();
         }
     }
 }

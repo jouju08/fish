@@ -40,11 +40,11 @@ public class FishCard extends Common{
 
     //기온
     @Column
-    private Integer temperature;
+    private Double temperature;
 
     //수온
     @Column(name="water_temperature")
-    private Integer waterTemperature;
+    private Double waterTemperature;
 
     //조류
     @Column

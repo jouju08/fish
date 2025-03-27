@@ -3,7 +3,10 @@ package fishermanjoeandchildren.thewater.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.Builder;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -23,9 +26,24 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expiration;
 
+    // 헤더에서 토큰 추출
+    public String resolveToken(HttpServletRequest request) {
+        String bearer = request.getHeader("Authorization");
+        if (bearer != null && bearer.startsWith("Bearer ")) {
+            return bearer.substring(7);
+        }
+        return null;
+    }
+
     // 토큰에서 사용자 이름 추출
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+
+     // 토큰에서 사용자 ID 추출
+    public Long extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", Long.class);
     }
 
     // 토큰에서 만료 일자 추출
@@ -52,6 +70,14 @@ public class JwtUtil {
     // 토큰 만료 여부 확인
     private Boolean isTokenExpired(String token) {
         return extractExpiration(token).before(new Date());
+    }
+
+    // 사용자 상세 정보와 ID를 기반으로 JWT 토큰을 생성합니다.
+    public String generateToken(UserDetails userDetails, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        // 사용자 ID를 claims에 추가
+        claims.put("userId", userId);
+        return createToken(claims, userDetails.getUsername());
     }
 
     // 토큰 생성
