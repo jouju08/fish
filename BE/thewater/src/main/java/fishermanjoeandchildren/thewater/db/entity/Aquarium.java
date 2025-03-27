@@ -42,7 +42,17 @@ public class Aquarium extends Common {
     private List<AquariumLike> aquariumLikes=new ArrayList<>();
 
     public void incrementVisitors(){
-        this.visitorCnt += 1;
+        this.visitorCnt++;
+    }
+
+    public void incrementLikes(){
+        this.likeCnt++;
+    }
+
+    public void decrementLikes() {
+        if (this.likeCnt > 0) {
+            this.likeCnt--;
+        }
     }
 
     public void setMember(Member member) {
