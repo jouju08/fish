@@ -370,3 +370,116 @@ pytorch 모델은 탐지 잘 한다.
 ![mask_1-4_result.jpg](./mask_1-4_result.jpg)
 
 📌 내일 할 일 : 길이 측정 모델 변환🚀
+
+//
+
+# 📝 TIL (Today I Learned) - 2025-03-28
+
+## 🎯 목표
+YOLOv8 Instance Segmentation 모델을 TFLite로 변환하고,  
+TFLite 모델만을 활용하여 **물고기 윤곽 마스크 재구성 및 자동 길이 측정**까지 완전하게 구현하는 것.
+
+---
+
+## ✅ 전체 진행 흐름
+
+### 1. YOLOv8 Segmentation 모델 준비
+- 라벨: Roboflow에서 instance segmentation dataset 다운로드
+- 학습: 커스터마이징된 `yolov8n-seg.yaml`로 학습 완료
+- 결과: `best.pt` 가중치 확보
+
+---
+
+### 2. PyTorch → ONNX 변환 (📌 가장 큰 이슈 발생 지점)
+
+#### ❌ 문제
+- `model.export(format="onnx")`로 변환된 모델(`best.onnx`)에서 **정확도 급감**
+- 추론 결과가 모두 0에 가까운 confidence 또는 마스크가 의미 없게 나옴
+
+#### ✅ 해결 과정
+- [`Segment.forward()`] 내부 구조 수정:
+  - `export=True`일 때 내부적으로 **`proto` 크기와 `cls` 크기 일치하도록 interpolate** 추가
+  - 마지막 `output`을 `(cls_flat + mask)` 형태로 결합하여 ONNX export-friendly 구조로 변경
+
+#### ✅ 정확도 복원 위한 핵심 작업
+- `proto = F.interpolate(proto_out, size=cls.shape[2:], mode='bilinear')` 추가
+- `sigmoid`가 export 시 누락되는 문제 해결 위해 **수동 sigmoid 적용** 고려
+- `torch.onnx.export(..., input_names, output_names, dynamic_axes)` 설정 명확화
+- `onnxsim`으로 단순화한 후 저장: `best_sim.onnx`
+
+![onnx_test_result1.png](./onnx_test_result1.png)
+
+---
+
+### 3. ONNX → TensorFlow → TFLite 변환
+
+#### 📦 도구 사용
+- [`onnx2tf`] with `--output_signature` 옵션: `onnx2tf -i best_sim.onnx -ois`
+- TensorFlow SavedModel → `segment_flex.tflite`로 변환
+  - `tf.lite.TFLiteConverter` 사용
+  - Flex delegate 포함 (일부 dynamic op 처리)
+
+#### ⚠️ 주의
+- `sigmoid` 연산이 변환 중 누락되어 **logit 값으로 출력**됨
+- 따라서 TFLite 추론 후 `sigmoid(cls_conf)` 수동 적용 필요
+
+---
+
+## 🧪 디버깅 실험: PyTorch vs TensorFlow vs TFLite
+
+### PyTorch 추론 결과 저장
+- `proto.npy`: shape = `(32, 160, 160)`
+- `mask_vector.npy`: shape = `(32,)`
+- 길이 측정, 윤곽 시각화, 마스크 히트맵 확인
+
+### TensorFlow에서 마스크 복원 실험
+- 저장된 `proto`, `mask_vector`를 활용
+- `proto × mask_vector` → sigmoid → resize → binary mask
+- 윤곽선 추출 후 두 점 거리 측정
+
+### TFLite 추론 결과 실험
+- `output`: shape = `(1, 6400, 34)`
+- `output[:, 1]` → sigmoid(confidence)
+- `output[:, 2:]` → mask vector
+- top-1 vector만으로 마스크 복원 및 시각화 성공
+
+---
+
+## 🐛 주요 에러 및 해결 요약
+
+| 에러/현상 | 원인 | 해결 방법 |
+|-----------|------|------------|
+| `IndexError: preds[1]` | Segment.forward에서 tuple 반환 안 함 | `(output, proto)` 명시적으로 반환 |
+| 마스크가 항상 고정됨 | proto를 새로 추출하지 않음 | PyTorch 추론에서 매번 proto 추출 |
+| TFLite confidence 모두 음수 | sigmoid 제거됨 | 수동 sigmoid 적용 |
+| 마스크가 전혀 안 나옴 | proto-image 불일치 or vector 0 | 모델 추론과 일치하는 이미지로 진행 |
+| TFLite에서 confidence 너무 작음 | sigmoid 미적용 | sigmoid(cls_conf) 확인 필수 |
+
+---
+
+## 📷 시각화 결과
+
+| 파일명 | 설명 |
+|--------|------|
+| `fish_length_from_pytorch_proto.png` | PyTorch 기반 마스크 길이 측정 |
+| `mask_heatmap_from_proto.png` | proto 기반 마스크 히트맵 |
+| `fish_mask_overlay.png` | TFLite 추론 후 마스크 시각화 |
+| `fish_length_from_tflite_proto.png` | TFLite 추론 후 길이 측정 |
+
+---
+
+## 🧠 오늘 배운 점
+
+- YOLOv8에서 `Segment` 구조를 export에 맞게 수정하는 것이 중요
+- TFLite 모델에서 confidence가 logit으로 출력될 수 있으므로 항상 sigmoid 확인
+- 정확도 비교 실험은 proto+mask_vector 저장 방식으로 깔끔하게 검증 가능
+- 변환 경로별로 마스크 정확도 및 위치 오차가 존재할 수 있으므로 디버깅용 시각화 필수
+- **ONNX → TF → TFLite**는 변환 정밀도와 구조가 무너지지 않도록 export 로직을 정밀하게 맞춰야 함
+
+---
+
+✅ **최종 결과**:  
+- PyTorch 모델을 정확하게 TFLite로 변환하고,  
+- TFLite만으로 **물고기 윤곽 마스크 복원 및 길이 측정 자동화 성공!**
+![fish_length_from_tflite_proto.png](./fish_length_from_tflite_proto.png)
+![mask_heatmap_from_tflite_proto.png](./mask_heatmap_from_tflite_proto.png)
