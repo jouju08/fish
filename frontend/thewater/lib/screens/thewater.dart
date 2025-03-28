@@ -113,7 +113,7 @@ class _TheWaterState extends State<TheWater> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CameraScreen()),
+              MaterialPageRoute(builder: (context) => ModelScreen2()),
             );
           },
           child: const Icon(
