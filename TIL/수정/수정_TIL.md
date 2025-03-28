@@ -1230,3 +1230,29 @@ https://goddaehee.tistory.com/331
     ```
     
     - i옵션: commit 순서 조정, commit하나 빼기, 일부 메세지 수정 등 가능
+                
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 28일 🚩
+🎯 취미
+
+- 번아웃에 취미가 많은 도움이 된다
+    - 신체적
+    - 감정적
+    - 아무생각없이
+
+🎯 InteliJ가 SpringBoot Main 파일을 찾지 못할 때
+- InteliJ 완전 초기화
+    1. InteliJ 종료
+    2. 프로젝트 루트 폴더에서 다음 폴더 삭제
+        
+        ```java
+        rm -rf .idea
+        rm -rf *.iml
+        
+        ```
+        
+    3. InteliJ 재실행
