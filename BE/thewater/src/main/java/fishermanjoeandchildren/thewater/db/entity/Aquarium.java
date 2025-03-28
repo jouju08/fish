@@ -31,8 +31,7 @@ public class Aquarium extends Common {
     @Column(name="total_price", nullable = false)
     private int totalPrice;
 
-    @OneToOne
-    @JoinColumn(name="member_id")
+    @OneToOne(mappedBy = "aquarium")
     private Member member;
 
     @OneToMany(mappedBy = "aquarium")

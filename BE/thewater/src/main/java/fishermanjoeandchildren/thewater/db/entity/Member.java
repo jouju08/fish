@@ -42,7 +42,8 @@ public class Member extends Common {
     @Column(nullable = false)
     private Boolean has_deleted=false;
 
-    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="aquarium_id")
     private Aquarium aquarium;
 
     @OneToMany(mappedBy = "member")
