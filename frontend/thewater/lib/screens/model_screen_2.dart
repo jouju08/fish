@@ -90,11 +90,10 @@ class _ModelScreen2State extends State<ModelScreen2> {
             // 픽셀 값 가져오기
             int pixel = resizedImage.getPixel(x, y);
 
-            // 평균값을 빼서 정규화
             return [
-              img.getBlue(pixel) - meanB, // B 채널 정규화
-              img.getGreen(pixel) - meanG, // G 채널 정규화
-              img.getRed(pixel) - meanR, // R 채널 정규화
+              img.getBlue(pixel).toDouble(),
+              img.getGreen(pixel).toDouble(),
+              img.getRed(pixel).toDouble(),
             ];
           },
         ),
@@ -155,7 +154,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Image Picker Example')),
+      appBar: AppBar(title: Text('잡은 물고기 사진을 넣어주세요')),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
@@ -163,7 +162,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
             children: <Widget>[
               // 이미지를 선택했다면 해당 이미지를 화면에 표시
               _image == null
-                  ? Text('이미지를 선택하세요.')
+                  ? SizedBox(height: 15,)
                   : Image.file(_image!), // 선택한 이미지를 화면에 표시
 
               SizedBox(height: 20),
@@ -178,6 +177,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
                 onPressed: _pickImageFromCamera,
                 child: Text('카메라로 사진 찍기'),
               ),
+              _image == null ? SizedBox(height: 15,):
               Text.rich(
                 TextSpan(
                   children: [
