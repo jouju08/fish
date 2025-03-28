@@ -1,12 +1,16 @@
 package fishermanjoeandchildren.thewater.db.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Table(name = "fishing_point")
 @Entity
-public class FishingPoint {
+@Getter
+@Setter
+public class FishingPoint extends Common {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
