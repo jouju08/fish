@@ -169,12 +169,12 @@ public class MemberController {
                     .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
             // 사용자 전체 정보 조회
-            Map<String, Object> fullUserInfo = memberService.getFullUserInfo(member.getId());
+            MemberDto UserInfo = memberService.getUserInfo(member.getId());
 
             return ApiResponse.builder()
                     .status(ResponseStatus.SUCCESS)
                     .message(ResponseMessage.SUCCESS)
-                    .data(fullUserInfo)
+                    .data(UserInfo)
                     .build();
         } catch (Exception e) {
             return ApiResponse.builder()

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
+import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'screens/camera_screen.dart';
@@ -40,6 +40,7 @@ class MyApp extends StatelessWidget {
           '/camera': (context) => CameraScreen(),
           '/model': (context) => ModelScreen(),
           '/login': (context) => LoginScreen(),
+          '/fish_cards': (context) => FishCardScreen(),
         },
         initialRoute: '/',
       ),

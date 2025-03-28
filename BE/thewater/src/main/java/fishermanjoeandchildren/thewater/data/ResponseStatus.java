@@ -20,9 +20,14 @@ public interface ResponseStatus {
     // HTTP Status 403
     String NO_PERMISSION = "NP";
 
+    // HTTP Status 409
+    String CONFLICT = "CF";
+
     // HTTP Status 500
     String DATABASE_ERROR = "DBE";
 
     String SERVER_ERROR = "SER";
+
+
 
 }
