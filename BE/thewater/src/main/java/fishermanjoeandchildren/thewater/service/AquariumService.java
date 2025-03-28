@@ -3,9 +3,12 @@ package fishermanjoeandchildren.thewater.service;
 
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.AquariumDto;
+import fishermanjoeandchildren.thewater.data.dto.AquariumFishCardDto;
+import fishermanjoeandchildren.thewater.data.dto.FishCardDto;
 import fishermanjoeandchildren.thewater.db.entity.*;
 import fishermanjoeandchildren.thewater.db.repository.AquariumLikeRepository;
 import fishermanjoeandchildren.thewater.db.repository.AquariumRepository;
+import fishermanjoeandchildren.thewater.db.repository.FishCardRepository;
 import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,7 @@ public class AquariumService {
     private final AquariumRepository aquariumRepository;
     private final MemberRepository memberRepository;
     private final AquariumLikeRepository aquariumLikeRepository;
+    private final FishCardRepository fishCardRepository;
 
     public AquariumDto saveAquarium(AquariumDto aquariumDto, Long currentMemberId){
 
@@ -92,4 +96,19 @@ public class AquariumService {
         return ResponseStatus.SUCCESS;
     }
 
+    public String changeAquariumFishVisible(Long aquariumId, Long memberId, Long fishCardId){
+        Aquarium aquarium = aquariumRepository.findById(aquariumId).orElse(null);
+        FishCard fishCard = fishCardRepository.findById(fishCardId).orElse(null);
+
+        if (aquarium == null || fishCard == null) {
+            return ResponseStatus.NOT_FOUND;
+        } else if (!memberId.equals(aquarium.getMember().getId()) || !fishCard.getMember().getId().equals(memberId)) {
+            return ResponseStatus.AUTHROIZATION_FAILED;
+        }
+
+        fishCard.changeFishVisible();
+        fishCardRepository.save(fishCard);
+
+        return ResponseStatus.SUCCESS;
+    }
 }
