@@ -24,17 +24,13 @@ public class FishingPoint {
     @Column(nullable = false)
     private String longitude;
 
-    //위치(시/도)
+    //위치(address)
     @Column(nullable = false)
-    private String province;
+    private String address;
 
-    //위치(시. 군, 구)
+    // 공개여부
     @Column(nullable = false)
-    private String city;
-
-    //위치(읍, 면, 동)
-    @Column(nullable = false)
-    private String town;
+    private Boolean official = false;
 
 
 }
