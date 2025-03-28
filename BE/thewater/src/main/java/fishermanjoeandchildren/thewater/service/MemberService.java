@@ -66,18 +66,13 @@ public class MemberService {
             throw new RuntimeException("이메일 인증이 필요합니다.");
         }
 
-        // 비밀번호 암호화
+        // 비밀번호 암호화3
         String encodedPassword = passwordEncoder.encode(request.getPassword());
 
-        // 어항 생성 (기본 어항)
-        Aquarium aquarium = Aquarium.builder()
-                .visitorCnt(0)
-                .likeCnt(0)
-                .fishCnt(0)
-                .totalPrice(0)
-                .build();
-
+        Aquarium aquarium = new Aquarium();
         aquariumRepository.save(aquarium);
+
+
 
         // Member 객체 생성
         Member member = Member.builder()
