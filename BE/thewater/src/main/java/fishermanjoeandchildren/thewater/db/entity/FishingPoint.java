@@ -1,11 +1,15 @@
 package fishermanjoeandchildren.thewater.db.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 
 @Table(name = "fishing_point")
 @Entity
+@Getter
+@Setter
 public class FishingPoint {
 
     @Id

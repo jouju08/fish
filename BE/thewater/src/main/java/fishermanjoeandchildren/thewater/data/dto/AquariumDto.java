@@ -46,9 +46,8 @@ public class AquariumDto {
     @NotNull
     private Long member_id;
 
-    private List<FishCard> fishCards;
+    private List<AquariumFishCardDto> visibleFishCards;
 
-//    private List<Long> aquariumLikeMemberIds;
     @NotNull
     private boolean likedByMe;
 
@@ -60,7 +59,6 @@ public class AquariumDto {
                 .fishCnt(fishCnt)
                 .totalPrice(totalPrice)
                 .member(owner)
-                .fishCard(fishCards)
                 .build();
         return aquarium;
     }
@@ -70,6 +68,11 @@ public class AquariumDto {
                 aquarium.getAquariumLikes().stream()
                         .anyMatch(like -> like.getMemberId().equals(currentMemberId));
 
+        List<AquariumFishCardDto> aquariumFishes = aquarium.getFishCard().stream()
+                .filter(f -> Boolean.TRUE.equals(f.getHasVisible()))
+                .map(AquariumFishCardDto::fromEntity)
+                .collect(Collectors.toList());
+
         return AquariumDto.builder()
                 .id(aquarium.getId())
                 .visitorCnt(aquarium.getVisitorCnt())
@@ -77,7 +80,7 @@ public class AquariumDto {
                 .fishCnt(aquarium.getFishCnt())
                 .totalPrice(aquarium.getTotalPrice())
                 .member_id(aquarium.getMember().getId())
-                .fishCards(aquarium.getFishCard())
+                .visibleFishCards(aquariumFishes)
                 .likedByMe(likedByMe)
                 .build();
     }
