@@ -9,7 +9,6 @@ import java.util.List;
 @Entity
 @Table(name = "aquarium")
 @Getter
-@Data
 @Setter
 @ToString
 @NoArgsConstructor
@@ -32,7 +31,7 @@ public class Aquarium extends Common {
     @Column(name="total_price", nullable = false)
     private int totalPrice;
 
-    @OneToOne(mappedBy="aquarium")
+    @OneToOne(mappedBy = "aquarium")
     private Member member;
 
     @OneToMany(mappedBy = "aquarium")
@@ -42,7 +41,21 @@ public class Aquarium extends Common {
     private List<AquariumLike> aquariumLikes=new ArrayList<>();
 
     public void incrementVisitors(){
-        this.visitorCnt += 1;
+        this.visitorCnt++;
+    }
+
+    public void incrementLikes(){
+        this.likeCnt++;
+    }
+
+    public void decrementLikes() {
+        if (this.likeCnt > 0) {
+            this.likeCnt--;
+        }
+    }
+
+    public void setMember(Member member) {
+        this.member = member;
     }
 
 }

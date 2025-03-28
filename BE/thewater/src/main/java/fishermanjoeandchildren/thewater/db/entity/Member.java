@@ -42,11 +42,16 @@ public class Member extends Common {
     @Column(nullable = false)
     private Boolean has_deleted=false;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="aquarium_id")
     private Aquarium aquarium;
 
     @OneToMany(mappedBy = "member")
     private List<FishCard> card;
+
+    public void setAquarium(Aquarium aquarium) {
+        this.aquarium = aquarium;
+        aquarium.setMember(this);
+    }
 
 }
