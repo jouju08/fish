@@ -165,6 +165,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     {"label": "공유", "icon": "assets/icon/카카오공유아이콘.png"},
   ];
 
+  // 수족관에 추가된 물고기 imagePath를 저장하는 집합
+  Set<String> _selectedFish = {};
+
   @override
   void initState() {
     super.initState();
@@ -190,8 +193,19 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (_) => FishSelectModal(
-        onFishSelected: (imagePath) {
-          fishManager.addFallingFish(imagePath);
+        selectedFish: _selectedFish,
+        onToggleFish: (String path) {
+          setState(() {
+            if (_selectedFish.contains(path)) {
+              // 이미 추가된 경우: 수족관에서 제거
+              fishManager.removeFish(path);
+              _selectedFish.remove(path);
+            } else {
+              // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
+              fishManager.addFallingFish(path);
+              _selectedFish.add(path);
+            }
+          });
         },
       ),
     );
