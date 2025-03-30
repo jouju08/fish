@@ -16,10 +16,9 @@ class FishSelectModal extends StatefulWidget {
 
 class _FishSelectModalState extends State<FishSelectModal> {
   final List<String> fishImages = [
-    'assets/image/samchi.png',
-    'assets/image/moona.gif',
-    'assets/image/gapojinga.png',
-    // 문어 등 추가 이미지 가능
+    'assets/image/삼치.png',
+    'assets/image/문어.gif',
+    'assets/image/갑오징어.png',
   ];
 
   @override

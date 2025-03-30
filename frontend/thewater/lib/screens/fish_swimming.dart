@@ -21,27 +21,29 @@ enum FishState { moving, idle }
 
 class SwimmingFish {
   final String imagePath;
+  // final String fishName; // 백엔드 연동할때 받을 String fishName
   double x;
   double y;
   double speed;
-  double angle;
   FishState state;
   double dx;
   double dy;
   double stateTime;
   double stateDuration;
+  bool isPaused; // 일시정지 여부
 
   SwimmingFish({
     required this.imagePath,
+    // required this.fishName, // 물고기 이름을 받아서 저장
     required this.x,
     required this.y,
     required this.speed,
-    required this.angle,
     required this.state,
     required this.dx,
     required this.dy,
     required this.stateTime,
     required this.stateDuration,
+    this.isPaused = false,
   });
 }
 
@@ -97,6 +99,7 @@ class FishSwimmingManager {
           screenHeight - fishSize - bottomBarHeight; // 하단 경계
 
       for (var fish in swimmingFishes) {
+        if (fish.isPaused) continue; // 일시정지 중이면 업데이트 건너뛰기
         // 매 업데이트마다 0.03초씩 경과 시간 업데이트
         fish.stateTime += 0.03;
 
@@ -178,14 +181,12 @@ class FishSwimmingManager {
         int index = random.nextInt(directions.length);
         double dx = directions[index]['dx']!;
         double dy = directions[index]['dy']!;
-        double angle = 0; // 좌우 반전만 적용하므로 별도 회전 없음
         double movingDuration = 1.0 + random.nextDouble() * 2.0; // 1~3초 이동
         SwimmingFish newSwimmingFish = SwimmingFish(
           imagePath: fish.imagePath,
           x: MediaQuery.of(context).size.width / 2 - fishSize / 2,
           y: fish.top,
           speed: 1.2 + random.nextDouble(),
-          angle: angle,
           state: FishState.moving,
           dx: dx,
           dy: dy,
@@ -293,14 +294,62 @@ class FishSwimmingManager {
       return Positioned(
         top: fish.y,
         left: fish.x,
-        child: Transform(
-          alignment: Alignment.center,
-          // 좌우 반전: dx가 음수이면 수평 플립 적용
-          transform: fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
-          child: Image.asset(fish.imagePath, width: 80),
+        child: GestureDetector(
+          onTap: () {
+            // 이미 일시정지 중이면 아무것도 하지 않음
+            if (!fish.isPaused) {
+              fish.isPaused = true;
+              update();
+
+              // 1.5초 후 일시정지 해제
+              Timer(const Duration(milliseconds: 1500), () {
+                fish.isPaused = false;
+                update();
+              });
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              // 물고기 이미지 (좌우 반전 처리 포함)
+              Transform(
+                alignment: Alignment.center,
+                transform:
+                    fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
+                child: Image.asset(fish.imagePath, width: 80),
+              ),
+              // 일시정지 상태라면 물고기 이름 오버레이 (1.5초 동안 opacity 애니메이션)
+              if (fish.isPaused)
+                Positioned(
+                  bottom: 50,
+                  child: Center(child: _buildFishNameOverlay("물고기")),
+                ),
+            ],
+          ),
         ),
       );
     }).toList();
+  }
+
+  Widget _buildFishNameOverlay(String fishName) {
+    return TweenAnimationBuilder<double>(
+      tween: Tween<double>(begin: 1.0, end: 0.0),
+      duration: const Duration(milliseconds: 1500),
+      builder: (context, opacity, child) {
+        return Opacity(opacity: opacity, child: child);
+      },
+      child: Container(
+        padding: const EdgeInsets.all(4.0),
+        child: Text(
+          fishName,
+          style: const TextStyle(
+            color: Color.fromARGB(255, 0, 0, 0),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
+          ),
+        ),
+      ),
+    );
   }
 
   List<Widget> buildFallingFishes() {
