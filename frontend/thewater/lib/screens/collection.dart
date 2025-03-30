@@ -28,12 +28,12 @@ class CollectionPage extends StatelessWidget {
     return Scaffold(
       // 상단 AppBar
       appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pushNamed(context,'/');
-          },
-          ),
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back),
+        //   onPressed: () {
+        //     Navigator.pushNamed(context,'/');
+        //   },
+        //   ),
         title: const Text("도감"),
         centerTitle: true,
       ),
