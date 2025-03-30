@@ -198,7 +198,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           setState(() {
             if (_selectedFish.contains(path)) {
               // 이미 추가된 경우: 수족관에서 제거
-              fishManager.removeFish(path);
+              fishManager.removeFishWithFishingLine(path);
               _selectedFish.remove(path);
             } else {
               // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
@@ -360,6 +360,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         // 물고기 애니메이션 위젯들
         if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
         if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
       ],
     );
   }
