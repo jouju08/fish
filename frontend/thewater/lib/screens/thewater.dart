@@ -192,22 +192,23 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FishSelectModal(
-        selectedFish: _selectedFish,
-        onToggleFish: (String path) {
-          setState(() {
-            if (_selectedFish.contains(path)) {
-              // 이미 추가된 경우: 수족관에서 제거
-              fishManager.removeFishWithFishingLine(path);
-              _selectedFish.remove(path);
-            } else {
-              // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
-              fishManager.addFallingFish(path);
-              _selectedFish.add(path);
-            }
-          });
-        },
-      ),
+      builder:
+          (_) => FishSelectModal(
+            selectedFish: _selectedFish,
+            onToggleFish: (String path) {
+              setState(() {
+                if (_selectedFish.contains(path)) {
+                  // 이미 추가된 경우: 수족관에서 제거
+                  fishManager.removeFishWithFishingLine(path);
+                  _selectedFish.remove(path);
+                } else {
+                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
+                  fishManager.addFallingFish(path);
+                  _selectedFish.add(path);
+                }
+              });
+            },
+          ),
     );
   }
 
