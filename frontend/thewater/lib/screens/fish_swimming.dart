@@ -1,6 +1,21 @@
 import 'dart:async';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'dart:ui';
+
+class RemovalAnimationData {
+  final String imagePath;
+  final double startX;
+  final double startY;
+  final AnimationController controller;
+
+  RemovalAnimationData({
+    required this.imagePath,
+    required this.startX,
+    required this.startY,
+    required this.controller,
+  });
+}
 
 enum FishState { moving, idle }
 
@@ -41,6 +56,7 @@ class FallingFish {
 class FishSwimmingManager {
   List<SwimmingFish> swimmingFishes = [];
   List<FallingFish> fallingFishes = [];
+  List<RemovalAnimationData> removalAnimations = [];
   Timer? timer;
 
   final TickerProvider tickerProvider;
@@ -58,14 +74,14 @@ class FishSwimmingManager {
   }) {
     double invSqrt2 = 1 / sqrt(2);
     directions.addAll([
-      {'dx': 0, 'dy': -1},             // 상
+      {'dx': 0, 'dy': -1}, // 상
       {'dx': invSqrt2, 'dy': -invSqrt2}, // 상우
-      {'dx': 1, 'dy': 0},              // 우
-      {'dx': invSqrt2, 'dy': invSqrt2},  // 우하
-      {'dx': 0, 'dy': 1},              // 하
+      {'dx': 1, 'dy': 0}, // 우
+      {'dx': invSqrt2, 'dy': invSqrt2}, // 우하
+      {'dx': 0, 'dy': 1}, // 하
       {'dx': -invSqrt2, 'dy': invSqrt2}, // 하좌
-      {'dx': -1, 'dy': 0},             // 좌
-      {'dx': -invSqrt2, 'dy': -invSqrt2},// 좌상
+      {'dx': -1, 'dy': 0}, // 좌
+      {'dx': -invSqrt2, 'dy': -invSqrt2}, // 좌상
     ]);
   }
 
@@ -74,9 +90,9 @@ class FishSwimmingManager {
       update();
       final double screenWidth = MediaQuery.of(context).size.width;
       final double screenHeight = MediaQuery.of(context).size.height;
-      const double fishSize = 80.0;         // 물고기 이미지 크기
-      const double topBoundary = 120.0;       // 상단 UI 영역 아래 (수족관 가치 영역)
-      const double bottomBarHeight = 60.0;    // 바텀 네비게이션 높이
+      const double fishSize = 80.0; // 물고기 이미지 크기
+      const double topBoundary = 120.0; // 상단 UI 영역 아래 (수족관 가치 영역)
+      const double bottomBarHeight = 60.0; // 바텀 네비게이션 높이
       final double bottomBoundary =
           screenHeight - fishSize - bottomBarHeight; // 하단 경계
 
@@ -182,10 +198,94 @@ class FishSwimmingManager {
     });
   }
 
+  void removeFishWithFishingLine(String imagePath) {
+    final index = swimmingFishes.indexWhere(
+      (fish) => fish.imagePath == imagePath,
+    );
+    if (index == -1) return;
+    final fish = swimmingFishes[index];
+    swimmingFishes.removeAt(index);
+
+    final removalController = AnimationController(
+      vsync: tickerProvider,
+      duration: const Duration(milliseconds: 2000),
+    );
+    final removalData = RemovalAnimationData(
+      imagePath: fish.imagePath,
+      startX: fish.x,
+      startY: fish.y,
+      controller: removalController,
+    );
+    removalAnimations.add(removalData);
+
+    removalController.addListener(() {
+      update();
+    });
+    removalController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        removalAnimations.remove(removalData);
+        removalController.dispose();
+        update();
+      }
+    });
+    removalController.forward();
+  }
+
   void removeFish(String imagePath) {
     swimmingFishes.removeWhere((fish) => fish.imagePath == imagePath);
     fallingFishes.removeWhere((fish) => fish.imagePath == imagePath);
     update();
+  }
+
+  List<Widget> buildRemovalAnimations() {
+    // 물고기 이미지 크기 및 낚시줄의 가정된 크기
+    const double fishSize = 80.0;
+    const double lineHeight = 600.0; // 낚시줄 이미지의 세로 길이 (예시)
+    const double lineWidth = 30.0; // 낚시줄 이미지의 가로 길이 (예시)
+
+    return removalAnimations.map((data) {
+      double t = data.controller.value; // 0 ~ 1 사이의 값
+      double fishingLineBottomY;
+      double fishY;
+      if (t < 0.8) {
+        // 낚시줄 내려오기 (0 ~ 0.8초)
+        double stageT = t / 0.8; // 0~1 범위로 보정
+        double easeT = 1 - pow(1 - stageT, 2).toDouble(); // ease-out 효과 적용
+        fishingLineBottomY = lerpDouble(-lineHeight, data.startY + 50, easeT)!;
+        fishY = data.startY; // 물고기는 고정
+      } else {
+        // 낚시줄과 함께 위로 이동 (0.8 ~ 1초)
+        double stageT = (t - 0.8) / 0.2; // 0 ~ 1 범위로 보정
+        // 물고기는 data.startY에서 화면 위(예: -fishSize)까지 이동
+        fishY = data.startY + (-data.startY - fishSize) * stageT;
+        // 낚시줄의 bottom도 같이 이동
+        fishingLineBottomY =
+            data.startY + (-data.startY + 50 - fishSize) * stageT;
+      }
+      // 낚시줄의 x 위치: 물고기 중앙 기준 (fishSize/2)에서 낚시줄 width 절반만큼 왼쪽 이동
+      double lineX = data.startX + fishSize / 2 - lineWidth / 2;
+      return Stack(
+        children: [
+          // 낚시줄 이미지: Positioned의 top은 fishingLineBottomY - lineHeight로 계산
+          Positioned(
+            left: lineX,
+            top: fishingLineBottomY - lineHeight,
+            child: Image.asset(
+              'assets/image/낚시줄.png',
+              width: lineWidth,
+              height: lineHeight,
+              fit: BoxFit.fill,
+            ),
+          ),
+          // 물고기 이미지: 현재 y 위치에 그림
+          Positioned(
+            left: data.startX,
+            top: fishY,
+            child: Image.asset(data.imagePath, width: fishSize),
+          ),
+        ],
+      );
+    }).toList();
   }
 
   List<Widget> buildSwimmingFishes() {
@@ -215,5 +315,8 @@ class FishSwimmingManager {
 
   void dispose() {
     timer?.cancel();
+    for (var data in removalAnimations) {
+      data.controller.dispose();
+    }
   }
 }
