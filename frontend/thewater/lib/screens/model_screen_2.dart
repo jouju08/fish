@@ -1,10 +1,8 @@
+import 'package:flutter/material.dart';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class ModelScreen2 extends StatefulWidget {
@@ -59,27 +57,6 @@ class _ModelScreen2State extends State<ModelScreen2> {
         height: 224,
         interpolation: img.Interpolation.linear,
       );
-
-      // 평균값 계산을 위한 변수
-      double sumR = 0, sumG = 0, sumB = 0;
-      int totalPixels = 224 * 224;
-
-      // 모든 픽셀을 순회하면서 평균값 계산
-      for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-          int pixel = resizedImage.getPixel(x, y);
-          sumR += img.getRed(pixel);
-          sumG += img.getGreen(pixel);
-          sumB += img.getBlue(pixel);
-        }
-      }
-
-      // 각 채널별 평균값
-      double meanR = sumR / totalPixels;
-      double meanG = sumG / totalPixels;
-      double meanB = sumB / totalPixels;
-
-      print("meanR: $meanR, meanG: $meanG, meanB: $meanB");
 
       // 224x224x3 형태의 배열 생성
       List<List<List<double>>> imageArray = List.generate(
