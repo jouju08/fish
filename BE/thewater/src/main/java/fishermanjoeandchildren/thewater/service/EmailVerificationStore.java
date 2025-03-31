@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class EmailVerificationStore {
 
-    @Autowired
+//    @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
     // 이메일 인증 코드를 위한 Redis 키 접두사
