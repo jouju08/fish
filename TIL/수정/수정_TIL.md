@@ -1256,3 +1256,32 @@ https://goddaehee.tistory.com/331
         ```
         
     3. InteliJ 재실행
+                
+</br>
+</br>
+</br>
+</br>
+    
+## 3월 28일 🚩
+🎯 해외 기업
+
+- 서류
+    - Cover Letter 작성
+        - 한 페이지로 나는 누군지
+        - queue에 내가 들어간다.
+        - 내부 사람 추천은 서류 결과가 빠르게 나온다.
+        - 외국계 회사일수록 네트워크가 중요하다.
+    - Resume 작성
+- Hiring Manager Meeting
+    - 프로세스 도와주는 매니저 1:1
+- Phone screening
+    - Google docs에 라이브 코드 작성
+        - string reverse
+        - 질문하기 : input, output, in-place reverse인지 등등…
+        - communication에 집중해야함
+        - 시간복잡도
+- onsite interview
+    - 회사방문 인터뷰
+    - Live coding test
+        - 화이트보드 코테
+    - 당신이 짠 코드에 들어갈 수 있는 edge case 생각해봅시다.
