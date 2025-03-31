@@ -1,257 +1,176 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:thewater/services/auth_api.dart';
-import 'dart:math';
-
-
-String generateNickname(String prefix) {
-      final random = Random();
-      final randomNumber = random.nextInt(9000) + 1000; // 1000~9999
-      return '$prefix\_$randomNumber';
-}
-
+import 'package:thewater/services/user_api.dart';
+import 'package:thewater/screens/signup.dart';
+import 'package:thewater/services/token_manager.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({Key? key}) : super(key: key);
 
   @override
-  State<LoginScreen> createState() => _loginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _loginScreenState extends State<LoginScreen> {
-  final TextEditingController _idController = TextEditingController();
+class _LoginScreenState extends State<LoginScreen> {
+  final TextEditingController _loginIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController =
-      TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _verificationCodeController =
-      TextEditingController();
-  String? _idCheckMessage;
+  String? errorMessage;
+  bool _isLoading = false;
+  final TokenManager _tokenManager = TokenManager();
 
-  bool _isEmailVerified = false;
-
-  void _checkIdAvailability() async {
-    debugPrint("아이디 중복체크 버튼 클릭");
-    bool isValid = await AuthApi().checkIdAvailability(
-      _idController.text.trim(),
-    );
-    // bool isValid = true;
+  void _login() async {
     setState(() {
-      _idCheckMessage = isValid ? "사용 가능한 아이디입니다." : "이미 사용 중인 아이디입니다.";
+      errorMessage = null;
+      _isLoading = true;
     });
-    // 아이디 중복 확인 기능 (추후 API 연결 가능)
-    print("아이디 중복 확인: ${_idController.text}");
-  }
 
-  void _sendVerificationCode() async {
-    final email = _emailController.text.trim();
+    final loginId = _loginIdController.text.trim();
+    final password = _passwordController.text;
 
-    if (email.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('이메일을 입력해주세요')));
-      return;
-    }
+    try {
+      final response = await UserApi().login(loginId, password);
+      // 응답 예시:
+      // {
+      //   "status": "SU",
+      //   "message": "Success.",
+      //   "data": {
+      //     "success": true,
+      //     "message": "로그인 성공",
+      //     "token": "eyJhbGciOiJIUzUxMiJ9..."
+      //   }
+      // }
 
-    final isSent = await AuthApi().sendVerificationCode(email);
-
-    if (isSent) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('인증번호가 전송되었습니다')));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('인증번호 전송에 실패했습니다')));
-    }
-  }
-
-  void _verifyCode() async {
-    // 인증번호 확인 기능 (추후 API 연결 가능)
-    final email = _emailController.text.trim();
-    final code = _verificationCodeController.text.trim();
-
-    if (email.isEmpty || code.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('이메일과 인증번호를 모두 입력해주세요')));
-      return;
-    }
-
-    final isVerified = await AuthApi().verifyEmailCode(
-      email: email,
-      code: code,
-    );
-
-    if (isVerified) {
+      if (response['status'] == 'SU' &&
+          response['data'] != null &&
+          response['data']['success'] == true) {
+        // 로그인 성공: token 저장
+        final token = response['data']['token'];
+        debugPrint("로그인 성공 데이터: ${response['data']}");
+        await _tokenManager.saveToken(token);
+        // 사용자 데이터 가져오기
+        await _getUserData();
+        // 메인 페이지('/')로 이동
+        Navigator.pushReplacementNamed(context, '/');
+      } else {
+        setState(() {
+          errorMessage = "아이디 또는 비밀번호가 잘못되었습니다.";
+        });
+      }
+    } catch (e) {
       setState(() {
-        _isEmailVerified = true;
+        errorMessage = "로그인 중 오류가 발생했습니다.";
+        debugPrint("로그인 실패: $e");
       });
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('이메일 인증이 완료되었습니다')));
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('인증번호가 틀렸습니다')));
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
-    print("인증번호 확인: ${_verificationCodeController.text}");
   }
 
-  void _nextStep() async {
-    final loginId = _idController.text.trim();
-    final password = _passwordController.text.trim();
-    final confirmPassword = _confirmPasswordController.text.trim();
-    final email = _emailController.text.trim();
-
-    if (!_isEmailVerified) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('이메일 인증을 완료해주세요')));
-      return;
+  Future<void> _getUserData() async {
+    debugPrint("_getUserData() 함수 실행!!!!");
+    try {
+      final userData = await UserApi().fetchUserInfo();
+      debugPrint("User data: $userData");
+    } catch (e) {
+      debugPrint("User data 가져오기 실패: $e");
     }
-
-    if (password != confirmPassword) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('비밀번호가 일치하지 않습니다')));
-      return;
-    }
-
-    
-
-    final isSuccess = await AuthApi().signUp(
-      loginId: loginId,
-      password: password,
-      email: _emailController.text.trim(),
-      nickname: generateNickname('강태공'), // 임시 닉네임
-    );
-
-    if (isSuccess) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('회원가입이 완료되었습니다')));
-      Navigator.pop(context); // 이전 화면으로 이동
-    } else {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('회원가입 실패. 다시 시도해주세요')));
-    }
-    print("회원가입 진행");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('회원가입')),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 1️⃣ 아이디 입력란 + 중복 확인 버튼
-              Row(
+      // 필요시 AppBar 등 추가 가능
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _idController,
-                      decoration: InputDecoration(
-                        labelText: '아이디 입력',
-                        border: OutlineInputBorder(),
+                  // 중앙 로고 이미지
+                  Image.asset(
+                    'assets/icon/로그인로고.png',
+                    width: 200,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 40),
+                  // 아이디 입력 필드
+                  TextField(
+                    controller: _loginIdController,
+                    decoration: const InputDecoration(
+                      labelText: '아이디',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  // 비밀번호 입력 필드
+                  TextField(
+                    controller: _passwordController,
+                    decoration: const InputDecoration(
+                      labelText: '비밀번호',
+                      border: OutlineInputBorder(),
+                    ),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 20),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      '이메일로 회원가입',
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontSize: 16,
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _checkIdAvailability,
-                    child: Text('중복 확인'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              if (_idCheckMessage != null)
-                Text(
-                  _idCheckMessage!,
-                  style: TextStyle(
-                    color:
-                        _idCheckMessage == "사용 가능한 아이디입니다."
-                            ? Colors.green
-                            : Colors.red,
-                    fontSize: 14,
-                  ),
-                ),
-
-              // 2️⃣ 비밀번호 입력란
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 입력',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              // 3️⃣ 비밀번호 확인 입력란
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 확인',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              // 4️⃣ 이메일 입력란 + 인증번호 발송 버튼
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _emailController,
-                      decoration: InputDecoration(
-                        labelText: '이메일 입력',
-                        border: OutlineInputBorder(),
-                      ),
+                  const SizedBox(height: 40),
+                  // 에러 메시지 (로그인 실패 시 빨간색 텍스트)
+                  if (errorMessage != null)
+                    Text(
+                      errorMessage!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
+                  const SizedBox(height: 20),
+                  // "다음" 버튼
+                  SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      child: _isLoading
+                          ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : const Text(
+                              '다음',
+                              style: TextStyle(fontSize: 18),
+                            ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _sendVerificationCode,
-                    child: Text('인증번호 발송'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-
-              // 5️⃣ 인증번호 입력란 + 확인 버튼
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _verificationCodeController,
-                      decoration: InputDecoration(
-                        labelText: '인증번호 입력',
-                        border: OutlineInputBorder(),
-                      ),
+                  const SizedBox(height: 40),
+                  // 카카오톡 로그인 아이콘
+                  GestureDetector(
+                    onTap: () {
+                      // TODO: 카카오톡 로그인 로직 추가
+                    },
+                    child: Image.asset(
+                      'assets/icon/카카오공유아이콘.png',
+                      width: 60,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                  SizedBox(width: 10),
-                  ElevatedButton(onPressed: _verifyCode, child: Text('확인')),
                 ],
               ),
-              SizedBox(height: 20),
-
-              // 6️⃣ 다음 버튼
-              ElevatedButton(
-                onPressed: _nextStep,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                ),
-                child: Text('다음'),
-              ),
-            ],
+            ),
           ),
         ),
       ),

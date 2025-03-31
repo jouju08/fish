@@ -2,13 +2,14 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/login.dart';
+import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
+import 'package:thewater/services/user_api.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -75,6 +76,12 @@ class _TheWaterState extends State<TheWater> {
                       builder: (context) => const ModelScreen2(),
                     ),
                   );
+                },
+              ),
+              ListTile(
+                title: const Text("회원가입하러 가기"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
                 },
               ),
               ListTile(
@@ -153,6 +160,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   bool fishManagerInitialized = false;
   bool showMoreMenu = false;
 
+  String userNickname = "사용자";
+
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
   late List<Animation<double>> _fadeAnimations;
@@ -165,10 +174,14 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     {"label": "공유", "icon": "assets/icon/카카오공유아이콘.png"},
   ];
 
+  // 수족관에 추가된 물고기 imagePath를 저장하는 집합
+  Set<String> _selectedFish = {};
+
   @override
   void initState() {
     super.initState();
     _initMenuAnimation();
+    _getUserData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fishManager = FishSwimmingManager(
         tickerProvider: this,
@@ -184,16 +197,40 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     });
   }
 
+  void _getUserData() async {
+    try {
+      final userData = await UserApi().fetchUserInfo();
+      setState(() {
+        userNickname = userData['data']?['nickname'] ?? "사용자";
+      });
+      debugPrint("User nickname : $userNickname");
+    } catch (e) {
+      debugPrint("User data 가져오기 실패 : $e");
+    }
+  }
+
   void _openFishSelectModal() {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FishSelectModal(
-        onFishSelected: (imagePath) {
-          fishManager.addFallingFish(imagePath);
-        },
-      ),
+      builder:
+          (_) => FishSelectModal(
+            selectedFish: _selectedFish,
+            onToggleFish: (String path) {
+              setState(() {
+                if (_selectedFish.contains(path)) {
+                  // 이미 추가된 경우: 수족관에서 제거
+                  fishManager.removeFishWithFishingLine(path);
+                  _selectedFish.remove(path);
+                } else {
+                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
+                  fishManager.addFallingFish(path);
+                  _selectedFish.add(path);
+                }
+              });
+            },
+          ),
     );
   }
 
@@ -261,9 +298,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "조태공",
+                            userNickname,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -346,6 +383,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         // 물고기 애니메이션 위젯들
         if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
         if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
       ],
     );
   }
