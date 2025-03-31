@@ -322,7 +322,7 @@ class FishSwimmingManager {
               if (fish.isPaused)
                 Positioned(
                   bottom: 50,
-                  child: Center(child: _buildFishNameOverlay("물고기")),
+                  child: Center(child: _buildFishNameOverlay("간지렁~!")),
                 ),
             ],
           ),

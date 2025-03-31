@@ -2,13 +2,14 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/login.dart';
+import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
+import 'package:thewater/services/user_api.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -75,6 +76,12 @@ class _TheWaterState extends State<TheWater> {
                       builder: (context) => const ModelScreen2(),
                     ),
                   );
+                },
+              ),
+              ListTile(
+                title: const Text("회원가입하러 가기"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
                 },
               ),
               ListTile(
@@ -153,6 +160,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   bool fishManagerInitialized = false;
   bool showMoreMenu = false;
 
+  String userNickname = "사용자";
+
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
   late List<Animation<double>> _fadeAnimations;
@@ -172,6 +181,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initMenuAnimation();
+    _getUserData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fishManager = FishSwimmingManager(
         tickerProvider: this,
@@ -185,6 +195,18 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         fishManagerInitialized = true;
       });
     });
+  }
+
+  void _getUserData() async {
+    try {
+      final userData = await UserApi().fetchUserInfo();
+      setState(() {
+        userNickname = userData['data']?['nickname'] ?? "사용자";
+      });
+      debugPrint("User nickname : $userNickname");
+    } catch (e) {
+      debugPrint("User data 가져오기 실패 : $e");
+    }
   }
 
   void _openFishSelectModal() {
@@ -276,9 +298,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "조태공",
+                            userNickname,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
