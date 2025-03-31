@@ -9,6 +9,7 @@ import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
+import 'model_segment_screen.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -73,6 +74,17 @@ class _TheWaterState extends State<TheWater> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ModelScreen2(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text("모델 화면 3, 거리 계산"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ModelSegmentScreen(),
                     ),
                   );
                 },
