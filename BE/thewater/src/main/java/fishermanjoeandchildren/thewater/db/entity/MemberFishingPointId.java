@@ -13,6 +13,7 @@ public class MemberFishingPointId implements Serializable {
         this.fishingPointId = fishingPointId;
         this.memberId = memberId;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
