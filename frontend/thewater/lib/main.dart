@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
+import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
@@ -18,7 +20,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => FishProvider())],
+      providers: [
+        ChangeNotifierProvider(create: (_) => FishModel()),
+        ChangeNotifierProvider(create: (_) => UserModel()),
+      ],
       child: MaterialApp(
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(

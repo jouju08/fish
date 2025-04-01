@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:thewater/services/fish_api.dart';
-import 'package:thewater/services/token_manager.dart';
 
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
@@ -31,7 +30,6 @@ class CollectionPage extends StatefulWidget {
 
 class _CollectionPageState extends State<CollectionPage> {
   final FishApi fishApi = FishApi();
-  final TokenManager tokenManager = TokenManager();
   List<dynamic> fishCardList = [];
   @override
   void initState() {
@@ -40,6 +38,7 @@ class _CollectionPageState extends State<CollectionPage> {
   }
 
   Future<void> fetchFishCardList() async {
+    debugPrint("fetchFishCardList() 호출");
     try {
       fishCardList = await fishApi.getFishCardList();
       setState(() {}); // 상태 업데이트
@@ -61,11 +60,10 @@ class _CollectionPageState extends State<CollectionPage> {
         ),
         child: Column(
           children: [
-            Text(fishCardList.toString()),
             // 상단에 이번달 포획한 횟수 표시
             const SizedBox(height: 16),
-            const Text(
-              "이번달 포획한 횟수 : n마리",
+            Text(
+              "포획한 횟수 : ${fishCardList.length}마리",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -100,11 +98,19 @@ class _CollectionPageState extends State<CollectionPage> {
                           color: Colors.black87,
                         ),
                       ),
+                      Text(
+                        "길이: ${fishCard["realSize"].toString()}cm",
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                      ),
                     ],
                   );
                 },
               ),
             ),
+            Text(fishCardList.toString()),
           ],
         ),
       ),
