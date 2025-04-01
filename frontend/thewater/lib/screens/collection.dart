@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class CollectionPage extends StatelessWidget {
-  const CollectionPage({Key? key}) : super(key: key);
+  const CollectionPage({super.key});
 
   // 예시용 임시 데이터 (나중에 백엔드 연동 시 변경)
   static const List<Map<String, String>> fishData = [
@@ -66,10 +66,10 @@ class CollectionPage extends StatelessWidget {
                 padding: const EdgeInsets.all(16),
                 // 3열 배치
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,        // 한 줄에 3개
-                  crossAxisSpacing: 10,     // 가로 간격
-                  mainAxisSpacing: 10,      // 세로 간격
-                  childAspectRatio: 0.7,    // 카드(가로:세로) 비율 조정
+                  crossAxisCount: 3, // 한 줄에 3개
+                  crossAxisSpacing: 10, // 가로 간격
+                  mainAxisSpacing: 10, // 세로 간격
+                  childAspectRatio: 0.7, // 카드(가로:세로) 비율 조정
                 ),
                 itemCount: fishData.length,
                 itemBuilder: (context, index) {
@@ -79,10 +79,7 @@ class CollectionPage extends StatelessWidget {
                     children: [
                       Expanded(
                         // 물고기 이미지
-                        child: Image.asset(
-                          fish["image"]!,
-                          fit: BoxFit.contain,
-                        ),
+                        child: Image.asset(fish["image"]!, fit: BoxFit.contain),
                       ),
                       const SizedBox(height: 8),
                       // 물고기 이름

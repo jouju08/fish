@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class FishSelectModal extends StatelessWidget {
   final void Function(String) onFishSelected;
 
-  FishSelectModal({Key? key, required this.onFishSelected}) : super(key: key);
+  FishSelectModal({super.key, required this.onFishSelected});
 
   final List<String> fishImages = [
     'assets/image/samchi.png',

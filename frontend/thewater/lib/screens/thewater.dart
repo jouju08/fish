@@ -1,9 +1,4 @@
-import 'dart:async';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/login.dart';
-import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
@@ -62,7 +57,7 @@ class _TheWaterState extends State<TheWater> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ModelScreen(),
+                      builder: (context) => const ModelScreen2(),
                     ),
                   );
                 },
@@ -155,7 +150,7 @@ class FirstPage extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -201,11 +196,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FishSelectModal(
-        onFishSelected: (imagePath) {
-          fishManager.addFallingFish(imagePath);
-        },
-      ),
+      builder:
+          (_) => FishSelectModal(
+            onFishSelected: (imagePath) {
+              fishManager.addFallingFish(imagePath);
+            },
+          ),
     );
   }
 
