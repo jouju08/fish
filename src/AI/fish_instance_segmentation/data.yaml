@@ -1,0 +1,13 @@
+train: /home/yun/fish_length/dataset/train/images
+val: /home/yun/fish_length/dataset/valid/images
+test: /home/yun/fish_length/dataset/test/images
+
+nc: 2
+names: ['Cephalopod', 'fish']
+
+roboflow:
+  workspace: data-caasi
+  project: fish_detect-p0av0
+  version: 6
+  license: CC BY 4.0
+  url: https://universe.roboflow.com/data-caasi/fish_detect-p0av0/dataset/6
