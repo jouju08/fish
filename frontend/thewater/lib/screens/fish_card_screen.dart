@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:thewater/models/fish_card.dart';
 
 class FishCardScreen extends StatefulWidget {
+  const FishCardScreen({super.key});
+
   @override
   _FishCardScreenState createState() => _FishCardScreenState();
 }
@@ -11,7 +13,7 @@ class _FishCardScreenState extends State<FishCardScreen> {
 
   @override
   void initState() {
-    // super.initState();
+    super.initState();
     // fishCards = ApiService.fetchFishCards();
     fishCards = Future.value([
       FishCard(
