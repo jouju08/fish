@@ -1,18 +1,18 @@
 package fishermanjoeandchildren.thewater.data.dto;
 
 import fishermanjoeandchildren.thewater.db.entity.*;
-import fishermanjoeandchildren.thewater.db.repository.FishingPointRepository;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Date;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Schema(description = "물고기 카드 DTO")
 public class FishCardDto {
     private Long id;
     private String fishName;
