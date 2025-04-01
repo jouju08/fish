@@ -4,11 +4,13 @@ import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.FishCardDto;
 import fishermanjoeandchildren.thewater.db.entity.*;
 import fishermanjoeandchildren.thewater.db.repository.*;
+import fishermanjoeandchildren.thewater.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 
 import java.util.ArrayList;
@@ -24,6 +26,7 @@ public class FishCardService {
     private final FishRepository fishRepository;
     private final MemberRepository memberRepository;
     private final FishingPointRepository fishingPointRepository;
+    private final FileUtil fileUtil;
 
     public List<FishCardDto> getAllFishCards(Long memberId) {
         Member member = memberRepository.findById(memberId)
@@ -37,7 +40,7 @@ public class FishCardService {
     }
 
 
-    public FishCardDto addFishCard(FishCardDto fishCardDto, Long memberId) {
+    public FishCardDto addFishCard(FishCardDto fishCardDto, Long memberId, MultipartFile imageFile) {
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
             throw new NoSuchElementException("유저 정보가 없습니다.");
@@ -55,7 +58,10 @@ public class FishCardService {
 
         Aquarium aquarium=member.getAquarium();
 
+        String imagePath = fileUtil.saveImage(imageFile);
+
         FishCard fishcard = fishCardDto.toEntity(member,fishingPoint,fish,aquarium);
+        fishcard.setCardImg(imagePath);
         FishCard savedFishcard = fishCardRepository.save(fishcard);
 
         return FishCardDto.fromEntity(savedFishcard);

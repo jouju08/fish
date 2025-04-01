@@ -7,10 +7,15 @@ import fishermanjoeandchildren.thewater.data.dto.FishCardDto;
 import fishermanjoeandchildren.thewater.db.entity.FishCard;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.FishCardService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import org.springframework.http.MediaType;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -30,17 +35,22 @@ public class FishCardController {
     }
 
 
-    @PostMapping("/myfish/add")
-    public ApiResponse<FishCardDto> addFishCard(@RequestBody FishCardDto fishCardDto, HttpServletRequest request) {
+    @PostMapping(value = "/myfish/add", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ApiResponse<FishCardDto> addFishCard(
+            @RequestPart("fishCard") @Parameter(description = "fishCard JSON") FishCardDto fishCardDto,
+            @RequestPart("image") @Parameter(description = "이미지 파일") MultipartFile image,
+            HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
-        FishCardDto savedFishCardDto =fishCardService.addFishCard(fishCardDto,memberId);
+        FishCardDto saved = fishCardService.addFishCard(fishCardDto, memberId, image);
+
         return ApiResponse.<FishCardDto>builder()
-                .data(savedFishCardDto)
-                .message(ResponseMessage.SUCCESS)
+                .data(saved)
                 .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
                 .build();
     }
+
 
     @DeleteMapping("/myfish/delete/{fishcard_id}")
     public ApiResponse<?> deleteFishCard(@PathVariable("fishcard_id") Long fishCardId, HttpServletRequest request) {
