@@ -4,6 +4,7 @@ import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
+import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/thewater.dart';
 
 void main() async {
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
           '/': (context) => const TheWater(),
           '/camera': (context) => const CameraScreen(),
           '/login': (context) => const LoginScreen(),
+          '/signup': (context) => SignupScreen(),
           '/fish_cards': (context) => FishCardScreen(),
         },
         initialRoute: '/',
