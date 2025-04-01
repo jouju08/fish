@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/model_screen_2.dart';
@@ -23,8 +24,21 @@ class _TheWaterState extends State<TheWater> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<UserModel>(context, listen: false).fetchUserInfo();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+
+      // 사용자 정보 가져오고 기다림
+      await userModel.fetchUserInfo();
+
+      // user id 확인 후 수족관정보 가져오는거에 userid 대입해서 가져오는거
+      if (userModel.id != 0) {
+        await aquariumModel.fetchAquariumInfo(userModel.id);
+        debugPrint("수족관 정보 불러오기 성공, userId : ${userModel.id}");
+      } else {
+        debugPrint("사용자 id가 아직 0입니다.");
+      }
     });
   }
 
@@ -303,6 +317,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final aquariumModel = Provider.of<AquariumModel>(context);
     return Stack(
       children: [
         // 상단 UI: 유저 정보, 수족관 가치 등
@@ -326,39 +341,65 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         children: [
                           Text(
                             Provider.of<UserModel>(context).nickname,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           Text(
                             "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
-                            style: TextStyle(fontSize: 14),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ],
                       ),
                     ],
                   ),
                   Row(
-                    children: const [
-                      Text("today", style: TextStyle(fontSize: 12)),
-                      SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    children: [
+                      const Text("today", style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 5),
+                      Consumer<AquariumModel>(
+                        builder: (context, aquariumModel, child) {
+                          return Text(
+                            '${aquariumModel.visitCount}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.favorite_border, color: Colors.blue),
-                      SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      const SizedBox(width: 10),
+
+                      /// 좋아요 로직
+                      Consumer<AquariumModel>(
+                        builder: (context, aquariumModel, child) {
+                          return Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  aquariumModel.likedByMe
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color:
+                                      aquariumModel.likedByMe
+                                          ? Colors.blue
+                                          : Colors.grey,
+                                ),
+                                onPressed: () async {
+                                  await aquariumModel.toggleLikeAquarium();
+                                },
+                              ),
+                              Text(
+                                '${aquariumModel.likeCount}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
