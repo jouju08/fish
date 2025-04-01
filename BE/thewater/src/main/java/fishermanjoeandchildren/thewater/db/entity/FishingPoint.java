@@ -10,7 +10,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class FishingPoint {
+public class FishingPoint extends Common {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
