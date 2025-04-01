@@ -17,7 +17,7 @@ class UserModel extends ChangeNotifier {
   bool _isLoggedIn = false;
 
   // Getters
-  int get id => _id; //getter 함수로 _id를 가져옴
+  int get id => _id;
   String get loginId => _loginId;
   String get birthday => _birthday;
   String get nickname => _nickname;
@@ -25,26 +25,35 @@ class UserModel extends ChangeNotifier {
   String get loginType => _loginType;
   bool get isLoggedIn => _isLoggedIn;
 
-  void login(String loginId, String password) async {
+  Future<String?> get token async {
+    return await _storage.read(key: 'token');
+  }
+
+  /// 로그인
+  Future<void> login(String loginId, String password) async {
     final url = Uri.parse('$baseUrl/users/login');
     final headers = {'Content-Type': 'application/json'};
     final body = jsonEncode({"loginId": loginId, "password": password});
 
     final response = await http.post(url, headers: headers, body: body);
     final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
+
     await _storage.write(key: 'token', value: decodedBody['data']['token']);
-    fetchUserInfo();
+    await fetchUserInfo(); // fetchUserInfo가 완료될 때까지 기다림
 
     notifyListeners(); // 상태 변경을 알림
   }
 
-  void fetchUserInfo() async {
+  /// 사용자 정보 가져오기
+  Future<void> fetchUserInfo() async {
     final token = await _storage.read(key: 'token');
-    debugPrint("Token: $token"); //토큰 값 확인
+    debugPrint("fetchUserInfo 의 토큰 확인: $token");
     final url = Uri.parse('$baseUrl/users/me');
     final headers = {'Authorization': 'Bearer $token'};
+
     final response = await http.get(url, headers: headers);
     debugPrint("Response status: ${response.statusCode}");
+
     if (response.statusCode == 200) {
       final body = jsonDecode(utf8.decode(response.bodyBytes));
       debugPrint("200 OK: $body");
@@ -55,12 +64,13 @@ class UserModel extends ChangeNotifier {
       _email = body['data']['email'];
       _birthday = body['data']['birthday'];
       _isLoggedIn = true;
-      return;
+      notifyListeners();
     } else {
       throw Exception('fetchuser 오류: ${response.statusCode}');
     }
   }
 
+  /// 로그아웃
   void logout() {
     debugPrint("UserModel().logout() 함수 실행");
     _storage.delete(key: 'token');
@@ -72,6 +82,6 @@ class UserModel extends ChangeNotifier {
     _email = '';
     _isLoggedIn = false;
 
-    notifyListeners(); // 상태 변경을 알림
+    notifyListeners();
   }
 }
