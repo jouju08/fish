@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:thewater/services/token_manager.dart';
 
 const String baseUrl = 'http://j12c201.p.ssafy.io:8081';
 
 class FishApi {
+  final _storage = const FlutterSecureStorage();
   Future<List<dynamic>> getFishCardList() async {
     final url = Uri.parse('$baseUrl/api/collection/myfish/all');
-    final token = await TokenManager().getToken();
+    final token = await _storage.read(key: 'token');
     debugPrint("Token: $token"); // 토큰 값 확인
     final headers = {'Authorization': 'Bearer $token'};
     final response = await http.get(url, headers: headers);

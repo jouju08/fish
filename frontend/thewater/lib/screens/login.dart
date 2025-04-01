@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:thewater/services/user_api.dart';
+import 'package:provider/provider.dart';
+import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/signup.dart';
-import 'package:thewater/services/token_manager.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -14,68 +14,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _loginIdController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   String? errorMessage;
-  bool _isLoading = false;
-  final TokenManager _tokenManager = TokenManager();
-
-  void _login() async {
-    setState(() {
-      errorMessage = null;
-      _isLoading = true;
-    });
-
-    final loginId = _loginIdController.text.trim();
-    final password = _passwordController.text;
-
-    try {
-      final response = await UserApi().login(loginId, password);
-      // 응답 예시:
-      // {
-      //   "status": "SU",
-      //   "message": "Success.",
-      //   "data": {
-      //     "success": true,
-      //     "message": "로그인 성공",
-      //     "token": "eyJhbGciOiJIUzUxMiJ9..."
-      //   }
-      // }
-
-      if (response['status'] == 'SU' &&
-          response['data'] != null &&
-          response['data']['success'] == true) {
-        // 로그인 성공: token 저장
-        final token = response['data']['token'];
-        debugPrint("로그인 성공 데이터: ${response['data']}");
-        await _tokenManager.saveToken(token);
-        // 사용자 데이터 가져오기
-        await _getUserData();
-        // 메인 페이지('/')로 이동
-        Navigator.pushReplacementNamed(context, '/');
-      } else {
-        setState(() {
-          errorMessage = "아이디 또는 비밀번호가 잘못되었습니다.";
-        });
-      }
-    } catch (e) {
-      setState(() {
-        errorMessage = "로그인 중 오류가 발생했습니다.";
-        debugPrint("로그인 실패: $e");
-      });
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _getUserData() async {
-    debugPrint("_getUserData() 함수 실행!!!!");
-    try {
-      final userData = await UserApi().fetchUserInfo();
-      debugPrint("User data: $userData");
-    } catch (e) {
-      debugPrint("User data 가져오기 실패: $e");
-    }
-  }
+  final bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -145,7 +84,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: double.infinity,
                     height: 50,
                     child: ElevatedButton(
-                      onPressed: _isLoading ? null : _login,
+                      // onPressed: _isLoading ? null : _login,
+                      onPressed:
+                          _isLoading
+                              ? null
+                              : () {
+                                Provider.of<UserModel>(
+                                  context,
+                                  listen: false,
+                                ).login(
+                                  _loginIdController.text,
+                                  _passwordController.text,
+                                );
+                                Navigator.pushReplacementNamed(context, '/');
+                              },
                       child:
                           _isLoading
                               ? const CircularProgressIndicator(
