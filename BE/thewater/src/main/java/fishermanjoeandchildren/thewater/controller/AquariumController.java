@@ -27,6 +27,7 @@ public class AquariumController {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
         AquariumDto aquariumDto = aquariumService.getAquarium(aquariumId, memberId);
+        System.out.println("\nMemberId: "+ memberId + "\n");
 
         return ApiResponse.builder()
                 .status(ResponseStatus.SUCCESS)
@@ -35,6 +36,19 @@ public class AquariumController {
                 .build();
     }
 
+//    @SecurityRequirement(name="BearerAuth")
+//    @GetMapping("/info/{aquarium_id}")
+//    public ApiResponse<?> getAquariumInfo(@PathVariable("aquarium_id") Long aquariumId, HttpServletRequest request){
+//        String token = jwtUtil.resolveToken(request);
+//        Long memberId = jwtUtil.extractUserId(token);
+//        AquariumDto aquariumDto = aquariumService.getAquarium(aquariumId, memberId);
+//
+//        return ApiResponse.builder()
+//                .status(ResponseStatus.SUCCESS)
+//                .message(ResponseMessage.SUCCESS)
+//                .data(aquariumDto)
+//                .build();
+//    }
 
     @PostMapping("/visit/{aquarium_id}")
     public ApiResponse<?> updateAquariumVisitors(@PathVariable("aquarium_id") Long aquariumId){
@@ -129,6 +143,41 @@ public class AquariumController {
         }
     }
 
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("visible/{aquarium_id}/{fish_id}")
+    public ApiResponse<?> addAquariumFish(@PathVariable("aquarium_id") Long aquariumId, @PathVariable("fish_id") Long fishId, HttpServletRequest request) {
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        String status = aquariumService.changeAquariumFishVisible(aquariumId, memberId, fishId);
+
+        switch(status){
+            case ResponseStatus.SUCCESS:
+                return ApiResponse.builder()
+                        .status(status)
+                        .message(ResponseMessage.SUCCESS)
+                        .data("어항에 물고기 등록이 완료되었습니다..")
+                        .build();
+            case ResponseStatus.NOT_FOUND:
+                return ApiResponse.builder()
+                        .status(status)
+                        .message(ResponseMessage.NOT_FOUND)
+                        .data("어항 또는 물고기 정보가 없습니다.")
+                        .build();
+            case ResponseStatus.AUTHROIZATION_FAILED:
+                return ApiResponse.builder()
+                        .status(status)
+                        .message(ResponseMessage.AUTHROIZATION_FAILED)
+                        .data("어항 또는 물고기 접근 권한이 없습니다.")
+                        .build();
+            default:
+                return ApiResponse.builder()
+                        .status(status)
+                        .message(ResponseMessage.SERVER_ERROR)
+                        .data("어항에 물고기 등록중 오류가 발생했습니다.")
+                        .build();
+        }
+    }
 
 
 

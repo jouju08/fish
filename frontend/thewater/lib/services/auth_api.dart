@@ -73,8 +73,8 @@ class AuthApi {
       "password": password,
       "email": email,
       "nickname": nickname,
-      "birthDay": birthDay,
-      "loginType": "email",
+      "birthday": birthDay,
+      "loginType": "E",
       "has_deleted": false,
     });
 

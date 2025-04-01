@@ -38,6 +38,10 @@ public class FishCard extends Common{
     @Column(name="real_size")
     private Double realSize;
 
+    //날씨
+    @Column
+    private Integer sky;
+
     //기온
     @Column
     private Double temperature;
@@ -59,6 +63,8 @@ public class FishCard extends Common{
     @Column(name="card_img", nullable = false)
     private String cardImg;
 
-
+    public void changeFishVisible(){
+        hasVisible = !hasVisible;
+    }
 
 }

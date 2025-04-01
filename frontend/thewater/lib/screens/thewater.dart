@@ -1,13 +1,10 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/login.dart';
-import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
+import 'package:thewater/screens/fish_modal.dart';
+import 'fish_swimming.dart';
+import 'package:thewater/services/user_api.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -16,25 +13,8 @@ class TheWater extends StatefulWidget {
   State<TheWater> createState() => _TheWaterState();
 }
 
-class SwimmingFish {
-  final String imagePath;
-  double x;
-  double y;
-  bool moveRight;
-  double speed;
-  double angle;
-
-  SwimmingFish({
-    required this.imagePath,
-    required this.x,
-    required this.y,
-    this.moveRight = true,
-    this.speed = 1.5,
-    this.angle = 0,
-  });
-}
-
 class _TheWaterState extends State<TheWater> {
+  final UserApi userApi = UserApi();
   int bottomNavIndex = 0;
   int pageIndex = 0;
 
@@ -46,7 +26,6 @@ class _TheWaterState extends State<TheWater> {
   }
 
   void showCollectionPage() {
-    // 도감 탭
     setState(() {
       pageIndex = 2;
     });
@@ -79,7 +58,7 @@ class _TheWaterState extends State<TheWater> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ModelScreen(),
+                      builder: (context) => const ModelScreen2(),
                     ),
                   );
                 },
@@ -96,9 +75,21 @@ class _TheWaterState extends State<TheWater> {
                 },
               ),
               ListTile(
-                title: Text("로그인하러 가기"),
+                title: const Text("회원가입하러 가기"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/signup');
+                },
+              ),
+              ListTile(
+                title: const Text("로그인하러 가기"),
                 onTap: () {
                   Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                title: const Text("로그아웃 하기"),
+                onTap: () {
+                  userApi.logout();
                 },
               ),
             ],
@@ -153,34 +144,25 @@ class FirstPage extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ),
-          child: const mainPage(),
+          child: const MainPage(),
         ),
       ),
     );
   }
 }
 
-class mainPage extends StatefulWidget {
-  const mainPage({Key? key}) : super(key: key);
+class MainPage extends StatefulWidget {
+  const MainPage({super.key});
   @override
-  _mainPageState createState() => _mainPageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class FallingFish {
-  final String imagePath;
-  double top;
-  bool landed;
-
-  FallingFish({required this.imagePath, this.top = -100, this.landed = false});
-}
-
-class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
-  // --- 물고기 이동/정지 관련 ---
-  List<SwimmingFish> swimmingFishes = [];
-  late Timer _timer;
-  double time = 0.0;
-
+class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
+  late FishSwimmingManager fishManager;
+  bool fishManagerInitialized = false;
   bool showMoreMenu = false;
+
+  String userNickname = "사용자";
 
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
@@ -194,33 +176,39 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     {"label": "공유", "icon": "assets/icon/카카오공유아이콘.png"},
   ];
 
-  List<FallingFish> fallingFishes = [];
+  // 수족관에 추가된 물고기 imagePath를 저장하는 집합
+  Set<String> _selectedFish = {};
 
   @override
   void initState() {
     super.initState();
     _initMenuAnimation();
-    _startFishMovement();
-  }
-
-  void _startFishMovement() {
-    _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+    _getUserData();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fishManager = FishSwimmingManager(
+        tickerProvider: this,
+        context: context,
+        update: () {
+          if (mounted) setState(() {});
+        },
+      );
+      fishManager.startFishMovement();
       setState(() {
-        final screenWidth = MediaQuery.of(context).size.width;
-        time += 0.05;
-
-        for (var fish in swimmingFishes) {
-          // 테스트코드 확인후 지우길바람
-          fish.y += sin(time) * 0.5;
-          fish.x += fish.moveRight ? fish.speed : -fish.speed;
-          fish.angle = fish.moveRight ? 0 : 3.14159;
-
-          if (fish.x > screenWidth - 80 || fish.x < 10) {
-            fish.moveRight = !fish.moveRight;
-          }
-        }
+        fishManagerInitialized = true;
       });
     });
+  }
+
+  void _getUserData() async {
+    try {
+      final userData = await UserApi().fetchUserInfo();
+      setState(() {
+        userNickname = userData['data']?['nickname'] ?? "사용자";
+      });
+      debugPrint("User nickname : $userNickname");
+    } catch (e) {
+      debugPrint("User data 가져오기 실패 : $e");
+    }
   }
 
   void _openFishSelectModal() {
@@ -228,68 +216,24 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FishSelectModal(onFishSelected: _addFallingFish),
+      builder:
+          (_) => FishSelectModal(
+            selectedFish: _selectedFish,
+            onToggleFish: (String path) {
+              setState(() {
+                if (_selectedFish.contains(path)) {
+                  // 이미 추가된 경우: 수족관에서 제거
+                  fishManager.removeFishWithFishingLine(path);
+                  _selectedFish.remove(path);
+                } else {
+                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
+                  fishManager.addFallingFish(path);
+                  _selectedFish.add(path);
+                }
+              });
+            },
+          ),
     );
-  }
-
-  void _addFallingFish(String imagePath) {
-    final newFish = FallingFish(imagePath: imagePath);
-    fallingFishes.add(newFish);
-    _animateFishFall(newFish);
-  }
-
-  void _animateFishFall(FallingFish fish) {
-    const double targetY = 400;
-    const double baseSpeed = 20;
-    Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      setState(() {
-        double progress = (fish.top / targetY).clamp(0.0, 1.0);
-        double currentSpeed = baseSpeed * (1 - progress); // 감속
-        if (fish.top <= targetY - 2) {
-          // 떨어지는 값 맞춤 수영로직 연결 조건
-          fish.top += currentSpeed;
-        } else {
-          fish.landed = true;
-          timer.cancel();
-
-          final random = Random();
-          swimmingFishes.add(
-            SwimmingFish(
-              imagePath: fish.imagePath,
-              x: MediaQuery.of(context).size.width / 2 - 40,
-              y: fish.top,
-              moveRight: random.nextBool(),
-              speed: 1.2 + random.nextDouble(),
-            ),
-          );
-          fallingFishes.remove(fish);
-        }
-      });
-    });
-  }
-
-  List<Widget> _buildSwimmingFishes() {
-    return swimmingFishes.map((fish) {
-      return Positioned(
-        top: fish.y,
-        left: fish.x,
-        child: Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.rotationY(fish.angle),
-          child: Image.asset(fish.imagePath, width: 80),
-        ),
-      );
-    }).toList();
-  }
-
-  List<Widget> _buildFallingFishes() {
-    return fallingFishes.map((fish) {
-      return Positioned(
-        top: fish.top,
-        left: MediaQuery.of(context).size.width / 2 - 40,
-        child: Image.asset(fish.imagePath, width: 80),
-      );
-    }).toList();
   }
 
   void _initMenuAnimation() {
@@ -329,7 +273,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _timer.cancel();
+    fishManager.dispose();
     _menuController.dispose();
     super.dispose();
   }
@@ -338,9 +282,9 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // 상단 UI: 유저 정보, 수족관 가치 등
         Column(
           children: [
-            // 유저 정보 및 상단 UI
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
@@ -356,9 +300,9 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "조태공",
+                            userNickname,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
@@ -396,8 +340,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
               ),
             ),
             const Divider(color: Colors.grey),
-
-            // 수족관 가치 + "더 많은.."
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
@@ -429,11 +371,8 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                 ],
               ),
             ),
-
-
           ],
         ),
-
         // 펼쳐지는 메뉴
         Positioned(
           top: 120,
@@ -443,13 +382,13 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             child: _buildStaggeredMenu(),
           ),
         ),
-        ..._buildFallingFishes(),
-        ..._buildSwimmingFishes(),
+        // 물고기 애니메이션 위젯들
+        if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
       ],
     );
   }
-
-
 
   Widget _buildStaggeredMenu() {
     return Column(
@@ -500,72 +439,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class FishSelectModal extends StatelessWidget {
-  final void Function(String) onFishSelected;
-
-  FishSelectModal({Key? key, required this.onFishSelected}) : super(key: key);
-
-  final List<String> fishImages = [
-    'assets/image/samchi.png',
-    'assets/image/moona.png',
-    'assets/image/gapojinga.png',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 👉 핸들바
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Colors.grey[400],
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(height: 12), // 핸들과 콘텐츠 사이 간격
-          // 👉 물고기 리스트
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 20,
-            runSpacing: 10,
-            children:
-                fishImages.map((path) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      onFishSelected(path);
-                    },
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 225, 225, 225),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Image.asset(path),
-                    ),
-                  );
-                }).toList(),
-          ),
-        ],
       ),
     );
   }
