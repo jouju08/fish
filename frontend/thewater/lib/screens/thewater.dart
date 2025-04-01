@@ -1,9 +1,4 @@
-import 'dart:async';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/signup.dart';
-import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
@@ -19,6 +14,7 @@ class TheWater extends StatefulWidget {
 }
 
 class _TheWaterState extends State<TheWater> {
+  final UserApi userApi = UserApi();
   int bottomNavIndex = 0;
   int pageIndex = 0;
 
@@ -62,7 +58,7 @@ class _TheWaterState extends State<TheWater> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const ModelScreen(),
+                      builder: (context) => const ModelScreen2(),
                     ),
                   );
                 },
@@ -88,6 +84,12 @@ class _TheWaterState extends State<TheWater> {
                 title: const Text("로그인하러 가기"),
                 onTap: () {
                   Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                title: const Text("로그아웃 하기"),
+                onTap: () {
+                  userApi.logout();
                 },
               ),
             ],
@@ -150,7 +152,7 @@ class FirstPage extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({Key? key}) : super(key: key);
+  const MainPage({super.key});
   @override
   _MainPageState createState() => _MainPageState();
 }
