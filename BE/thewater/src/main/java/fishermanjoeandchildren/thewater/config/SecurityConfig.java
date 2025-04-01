@@ -30,7 +30,7 @@ public class SecurityConfig {
                                 "/api/users/check-email", "/api/users/check-nickname",
                                 "/api/users/request-verification", "/api/users/verify-code").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
-                        .requestMatchers("/api/weather/**").permitAll()
+                        .requestMatchers("/api/env-info/**").permitAll()
                         // Aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
 
