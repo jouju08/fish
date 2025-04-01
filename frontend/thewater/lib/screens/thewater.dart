@@ -14,6 +14,7 @@ class TheWater extends StatefulWidget {
 }
 
 class _TheWaterState extends State<TheWater> {
+  final UserApi userApi = UserApi();
   int bottomNavIndex = 0;
   int pageIndex = 0;
 
@@ -83,6 +84,12 @@ class _TheWaterState extends State<TheWater> {
                 title: const Text("로그인하러 가기"),
                 onTap: () {
                   Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                title: const Text("로그아웃 하기"),
+                onTap: () {
+                  userApi.logout();
                 },
               ),
             ],
