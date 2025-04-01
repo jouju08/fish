@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/signup.dart';
-import 'package:thewater/screens/model_screen.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';

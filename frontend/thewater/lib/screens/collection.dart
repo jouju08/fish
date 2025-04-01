@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:thewater/services/fish_api.dart';
+import 'package:thewater/services/token_manager.dart';
 
-class CollectionPage extends StatelessWidget {
+class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
 
   // 예시용 임시 데이터 (나중에 백엔드 연동 시 변경)
@@ -24,21 +26,32 @@ class CollectionPage extends StatelessWidget {
   ];
 
   @override
+  State<CollectionPage> createState() => _CollectionPageState();
+}
+
+class _CollectionPageState extends State<CollectionPage> {
+  final FishApi fishApi = FishApi();
+  final TokenManager tokenManager = TokenManager();
+  List<dynamic> fishCardList = [];
+  @override
+  void initState() {
+    super.initState();
+    fetchFishCardList(); // 화면이 로드될 때 물고기 카드 목록을 가져옴
+  }
+
+  Future<void> fetchFishCardList() async {
+    try {
+      fishCardList = await fishApi.getFishCardList();
+      setState(() {}); // 상태 업데이트
+    } catch (e) {
+      debugPrint("Error fetching fish card list: $e");
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // 상단 AppBar
-      appBar: AppBar(
-        // leading: IconButton(
-        //   icon: const Icon(Icons.arrow_back),
-        //   onPressed: () {
-        //     Navigator.pushNamed(context,'/');
-        //   },
-        //   ),
-        title: const Text("도감"),
-        centerTitle: true,
-      ),
-
-      // 배경 설정
+      appBar: AppBar(title: const Text("도감"), centerTitle: true),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -48,6 +61,7 @@ class CollectionPage extends StatelessWidget {
         ),
         child: Column(
           children: [
+            Text(fishCardList.toString()),
             // 상단에 이번달 포획한 횟수 표시
             const SizedBox(height: 16),
             const Text(
@@ -71,20 +85,16 @@ class CollectionPage extends StatelessWidget {
                   mainAxisSpacing: 10, // 세로 간격
                   childAspectRatio: 0.7, // 카드(가로:세로) 비율 조정
                 ),
-                itemCount: fishData.length,
+                itemCount: fishCardList.length,
                 itemBuilder: (context, index) {
-                  final fish = fishData[index];
+                  final fishCard = fishCardList[index];
                   return Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        // 물고기 이미지
-                        child: Image.asset(fish["image"]!, fit: BoxFit.contain),
-                      ),
                       const SizedBox(height: 8),
                       // 물고기 이름
                       Text(
-                        fish["name"]!,
+                        fishCard["fishName"]!,
                         style: const TextStyle(
                           fontSize: 14,
                           color: Colors.black87,
