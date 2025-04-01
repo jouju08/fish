@@ -25,8 +25,7 @@ class _FishSelectModalState extends State<FishSelectModal> {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width,
-      padding:
-          const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
+      padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -49,31 +48,33 @@ class _FishSelectModalState extends State<FishSelectModal> {
             alignment: WrapAlignment.center,
             spacing: 20,
             runSpacing: 10,
-            children: fishImages.map((path) {
-              bool isSelected = widget.selectedFish.contains(path);
-              return GestureDetector(
-                onTap: () {
-                  widget.onToggleFish(path);
-                  // 물고기를 탭하면 모달을 닫아서 메인 화면이 보이도록 함
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isSelected
-                          ? Colors.blue
-                          : const Color.fromARGB(255, 225, 225, 225),
-                      width: 2,
+            children:
+                fishImages.map((path) {
+                  bool isSelected = widget.selectedFish.contains(path);
+                  return GestureDetector(
+                    onTap: () {
+                      widget.onToggleFish(path);
+                      // 물고기를 탭하면 모달을 닫아서 메인 화면이 보이도록 함
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color:
+                              isSelected
+                                  ? Colors.blue
+                                  : const Color.fromARGB(255, 225, 225, 225),
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset(path),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset(path),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
         ],
       ),

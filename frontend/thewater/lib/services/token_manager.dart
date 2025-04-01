@@ -15,4 +15,9 @@ class TokenManager {
   Future<void> deleteToken() async {
     await _storage.delete(key: _tokenKey);
   }
+
+  Future<bool> hasToken() async {
+    final token = await getToken();
+    return token != null;
+  }
 }

@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
+import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
-import 'package:thewater/screens/model_screen.dart';
-import 'screens/camera_screen.dart';
 import 'package:thewater/screens/thewater.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -31,18 +30,17 @@ class MyApp extends StatelessWidget {
           useMaterial3: true, // 최신 Material3 스타일 적용
           primarySwatch: Colors.blue,
           fontFamily: 'GrandifloraOne-Regular',
-          floatingActionButtonTheme: FloatingActionButtonThemeData(
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Colors.blue, // FAB 색상
           ),
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => TheWater(),
-          '/camera': (context) => CameraScreen(),
-          '/model': (context) => ModelScreen(),
+          '/': (context) => const TheWater(),
+          '/camera': (context) => const CameraScreen(),
+          '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),
           '/fish_cards': (context) => FishCardScreen(),
-          '/login': (context) => LoginScreen(),
         },
         initialRoute: '/',
       ),

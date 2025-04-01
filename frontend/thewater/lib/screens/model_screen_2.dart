@@ -1,10 +1,8 @@
+import 'package:flutter/material.dart';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class ModelScreen2 extends StatefulWidget {
@@ -60,27 +58,6 @@ class _ModelScreen2State extends State<ModelScreen2> {
         interpolation: img.Interpolation.linear,
       );
 
-      // 평균값 계산을 위한 변수
-      double sumR = 0, sumG = 0, sumB = 0;
-      int totalPixels = 224 * 224;
-
-      // 모든 픽셀을 순회하면서 평균값 계산
-      for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-          int pixel = resizedImage.getPixel(x, y);
-          sumR += img.getRed(pixel);
-          sumG += img.getGreen(pixel);
-          sumB += img.getBlue(pixel);
-        }
-      }
-
-      // 각 채널별 평균값
-      double meanR = sumR / totalPixels;
-      double meanG = sumG / totalPixels;
-      double meanB = sumB / totalPixels;
-
-      print("meanR: $meanR, meanG: $meanG, meanB: $meanB");
-
       // 224x224x3 형태의 배열 생성
       List<List<List<double>>> imageArray = List.generate(
         224, // 높이
@@ -113,10 +90,10 @@ class _ModelScreen2State extends State<ModelScreen2> {
     List<List<List<double>>> imageArray = await convertFileToArray(file);
     List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
     interpreter.run([imageArray], output);
-    List<double> model_result = output[0];
-    print(model_result);
-    int result_index = model_result.indexOf(
-      model_result.reduce((a, b) => a > b ? a : b),
+    List<double> modelResult = output[0];
+    print(modelResult);
+    int resultIndex = modelResult.indexOf(
+      modelResult.reduce((a, b) => a > b ? a : b),
     );
     List fishList = [
       '감성돔',
@@ -147,7 +124,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
       '농어',
     ];
     setState(() {
-      result = fishList[result_index]!;
+      result = fishList[resultIndex]!;
     });
   }
 
@@ -162,7 +139,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
             children: <Widget>[
               // 이미지를 선택했다면 해당 이미지를 화면에 표시
               _image == null
-                  ? SizedBox(height: 15,)
+                  ? SizedBox(height: 15)
                   : Image.file(_image!), // 선택한 이미지를 화면에 표시
 
               SizedBox(height: 20),
@@ -177,21 +154,22 @@ class _ModelScreen2State extends State<ModelScreen2> {
                 onPressed: _pickImageFromCamera,
                 child: Text('카메라로 사진 찍기'),
               ),
-              _image == null ? SizedBox(height: 15,):
-              Text.rich(
-                TextSpan(
-                  children: [
+              _image == null
+                  ? SizedBox(height: 15)
+                  : Text.rich(
                     TextSpan(
-                      text: result, // 기본 텍스트
-                      style: TextStyle(color: Colors.blue, fontSize: 36),
+                      children: [
+                        TextSpan(
+                          text: result, // 기본 텍스트
+                          style: TextStyle(color: Colors.blue, fontSize: 36),
+                        ),
+                        TextSpan(
+                          text: '를 잡았습니다 !!', // 기본 텍스트
+                          style: TextStyle(color: Colors.black, fontSize: 36),
+                        ),
+                      ],
                     ),
-                    TextSpan(
-                      text: '를 잡았습니다 !!', // 기본 텍스트
-                      style: TextStyle(color: Colors.black, fontSize: 36),
-                    ),
-                  ],
-                ),
-              ),
+                  ),
             ],
           ),
         ),

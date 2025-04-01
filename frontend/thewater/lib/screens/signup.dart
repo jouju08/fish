@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:thewater/services/auth_api.dart';
 import 'dart:math';
 
-
 String generateNickname(String prefix) {
-      final random = Random();
-      final randomNumber = random.nextInt(9000) + 1000; // 1000~9999
-      return '$prefix\_$randomNumber';
+  final random = Random();
+  final randomNumber = random.nextInt(9000) + 1000; // 1000~9999
+  return '$prefix\_$randomNumber';
 }
-
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -117,8 +114,6 @@ class _signupScreenState extends State<SignupScreen> {
       ).showSnackBar(SnackBar(content: Text('비밀번호가 일치하지 않습니다')));
       return;
     }
-
-    
 
     final isSuccess = await AuthApi().signUp(
       loginId: signupId,
