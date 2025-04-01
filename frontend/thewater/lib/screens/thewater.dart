@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
-import 'package:thewater/services/user_api.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -14,9 +16,16 @@ class TheWater extends StatefulWidget {
 }
 
 class _TheWaterState extends State<TheWater> {
-  final UserApi userApi = UserApi();
   int bottomNavIndex = 0;
   int pageIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<UserModel>(context, listen: false).fetchUserInfo();
+    });
+  }
 
   void onBottomNavTap(int newIndex) {
     setState(() {
@@ -50,46 +59,36 @@ class _TheWaterState extends State<TheWater> {
             children: [
               const DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blue),
-                child: Text("Header"),
+                child: Text("그물"),
               ),
               ListTile(
-                title: const Text("물고기 판별하러 가기"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen2(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text("모델 화면 2"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen2(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: const Text("회원가입하러 가기"),
+                title: const Text("회원가입"),
                 onTap: () {
                   Navigator.pushNamed(context, '/signup');
                 },
               ),
               ListTile(
-                title: const Text("로그인하러 가기"),
+                title: const Text("로그인"),
                 onTap: () {
                   Navigator.pushNamed(context, '/login');
                 },
               ),
               ListTile(
-                title: const Text("로그아웃 하기"),
+                title: const Text("로그아웃"),
                 onTap: () {
-                  userApi.logout();
+                  Provider.of<UserModel>(context, listen: false).logout();
+                  Navigator.pushNamed(context, '/');
+                },
+              ),
+              ListTile(
+                title: const Text("물고기 판별"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ModelScreen2(),
+                    ),
+                  );
                 },
               ),
             ],
@@ -183,7 +182,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initMenuAnimation();
-    _getUserData();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       fishManager = FishSwimmingManager(
         tickerProvider: this,
@@ -199,17 +197,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     });
   }
 
-  void _getUserData() async {
-    try {
-      final userData = await UserApi().fetchUserInfo();
-      setState(() {
-        userNickname = userData['data']?['nickname'] ?? "사용자";
-      });
-      debugPrint("User nickname : $userNickname");
-    } catch (e) {
-      debugPrint("User data 가져오기 실패 : $e");
-    }
-  }
+  //Provider.of<CounterProvider>(context).count
 
   void _openFishSelectModal() {
     showModalBottomSheet(
@@ -302,13 +290,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            userNickname,
+                            Provider.of<UserModel>(context).nickname,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text("이번달 누적 : n마리", style: TextStyle(fontSize: 14)),
+                          Text(
+                            "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
+                            style: TextStyle(fontSize: 14),
+                          ),
                         ],
                       ),
                     ],
