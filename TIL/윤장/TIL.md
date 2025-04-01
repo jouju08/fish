@@ -483,3 +483,144 @@ TFLite 모델만을 활용하여 **물고기 윤곽 마스크 재구성 및 자�
 - TFLite만으로 **물고기 윤곽 마스크 복원 및 길이 측정 자동화 성공!**
 ![fish_length_from_tflite_proto.png](./fish_length_from_tflite_proto.png)
 ![mask_heatmap_from_tflite_proto.png](./mask_heatmap_from_tflite_proto.png)
+
+# 📝 TIL (Today I Learned) - 2025-03-31, 2025-04-01
+
+🐟 YOLOv8 Instance Segmentation 기반 물고기 길이 측정 모델 변환 및 디버깅 전 과정 정리
+
+✅ 1. 시작: PyTorch에서 완벽하게 동작하던 YOLOv8 Segment 모델
+best.pt 모델은 Roboflow에서 학습된 YOLOv8 instance segmentation 모델이었고, PyTorch 추론에서는 완벽하게 작동
+
+물고기 윤곽을 감지하고, 그 윤곽선의 가장 먼 두 점을 기준으로 거리(px)를 계산하는 것도 매우 정밀하게 수행
+
+❗️2. ONNX 변환: Confidence가 0.0001 수준
+
+문제
+ONNX export 후 추론해보니 confidence가 0.00001 수준까지 떨어짐
+
+원인
+Segment.forward()에서 export=True일 때 단일 scale (x[0])만 사용하고 있었음.
+YOLOv8은 기본적으로 3개의 feature scale에서 예측을 수행하므로 정보가 손실되고 있었음.
+
+해결
+모든 scale (x[0], x[1], x[2])에서 cls와 mask를 추출해 concat하도록 forward()를 수정.
+export 모드에서도 sigmoid가 적용되지 않아 raw logits가 그대로 나가던 것을 수동으로 적용.
+
+❗️3. Mask Vector 차원 불일치
+
+문제
+proto shape은 [32, H, W]인데, mask_vector는 [28]로 나와 곱셈이 불가능.
+
+원인
+self.nm을 32로 설정했지만, 모델 내부 구조상 mask_vector가 28차원으로 설정되어 export됨.
+
+해결
+
+```python
+if mask_flat.shape[-1] < self.nm:
+    pad_size = self.nm - mask_flat.shape[-1]
+    pad = torch.zeros(mask_flat.shape[0], mask_flat.shape[1], pad_size, device=mask_flat.device)
+    mask_flat = torch.cat([mask_flat, pad], dim=2)
+→ 부족한 차원을 padding하여 강제로 nm 유지.
+```
+
+❗️4. 채널 mismatch: ONNX export 자체가 실패
+
+문제
+ONNX export 도중 오류 발생.
+C2f, Conv, Segment 간의 channel 수가 맞지 않음.
+
+원인
+.yaml 설정의 C2f 구조와 best.pt가 서로 다르게 설정되어 있었음.
+특히 Segment 입력 채널 [64, 128, 256]과 구조가 안 맞는 경우가 많았음.
+
+해결
+yaml 구조를 best.pt에 맞게 재정렬.
+Segment 입력 채널을 실제 pt 모델 구조와 정확히 맞춤.
+
+❗️5. proto 해상도 mismatch
+
+문제
+ONNX export 후 proto가 너무 작아져서 마스크가 복원되지 않음.
+
+해결
+proto를 cls[0]의 해상도에 맞춰 F.interpolate로 강제 업샘플링:
+
+```python
+proto_out = F.interpolate(proto_out, size=(H_cls, W_cls), mode='bilinear', align_corners=False)
+```
+
+❗️6. class 출력이 항상 “cephalopod”
+
+문제
+모든 클래스가 class_id = 1로 나옴 → "cephalopod" 고정.
+
+원인
+클래스 순서 문제 혹은 sigmoid 누락으로 인한 logit 오해.
+
+해결
+sigmoid(cls)를 수동 적용.
+class_id = np.argmax(sigmoid(cls), axis=1)
+class list를 [“fish”, “cephalopod”]로 수동 설정 후 mapping.
+
+❗️7. TensorFlow 변환 시 구조 붕괴
+
+문제
+onnx2tf 변환 시 output 순서가 꼬이거나 출력이 통째로 누락.
+
+해결
+```bash
+onnx2tf -i segment_v3_sim.onnx -o segment_tf_model --output_signaturedefs -ois 1,3,640,640
+--output_signaturedefs로 output 유지
+
+-ois로 입력 shape 강제 지정
+```
+❗️8. TFLite 변환 후 confidence 급락
+
+문제
+PyTorch에서 0.8 이상이던 confidence가 TFLite에서 0.0001 수준.
+
+원인
+sigmoid(cls)가 누락되어 raw logit으로 추론됨.
+
+해결
+TFLite 후처리에서 직접 sigmoid 적용:
+
+```python
+probs = 1 / (1 + np.exp(-output_cls))
+```
+
+❗️9. 마스크 윤곽이 흐릿하거나 복원되지 않음
+
+문제
+proto × mask_vector로 얻은 마스크가 흐릿하거나 완전히 무시됨.
+
+해결
+dot product 결과를 / 2.0으로 스케일링
+morphologyEx로 윤곽 강화
+
+✅ 10. 길이 측정 알고리즘의 진화
+
+초기 방식
+윤곽 내 모든 점 쌍 중 가장 먼 두 점 → 잡음 민감.
+
+최종 방식
+
+가장 왼쪽 점 기준 수평선
+가장 오른쪽 점 기준 수직선
+교차점과 왼쪽 점 사이 거리
+→ 일관된 결과 보장, TFLite에서도 동일하게 적용 가능.
+
+✅ 최종 결과
+.pt, .onnx, .pb, .tflite에서 모두 동일한 confidence, 정확한 마스크, 신뢰도 높은 길이 측정 수행 성공
+
+ARCore 기반 실시간 측정 앱 탑재를 위한 경량화된 TFLite 모델 완성
+
+최종적으로 result_debug_scaled.png, result_horizontal_length_with_helper.png 등 시각화 이미지로 정량적 성능 확인
+
+![debug_input_image.png](./debug_input_image.png)
+
+![debug_scaled_sigmoid_mask.png](./debug_scaled_sigmoid_mask.png)
+
+![result_horizontal_length_with_helper.png](./result_horizontal_length_with_helper.png)
+
