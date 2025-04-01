@@ -36,6 +36,10 @@ public class SecurityConfig {
 
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
+
+                        // collection 관련 정보
+                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**").authenticated()
+
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 
