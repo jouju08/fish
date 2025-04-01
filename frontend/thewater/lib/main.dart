@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/camera_screen.dart';
@@ -8,6 +7,7 @@ import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/thewater.dart';
+import 'package:thewater/providers/aquarium_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +21,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => AquariumModel()),
         ChangeNotifierProvider(create: (_) => FishModel()),
         ChangeNotifierProvider(create: (_) => UserModel()),
       ],
