@@ -7,6 +7,7 @@ import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
+import 'package:thewater/screens/guestbook.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -161,11 +162,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   bool fishManagerInitialized = false;
   bool showMoreMenu = false;
 
-  String userNickname = "사용자";
-
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
   late List<Animation<double>> _fadeAnimations;
+  List<GuestBookEntry> guestBookEntries = [
+    // 방명로끄 목업데이터
+    GuestBookEntry(
+      author: '킹수정',
+      content: '어이어이 나 왔다 간다구~~~',
+      date: DateTime.now(),
+    ),
+  ];
 
   final List<Map<String, String>> menuItems = [
     {"label": "어항", "icon": "assets/icon/어항.png"},
@@ -198,6 +205,34 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   //Provider.of<CounterProvider>(context).count
+
+  void _openGuestBookModal() {
+    final double topOffset = 200; // 사용자 정보 영역 높이에 맞춰 조절
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent, // 둥근 모서리 등 디자인 위해 투명 처리
+      builder: (BuildContext context) {
+        return Container(
+          // 화면 높이에서 상단 영역(topOffset)을 제외한 만큼만 높이를 설정
+          height: screenHeight - topOffset,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GuestBookModal(entries: guestBookEntries),
+          ),
+        );
+      },
+    );
+  }
 
   void _openFishSelectModal() {
     showModalBottomSheet(
@@ -408,6 +443,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             }
             if (label == "어항") {
               _openFishSelectModal();
+            }
+            if (label == "방명록") {
+              _openGuestBookModal();
             }
 
             debugPrint("$label 메뉴 클릭");
