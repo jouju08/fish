@@ -24,11 +24,11 @@ public class FishCardDto {
     private Integer tide;
     private String comment;
     private String cardImg;
+    private Boolean hasVisible = false;
 
 
 
     public FishCard toEntity(Member member, FishingPoint fishingPoint, Fish fish , Aquarium aquarium) {
-
         return FishCard.builder()
                 .member(member)
                 .aquarium(aquarium)
@@ -42,6 +42,7 @@ public class FishCardDto {
                 .comment(this.comment)
                 .hasDeleted(false)
                 .cardImg(this.cardImg)
+                .hasVisible(this.hasVisible)
                 .build();
     }
 
@@ -59,6 +60,8 @@ public class FishCardDto {
                 .tide(fishCard.getTide())
                 .comment(fishCard.getComment())
                 .cardImg(fishCard.getCardImg())
+                .hasVisible(fishCard.getHasVisible())
                 .build();
     }
+
 }

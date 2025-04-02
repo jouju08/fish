@@ -39,6 +39,9 @@ public class Member extends Common {
     @Column(nullable=false, columnDefinition ="CHAR(1) DEFAULT 'E'")
     private Character loginType;
 
+    @Column(name="comment")
+    private String comment;
+
     @Column(nullable = false)
     private Boolean has_deleted=false;
 
