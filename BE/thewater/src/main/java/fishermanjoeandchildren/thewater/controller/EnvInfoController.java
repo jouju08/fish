@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/env-info")
 public class EnvInfoController {
@@ -28,7 +31,7 @@ public class EnvInfoController {
     public ApiResponse<?> getWeatherData(
             @RequestParam (defaultValue = "34.3503656") double lat,
             @RequestParam (defaultValue = "126.4737491") double lon) {
-        String weatherData = weatherService.getWeatherData(lat, lon);
+        List<Map<String, Object>> weatherData = weatherService.getWeatherDataMappedToThreeHour(lat, lon);
 
         try {
             return ApiResponse.builder()
@@ -48,7 +51,7 @@ public class EnvInfoController {
             @RequestParam (defaultValue = "34.3503656") double lat,
             @RequestParam (defaultValue = "126.4737491") double lon) {
         try {
-            String waterTemperature = waterTempService.getWaterTemperature(lat, lon);
+            List<Map<String, String>> waterTemperature = waterTempService.getFilteredWaterTemperature(lat, lon);
             return ApiResponse.builder()
                     .status(ResponseStatus.SUCCESS)
                     .message(ResponseMessage.SUCCESS)
