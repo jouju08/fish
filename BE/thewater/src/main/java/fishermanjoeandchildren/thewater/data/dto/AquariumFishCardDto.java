@@ -12,7 +12,6 @@ public class AquariumFishCardDto {
     private String fishName;
     private Double realSize;
     private String fishingPointName;
-    private Boolean hasVisible;
 
     //TODO 잡은 날짜
     public static AquariumFishCardDto fromEntity(FishCard fishCard) {
@@ -20,7 +19,6 @@ public class AquariumFishCardDto {
                 .fishName(fishCard.getFish().getFishName())
                 .realSize(fishCard.getRealSize())
                 .fishingPointName(fishCard.getFishPoint().getPointName())
-                .hasVisible(fishCard.getHasVisible())
                 .build();
     }
 }
