@@ -85,7 +85,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
 
   modelrun(File file) async {
     final interpreter = await Interpreter.fromAsset(
-      'assets/quantization_model.tflite',
+      'assets/QAT_50model_mixed.tflite',
     );
     List<List<List<double>>> imageArray = await convertFileToArray(file);
     List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
@@ -96,32 +96,32 @@ class _ModelScreen2State extends State<ModelScreen2> {
       modelResult.reduce((a, b) => a > b ? a : b),
     );
     List fishList = [
-      '감성돔',
-      '벵에돔',
-      '참돔',
+      '학공치',
+      '문절망둑',
+      '광어',
       '복섬',
       '문어',
-      '돌돔',
       '주꾸미',
-      '성대',
-      '문절망둑',
-      '갑오징어',
       '노래미',
+      '무늬오징어',
+      '농어',
+      '갈치',
+      '붕장어',
+      '고등어',
       '독가시치',
+      '감성돔',
+      '삼치',
+      '성대',
+      '양태',
+      '갑오징어',
       '전갱이',
       '망상어',
-      '고등어',
-      '무늬오징어',
-      '볼락',
-      '광어',
-      '우럭',
-      '붕장어',
-      '갈치',
-      '양태',
       '숭어',
-      '삼치',
-      '학공치',
-      '농어',
+      '볼락',
+      '우럭',
+      '돌돔',
+      '벵에돔',
+      '참돔',
     ];
     setState(() {
       result = fishList[resultIndex]!;
