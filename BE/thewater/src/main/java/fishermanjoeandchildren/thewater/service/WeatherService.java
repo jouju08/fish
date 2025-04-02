@@ -5,15 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class WeatherService {
@@ -21,6 +19,8 @@ public class WeatherService {
     @Value("${weather.api.key}")
     private String serviceKey;
 
+    @Value("${weather.api.getUltraSrtNcst}")
+    private String ultraSrtNcstUrl;
     @Value("${weather.api.getVilageFcst}")
     private String apiUrl;
 
@@ -183,6 +183,69 @@ public class WeatherService {
         } catch (Exception e) {
             e.printStackTrace();
             // 에러 발생 시 빈 리스트 반환
+            return new ArrayList<>();
+        }
+    }
+
+    public List<String> getNowWeather(double lat, double lon) {
+        try {
+            // 1. 위경도를 XY좌표로 변환
+            int[] xy = GeoPointConverter.convertToXY(lat, lon);
+            int nx = xy[0];
+            int ny = xy[1];
+
+            // 2. 현재 시간에서 1시간 전 정시로 맞추기
+            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime baseDateTime = now.minusHours(1).withMinute(0).withSecond(0).withNano(0);
+
+            String baseDate = baseDateTime.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+            String baseTime = baseDateTime.format(DateTimeFormatter.ofPattern("HH00"));
+
+            System.out.println("baseDate=" + baseDate + ", baseTime=" + baseTime);
+
+            // 3. URL 생성
+            String urlString = ultraSrtNcstUrl +
+                    "?serviceKey=" + serviceKey +
+                    "&numOfRows=100" +
+                    "&pageNo=1" +
+                    "&dataType=JSON" +
+                    "&base_date=" + baseDate +
+                    "&base_time=" + baseTime +
+                    "&nx=" + nx +
+                    "&ny=" + ny;
+
+            System.out.println("API 요청 URL: " + urlString);
+
+            // 4. API 요청 및 응답
+            URI uri = new URI(urlString);
+            String response = restTemplate.getForObject(uri, String.class);
+            System.out.println("API 응답: " + response);
+
+            // 5. JSON 파싱
+            JSONObject jsonResponse = new JSONObject(response);
+            JSONArray items = jsonResponse.getJSONObject("response")
+                    .getJSONObject("body")
+                    .getJSONObject("items")
+                    .getJSONArray("item");
+
+            // 6. 가독성 높은 리스트로 변환
+            List<String> resultList = new ArrayList<>();
+            for (int i = 0; i < items.length(); i++) {
+                JSONObject item = items.getJSONObject(i);
+                String category = item.getString("category");
+                String obsrValue = item.get("obsrValue").toString(); // 숫자일 수도 있으므로 문자열 변환
+
+                // "카테고리: 값" 형식으로 리스트에 추가
+                resultList.add(category + ": " + obsrValue);
+            }
+
+            return resultList;
+
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } catch (Exception e) {
+            e.printStackTrace();
             return new ArrayList<>();
         }
     }
