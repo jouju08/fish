@@ -73,12 +73,17 @@ public class AquariumDto {
                 .map(AquariumFishCardDto::fromEntity)
                 .collect(Collectors.toList());
 
+        int calculatedTotalPrice = aquariumFishes.stream()
+                .mapToInt(AquariumFishCardDto::getPrice)
+                .sum();
+
+
         return AquariumDto.builder()
                 .id(aquarium.getId())
                 .visitorCnt(aquarium.getVisitorCnt())
                 .likeCnt(aquarium.getLikeCnt())
                 .fishCnt(aquarium.getFishCnt())
-                .totalPrice(aquarium.getTotalPrice())
+                .totalPrice(calculatedTotalPrice)
                 .member_id(aquarium.getMember().getId())
                 .visibleFishCards(aquariumFishes)
                 .likedByMe(likedByMe)

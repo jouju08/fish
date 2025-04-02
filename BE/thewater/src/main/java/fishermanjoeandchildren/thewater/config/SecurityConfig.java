@@ -34,6 +34,9 @@ public class SecurityConfig {
                         // Aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
 
+                        // Aquarium Ranking 관련 경로
+                        .requestMatchers("/api/aquarium/ranking/**").permitAll()
+
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
                         // Swagger UI 관련 경로 허용

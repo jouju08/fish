@@ -4,6 +4,7 @@ import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
 import fishermanjoeandchildren.thewater.data.dto.AquariumDto;
+import fishermanjoeandchildren.thewater.data.dto.AquariumRankingDto;
 import fishermanjoeandchildren.thewater.db.entity.Aquarium;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.AquariumService;
@@ -11,6 +12,8 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -27,7 +30,6 @@ public class AquariumController {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
         AquariumDto aquariumDto = aquariumService.getAquarium(aquariumId, memberId);
-        System.out.println("\nMemberId: "+ memberId + "\n");
 
         return ApiResponse.builder()
                 .status(ResponseStatus.SUCCESS)
@@ -36,19 +38,19 @@ public class AquariumController {
                 .build();
     }
 
-//    @SecurityRequirement(name="BearerAuth")
-//    @GetMapping("/info/{aquarium_id}")
-//    public ApiResponse<?> getAquariumInfo(@PathVariable("aquarium_id") Long aquariumId, HttpServletRequest request){
-//        String token = jwtUtil.resolveToken(request);
-//        Long memberId = jwtUtil.extractUserId(token);
-//        AquariumDto aquariumDto = aquariumService.getAquarium(aquariumId, memberId);
-//
-//        return ApiResponse.builder()
-//                .status(ResponseStatus.SUCCESS)
-//                .message(ResponseMessage.SUCCESS)
-//                .data(aquariumDto)
-//                .build();
-//    }
+    @SecurityRequirement(name="BearerAuth")
+    @GetMapping("/info/me")
+    public ApiResponse<?> getAquariumMyInfo(HttpServletRequest request){
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+        AquariumDto aquariumDto = aquariumService.getMyAquarium(memberId);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(aquariumDto)
+                .build();
+    }
 
     @PostMapping("/visit/{aquarium_id}")
     public ApiResponse<?> updateAquariumVisitors(@PathVariable("aquarium_id") Long aquariumId){
@@ -180,11 +182,15 @@ public class AquariumController {
     }
 
 
-
-
-
-
-
+    @GetMapping("ranking/top/{number}")
+    public ApiResponse<List<AquariumRankingDto>> getAquariumRanking(@PathVariable("number") Integer number){
+        List<AquariumRankingDto> rankingList = aquariumService.getTopAquariums(number);
+        return ApiResponse.<List<AquariumRankingDto>>builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(rankingList)
+                .build();
+    }
 
 
 

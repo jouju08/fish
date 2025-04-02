@@ -4,6 +4,7 @@ package fishermanjoeandchildren.thewater.service;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.AquariumDto;
 import fishermanjoeandchildren.thewater.data.dto.AquariumFishCardDto;
+import fishermanjoeandchildren.thewater.data.dto.AquariumRankingDto;
 import fishermanjoeandchildren.thewater.data.dto.FishCardDto;
 import fishermanjoeandchildren.thewater.db.entity.*;
 import fishermanjoeandchildren.thewater.db.repository.AquariumLikeRepository;
@@ -14,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +41,20 @@ public class AquariumService {
 
     public AquariumDto getAquarium(Long aquariumId, Long currentMemberId){
         Aquarium aquarium = aquariumRepository.findById(aquariumId).orElse(null);
+        if(aquarium == null){
+            throw new NoSuchElementException("어항이 존재하지 않습니다.");
 
+        }
+
+        return AquariumDto.fromEntity(aquarium,currentMemberId);
+    }
+
+    public AquariumDto getMyAquarium(Long currentMemberId){
+        Aquarium aquarium = aquariumRepository.findByMemberId(currentMemberId).orElse(null);
+        if(aquarium == null){
+            throw new NoSuchElementException("어항이 존재하지 않습니다.");
+
+        }
 
         return AquariumDto.fromEntity(aquarium,currentMemberId);
     }
@@ -110,5 +126,12 @@ public class AquariumService {
         fishCardRepository.save(fishCard);
 
         return ResponseStatus.SUCCESS;
+    }
+
+    public List<AquariumRankingDto> getTopAquariums(int number){
+        List<Aquarium> topAquariums = aquariumRepository.findTopByOrderByTotalPriceDesc(number);
+        return topAquariums.stream()
+                .map(AquariumRankingDto::fromEntity)
+                .collect(Collectors.toList());
     }
 }
