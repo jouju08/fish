@@ -624,3 +624,11 @@ ARCore 기반 실시간 측정 앱 탑재를 위한 경량화된 TFLite 모델 �
 
 ![result_horizontal_length_with_helper.png](./result_horizontal_length_with_helper.png)
 
+//
+
+# 📝 TIL (Today I Learned) - 2025-04-02
+
+flutter에서 arcore 사용하여 카메라 - 물체 간 거리 받아오려 함.
+
+arcore 관련 패키지 버전, 호환이 안되어서 고생 중.
+
