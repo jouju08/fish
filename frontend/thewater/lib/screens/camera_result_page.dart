@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/model_screen.dart';
+import 'package:thewater/screens/model_screen_2.dart';
 import 'dart:io';
 import 'fish_card_screen.dart';
 
@@ -17,7 +17,7 @@ class CameraResultScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ModelScreen()),
+                MaterialPageRoute(builder: (context) => ModelScreen2()),
               );
             },
             child: Text("모델 페이지로"),

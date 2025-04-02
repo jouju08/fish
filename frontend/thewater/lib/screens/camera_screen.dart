@@ -37,7 +37,7 @@ class _CameraScreenState extends State<CameraScreen> {
         ResolutionPreset.high,
       );
 
-      await _controller!.initialize();
+      await _controller.initialize();
       await _controller.setFlashMode(FlashMode.off); // 플래시 끄기
       setState(() => _isCameraInitialized = true);
     } catch (e) {

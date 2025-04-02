@@ -29,13 +29,9 @@ public class AquariumController {
     public ApiResponse<?> getAquariumInfo(@PathVariable("aquarium_id") Long aquariumId, HttpServletRequest request){
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
-        AquariumDto aquariumDto = aquariumService.getAquarium(aquariumId, memberId);
+        ApiResponse<?> result = aquariumService.getAquarium(aquariumId, memberId);
 
-        return ApiResponse.builder()
-                .status(ResponseStatus.SUCCESS)
-                .message(ResponseMessage.SUCCESS)
-                .data(aquariumDto)
-                .build();
+        return result;
     }
 
     @SecurityRequirement(name="BearerAuth")
@@ -43,39 +39,16 @@ public class AquariumController {
     public ApiResponse<?> getAquariumMyInfo(HttpServletRequest request){
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
-        AquariumDto aquariumDto = aquariumService.getMyAquarium(memberId);
+        ApiResponse<?> result = aquariumService.getMyAquarium(memberId);
 
-        return ApiResponse.builder()
-                .status(ResponseStatus.SUCCESS)
-                .message(ResponseMessage.SUCCESS)
-                .data(aquariumDto)
-                .build();
+        return result;
     }
 
     @PostMapping("/visit/{aquarium_id}")
     public ApiResponse<?> updateAquariumVisitors(@PathVariable("aquarium_id") Long aquariumId){
-        String status = aquariumService.updateVisitorCount(aquariumId);
+        ApiResponse<?> result = aquariumService.updateVisitorCount(aquariumId);
 
-        switch(status){
-            case ResponseStatus.SUCCESS:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SUCCESS)
-                        .data("어항 방문자 수가 업데이트되었습니다.")
-                        .build();
-            case ResponseStatus.NOT_FOUND:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.NOT_FOUND)
-                        .data("해당 어항을 찾을 수 없습니다.")
-                        .build();
-            default:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SERVER_ERROR)
-                        .data("어항 방문자 수 업데이트 중 오류가 발생했습니다.")
-                        .build();
-        }
+        return result;
     }
 
     @SecurityRequirement(name="BearerAuth")
@@ -84,35 +57,9 @@ public class AquariumController {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 
-        String status = aquariumService.likeAquarium(aquariumId,memberId);
+        ApiResponse<?> result = aquariumService.likeAquarium(aquariumId,memberId);
 
-        switch(status){
-            case ResponseStatus.SUCCESS:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SUCCESS)
-                        .data("어항에 좋아요를 눌렀습니다.")
-                        .build();
-            case ResponseStatus.NOT_FOUND:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.NOT_FOUND)
-                        .data("해당 어항을 찾을 수 없습니다.")
-                        .build();
-            case ResponseStatus.CONFLICT:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.CONFLICT)
-                        .data("이미 좋아요를 누른 어항입니다.")
-                        .build();
-            default:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SERVER_ERROR)
-                        .data("어항 좋아요 처리중 오류가 발생했습니다.")
-                        .build();
-        }
-
+        return result;
     }
 
     @SecurityRequirement(name="BearerAuth")
@@ -121,77 +68,35 @@ public class AquariumController {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 
-        String status = aquariumService.unlikeAquarium(aquariumId, memberId);
+        ApiResponse<?> result = aquariumService.unlikeAquarium(aquariumId, memberId);
 
-        switch(status){
-            case ResponseStatus.SUCCESS:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SUCCESS)
-                        .data("좋아요가 취소되었습니다.")
-                        .build();
-            case ResponseStatus.NOT_FOUND:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.NOT_FOUND)
-                        .data("좋아요 기록이 없습니다.")
-                        .build();
-            default:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SERVER_ERROR)
-                        .data("좋아요 취소 중 오류가 발생했습니다.")
-                        .build();
-        }
+        return result;
     }
 
     @SecurityRequirement(name="BearerAuth")
-    @PatchMapping("visible/{aquarium_id}/{fish_id}")
-    public ApiResponse<?> addAquariumFish(@PathVariable("aquarium_id") Long aquariumId, @PathVariable("fish_id") Long fishId, HttpServletRequest request) {
+    @PatchMapping("visible/{fish_id}")
+    public ApiResponse<?> addAquariumFish(@PathVariable("fish_id") Long fishId, HttpServletRequest request) {
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 
-        String status = aquariumService.changeAquariumFishVisible(aquariumId, memberId, fishId);
+        ApiResponse<?> result = aquariumService.changeAquariumFishVisible(memberId, fishId);
 
-        switch(status){
-            case ResponseStatus.SUCCESS:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SUCCESS)
-                        .data("어항에 물고기 등록이 완료되었습니다..")
-                        .build();
-            case ResponseStatus.NOT_FOUND:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.NOT_FOUND)
-                        .data("어항 또는 물고기 정보가 없습니다.")
-                        .build();
-            case ResponseStatus.AUTHROIZATION_FAILED:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.AUTHROIZATION_FAILED)
-                        .data("어항 또는 물고기 접근 권한이 없습니다.")
-                        .build();
-            default:
-                return ApiResponse.builder()
-                        .status(status)
-                        .message(ResponseMessage.SERVER_ERROR)
-                        .data("어항에 물고기 등록중 오류가 발생했습니다.")
-                        .build();
-        }
+        return result;
     }
 
 
     @GetMapping("ranking/top/{number}")
     public ApiResponse<List<AquariumRankingDto>> getAquariumRanking(@PathVariable("number") Integer number){
-        List<AquariumRankingDto> rankingList = aquariumService.getTopAquariums(number);
-        return ApiResponse.<List<AquariumRankingDto>>builder()
-                .status(ResponseStatus.SUCCESS)
-                .message(ResponseMessage.SUCCESS)
-                .data(rankingList)
-                .build();
+        ApiResponse<List<AquariumRankingDto>> result = aquariumService.getTopAquariums(number);
+
+        return result;
     }
 
+    @GetMapping("ranking/random/{number}")
+    public ApiResponse<List<AquariumRankingDto>> getRandomAquarium(@PathVariable("number") Integer number){
+        ApiResponse<List<AquariumRankingDto>> result = aquariumService.getRandomAquariums(number);
 
+        return result;
+    }
 
 }

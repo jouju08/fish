@@ -30,7 +30,7 @@ public class SecurityConfig {
                                 "/api/users/check-email", "/api/users/check-nickname",
                                 "/api/users/request-verification", "/api/users/verify-code").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
-
+                        .requestMatchers("/api/env-info/**").permitAll()
                         // Aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
 
@@ -39,6 +39,10 @@ public class SecurityConfig {
 
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
+
+                        // collection 관련 정보
+                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**").authenticated()
+
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
 

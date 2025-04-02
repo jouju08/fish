@@ -22,4 +22,6 @@ public interface AquariumRepository extends JpaRepository<Aquarium, Long>{
 
     Optional<Aquarium> findByMemberId(Long memberId);
 
+    @Query("SELECT a.id From Aquarium a")
+    List<Long> findAllIds();
 }

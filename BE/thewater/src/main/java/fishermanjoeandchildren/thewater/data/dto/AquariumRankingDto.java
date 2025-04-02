@@ -33,6 +33,7 @@ public class AquariumRankingDto {
         return AquariumRankingDto.builder()
                 .aquariumId(aquarium.getId())
                 .memberId(aquarium.getMember().getId())
+                .nickname(aquarium.getMember().getNickname())
                 .totalPrice(aquarium.getTotalPrice())
                 .memberComment(aquarium.getMember().getComment())
                 .build();
