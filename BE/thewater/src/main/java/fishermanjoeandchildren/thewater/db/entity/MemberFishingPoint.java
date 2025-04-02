@@ -24,7 +24,6 @@ public class MemberFishingPoint extends Common{
 
     private String description;
 
-
     // ManyToOne으로 멤버와 낚시 포인트 연결 가능
     @ManyToOne
     @JoinColumn(name = "member_id", insertable = false, updatable = false)

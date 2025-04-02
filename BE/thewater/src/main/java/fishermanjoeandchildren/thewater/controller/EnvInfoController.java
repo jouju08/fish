@@ -88,4 +88,24 @@ public class EnvInfoController {
                     .build();
         }
     }
+
+    @GetMapping("/now/weather")
+    public ApiResponse<?> getNowWeather(
+            @RequestParam (defaultValue = "34.3503656") double lat,
+            @RequestParam (defaultValue = "126.4737491") double lon){
+        try {
+            List<String>  nowWeather = weatherService.getNowWeather(lat, lon);
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(nowWeather)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.BAD_REQUEST)
+                    .message(ResponseMessage.BAD_REQUEST)
+                    .data("실황 날씨 데이터를 가져오는 중 오류가 발생했습니다." + e.getMessage())
+                    .build();
+        }
+    }
 }

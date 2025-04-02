@@ -1,59 +1,76 @@
 package fishermanjoeandchildren.thewater.service;
-
+import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
+import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
 import fishermanjoeandchildren.thewater.data.dto.FishCardDto;
 import fishermanjoeandchildren.thewater.db.entity.*;
 import fishermanjoeandchildren.thewater.db.repository.*;
 import fishermanjoeandchildren.thewater.util.FileUtil;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
-import org.springframework.data.crossstore.ChangeSetPersister;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-
-import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
 public class FishCardService {
     private final FishCardRepository fishCardRepository;
-    private final AquariumRepository aquariumRepository;
     private final FishRepository fishRepository;
     private final MemberRepository memberRepository;
     private final FishingPointRepository fishingPointRepository;
     private final FileUtil fileUtil;
 
-    public List<FishCardDto> getAllFishCards(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new NoSuchElementException("사용자 정보가 없습니다."));
+    public ApiResponse<?> getAllFishCards(Long memberId) {
+        Member member = memberRepository.findById(memberId).orElse(null);
+        if(member == null){
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("회원 정보가 없습니다.")
+                    .build();
+        }
 
         List<FishCard> fishCards = fishCardRepository.findFishCardExceptDeleted(member.getId());
 
-        return fishCards.stream()
+        List<FishCardDto> fishCardDtos = fishCards.stream()
                 .map(FishCardDto::fromEntity)
                 .toList();
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(fishCardDtos)
+                .build();
     }
 
 
-    public FishCardDto addFishCard(FishCardDto fishCardDto, Long memberId, MultipartFile imageFile) {
+    public ApiResponse<?> addFishCard(FishCardDto fishCardDto, Long memberId, MultipartFile imageFile) {
         Member member = memberRepository.findById(memberId).orElse(null);
         if (member == null) {
-            throw new NoSuchElementException("유저 정보가 없습니다.");
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("회원 정보가 없습니다.")
+                    .build();
         }
 
         FishingPoint fishingPoint = fishingPointRepository.findById(fishCardDto.getFishingPointId()).orElse(null);
         if (fishingPoint == null) {
-            throw new NoSuchElementException("낚시 포인트 정보가 없습니다.");
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("낚시포인트 정보가 없습니다.")
+                    .build();
         }
 
         Fish fish = fishRepository.findByFishname(fishCardDto.getFishName()).orElse(null);
         if (fish == null) {
-            throw new NoSuchElementException("물고기 정보가 없습니다.");
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("물고기 정보가 없습니다.")
+                    .build();
         }
 
         Aquarium aquarium=member.getAquarium();
@@ -62,24 +79,43 @@ public class FishCardService {
 
         FishCard fishcard = fishCardDto.toEntity(member,fishingPoint,fish,aquarium);
         fishcard.setCardImg(imagePath);
-        FishCard savedFishcard = fishCardRepository.save(fishcard);
+        fishCardRepository.save(fishcard);
 
-        return FishCardDto.fromEntity(savedFishcard);
+        return ApiResponse.builder()
+                .data(fishCardDto)
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("물고기가 도감에 성공적으로 등록되었습니다.")
+                .build();
     }
 
-    public String deleteFishCard(Long fishCardId, Long memberId) {
+    public ApiResponse<?> deleteFishCard(Long fishCardId, Long memberId) {
         FishCard fishCard = fishCardRepository.findById(fishCardId).orElse(null);
-        if (fishCard == null) return ResponseStatus.NOT_FOUND;
+        if (fishCard == null) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("삭제할 물고기 카드를 찾을 수 없습니다.")
+                    .build();
+        }
 
         // 소유자 확인
         if (!fishCard.getMember().getId().equals(memberId)) {
-            return ResponseStatus.NOT_FOUND;
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("접근할 수 없는 물고기 카드입니다.")
+                    .build();
         }
 
         // soft delete 처리
         fishCard.setHasDeleted(true);
         fishCardRepository.save(fishCard);
-        return ResponseStatus.SUCCESS;
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("물고기 카드 삭제 완료")
+                .build();
     }
 
 }
