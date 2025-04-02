@@ -63,8 +63,9 @@ public class FishCard extends Common{
     @Column(name="card_img", nullable = false)
     private String cardImg;
 
-    public void changeFishVisible(){
+    public boolean changeFishVisible(){
         hasVisible = !hasVisible;
+        return hasVisible;
     }
 
 }

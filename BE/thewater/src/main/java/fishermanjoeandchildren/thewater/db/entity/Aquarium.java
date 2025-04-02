@@ -58,4 +58,13 @@ public class Aquarium extends Common {
         this.member = member;
     }
 
+    public void makeFishVisible(int price){
+        this.fishCnt++;
+        this.totalPrice += price;
+    }
+
+    public void makeFishInvisible(int price){
+        this.fishCnt--;
+        this.totalPrice -= price;
+    }
 }
