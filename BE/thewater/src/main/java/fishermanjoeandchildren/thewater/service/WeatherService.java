@@ -1,5 +1,7 @@
 package fishermanjoeandchildren.thewater.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -10,6 +12,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class WeatherService {
@@ -88,5 +94,110 @@ public class WeatherService {
             e.printStackTrace();
             return "Error calling API: " + e.getMessage();
         }
+    }
+    // 3시간 간격으로 매핑된 날씨 데이터 제공
+    public List<Map<String, Object>> getWeatherDataMappedToThreeHour(double lat, double lon) {
+        try {
+            // 1. 원래 메서드로 날씨 데이터 가져오기
+            String apiResponse = getWeatherData(lat, lon);
+
+            // 2. JSON 파싱
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode rootNode = mapper.readTree(apiResponse);
+
+            // 3. 필요한 데이터 추출
+            JsonNode items = rootNode.path("response").path("body").path("items").path("item");
+
+            // 4. 결과를 저장할 맵 생성 (날짜별 -> 시간별 -> 카테고리별)
+            Map<String, Map<String, Map<String, String>>> dateTimeData = new HashMap<>();
+
+            // 5. 원하는 시간대 (3시간 간격)
+            final int[] targetHours = {0, 3, 6, 9, 12, 15, 18, 21};
+
+            // 6. 모든 아이템 순회
+            for (JsonNode item : items) {
+                String fcstDate = item.path("fcstDate").asText();
+                String fcstTime = item.path("fcstTime").asText();
+                String category = item.path("category").asText();
+                String fcstValue = item.path("fcstValue").asText();
+
+                // 7. 시간 추출 및 매핑
+                int hour = Integer.parseInt(fcstTime.substring(0, 2));
+
+                // 8. 3시간 간격으로 매핑
+                int mappedHour = mapToThreeHourInterval(hour);
+
+                // 9. 포맷에 맞게 시간 문자열 생성 (ex: 3 -> "0300")
+                String mappedTimeStr = String.format("%02d00", mappedHour);
+
+                // 10. 날짜-시간 기준으로 데이터 저장 구조 생성
+                if (!dateTimeData.containsKey(fcstDate)) {
+                    dateTimeData.put(fcstDate, new HashMap<>());
+                }
+
+                if (!dateTimeData.get(fcstDate).containsKey(mappedTimeStr)) {
+                    dateTimeData.get(fcstDate).put(mappedTimeStr, new HashMap<>());
+                }
+
+                // 11. 카테고리별 값 저장 (기존 값이 없을 때만)
+                Map<String, String> categoryMap = dateTimeData.get(fcstDate).get(mappedTimeStr);
+                if (!categoryMap.containsKey(category)) {
+                    categoryMap.put(category, fcstValue);
+                }
+            }
+
+            // 12. 결과를 리스트로 변환
+            List<Map<String, Object>> resultList = new ArrayList<>();
+
+            // 13. 날짜-시간별로 데이터 구성
+            for (String date : dateTimeData.keySet()) {
+                Map<String, Map<String, String>> timesForDate = dateTimeData.get(date);
+
+                for (String time : timesForDate.keySet()) {
+                    Map<String, String> categories = timesForDate.get(time);
+
+                    Map<String, Object> timeSlot = new HashMap<>();
+                    timeSlot.put("fcstDate", date);
+                    timeSlot.put("fcstTime", time);
+
+                    // 모든 카테고리 정보 추가
+                    for (String category : categories.keySet()) {
+                        timeSlot.put(category, categories.get(category));
+                    }
+
+                    resultList.add(timeSlot);
+                }
+            }
+
+            // 14. 날짜/시간 기준으로 정렬
+            resultList.sort((map1, map2) -> {
+                String dateTime1 = (String)map1.get("fcstDate") + (String)map1.get("fcstTime");
+                String dateTime2 = (String)map2.get("fcstDate") + (String)map2.get("fcstTime");
+                return dateTime1.compareTo(dateTime2);
+            });
+
+            // 15. 최종 결과 맵 생성
+            Map<String, Object> result = new HashMap<>();
+            result.put("data", resultList);
+
+            return resultList;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 에러 발생 시 빈 리스트 반환
+            return new ArrayList<>();
+        }
+    }
+
+    // 시간을 3시간 간격으로 매핑하는 헬퍼 메서드
+    private int mapToThreeHourInterval(int hour) {
+        if (hour == 0 || hour == 1 || hour == 2) return 0;
+        if (hour == 3 || hour == 4 || hour == 5) return 3;
+        if (hour == 6 || hour == 7 || hour == 8) return 6;
+        if (hour == 9 || hour == 10 || hour == 11) return 9;
+        if (hour == 12 || hour == 13 || hour == 14) return 12;
+        if (hour == 15 || hour == 16 || hour == 17) return 15;
+        if (hour == 18 || hour == 19 || hour == 20) return 18;
+        return 21; // 21, 22, 23시는 21시로 매핑
     }
 }
