@@ -3,7 +3,9 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:thewater/providers/fish_provider.dart';
 
 class ModelScreen2 extends StatefulWidget {
   const ModelScreen2({super.key});
@@ -131,7 +133,12 @@ class _ModelScreen2State extends State<ModelScreen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('물고기 사진을 넣어주세요')),
+      appBar: AppBar(
+        title: Text(
+          '물고기 사진을 넣어주세요',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ),
       body:
           _image == null
               ? Column(
@@ -208,6 +215,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
               : Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
+                  SizedBox(height: 20),
                   SizedBox(
                     width: 350,
                     child: Card(
@@ -252,6 +260,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
                               "크기: 10cm",
                               style: const TextStyle(
                                 fontSize: 16,
+                                fontWeight: FontWeight.bold,
                                 color: Colors.black54,
                               ),
                             ),
@@ -268,7 +277,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
                     children: [
                       SizedBox(
                         width: 150,
-                        child: ElevatedButton(
+                        child: TextButton(
                           onPressed: () {
                             setState(() {
                               _image = null; // 이미지 초기화
@@ -283,20 +292,38 @@ class _ModelScreen2State extends State<ModelScreen2> {
                               horizontal: 30,
                             ),
                           ),
-                          child: Text("🔄 다시 찍기"),
+                          child: Text(
+                            "🔄 다시 찍기",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
                       ),
                       SizedBox(
                         width: 150, // 버튼 크기 조정
-                        child: ElevatedButton(
-                          onPressed: () {},
+                        child: TextButton(
+                          onPressed: () {
+                            Provider.of<FishModel>(
+                              context,
+                              listen: false,
+                            ).addFishCard(result, 10, _image!);
+                            Navigator.pop(context);
+                          },
                           style: ElevatedButton.styleFrom(
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
                             padding: EdgeInsets.symmetric(vertical: 14),
                           ),
-                          child: Text("💾 저장"),
+                          child: Text(
+                            "💾 저장",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
                         ),
                       ),
                     ],
