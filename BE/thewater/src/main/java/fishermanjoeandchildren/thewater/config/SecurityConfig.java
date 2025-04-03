@@ -37,7 +37,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/fishing-points/**").authenticated()
 
                         // aquarium 관련 경로
-                        .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
+                        .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**", "/api/aquarium/like/**", "/api/aquarium/visible/**", "/api/aquarium/visit/**").authenticated()
+
+                        // aquarium ranking 관련 경로
+                        .requestMatchers("/api/aquarium/ranking/top/**", "/api/aquarium/ranking/random/**").permitAll()
 
                         // guest book 관련 경로
                         .requestMatchers("api/guest-book/read/").permitAll()
