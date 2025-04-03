@@ -21,7 +21,7 @@ enum FishState { moving, idle }
 
 class SwimmingFish {
   final String imagePath;
-  final String fishName; 
+  final String fishName;
   double x;
   double y;
   double speed;
@@ -30,11 +30,12 @@ class SwimmingFish {
   double dy;
   double stateTime;
   double stateDuration;
-  bool isPaused; // 일시정지 여부
+  bool isPaused;
+  bool isDragging;
 
   SwimmingFish({
     required this.imagePath,
-    required this.fishName, 
+    required this.fishName,
     required this.x,
     required this.y,
     required this.speed,
@@ -44,6 +45,7 @@ class SwimmingFish {
     required this.stateTime,
     required this.stateDuration,
     this.isPaused = false,
+    this.isDragging = false,
   });
 }
 
@@ -99,7 +101,7 @@ class FishSwimmingManager {
           screenHeight - fishSize - bottomBarHeight; // 하단 경계
 
       for (var fish in swimmingFishes) {
-        if (fish.isPaused) continue; // 일시정지 중이면 업데이트 건너뛰기
+        if (fish.isPaused || fish.isDragging) continue; // 일시정지 중이면 업데이트 건너뛰기
         // 매 업데이트마다 0.03초씩 경과 시간 업데이트
         fish.stateTime += 0.03;
 
@@ -296,30 +298,31 @@ class FishSwimmingManager {
         top: fish.y,
         left: fish.x,
         child: GestureDetector(
-          onTap: () {
-            // 이미 일시정지 중이면 아무것도 하지 않음
-            if (!fish.isPaused) {
-              fish.isPaused = true;
+          onPanStart: (_) {
+            fish.isDragging = true;
+            fish.isPaused = true;
+          },
+          onPanUpdate: (details) {
+            fish.x += details.delta.dx;
+            fish.y += details.delta.dy;
+            update(); // 위치 갱신
+          },
+          onPanEnd: (_) {
+            fish.isDragging = false;
+            Timer(const Duration(milliseconds: 1500), () {
+              fish.isPaused = false;
               update();
-
-              // 1.5초 후 일시정지 해제
-              Timer(const Duration(milliseconds: 1500), () {
-                fish.isPaused = false;
-                update();
-              });
-            }
+            });
           },
           child: Stack(
             alignment: Alignment.center,
             children: [
-              // 물고기 이미지 (좌우 반전 처리 포함)
               Transform(
                 alignment: Alignment.center,
                 transform:
                     fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
                 child: Image.asset(fish.imagePath, width: 80),
               ),
-              // 일시정지 상태라면 물고기 이름 오버레이 (1.5초 동안 opacity 애니메이션)
               if (fish.isPaused)
                 Positioned(
                   bottom: 50,
