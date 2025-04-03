@@ -21,7 +21,7 @@ class PointModel extends ChangeNotifier {
       return;
     }
     try {
-      final url = Uri.parse('$baseUrl/api/fishing-point/all');
+      final url = Uri.parse('$baseUrl/api/fishing-points/all');
       final headers = {'Authorization': 'Bearer $token'};
       final response = await http.get(url, headers: headers);
       if (response.statusCode == 200) {
