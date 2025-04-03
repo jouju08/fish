@@ -22,6 +22,7 @@ dependencies:
   path_provider: ^2.0.9 # 사진을 저장할 경로를 얻기 위한 패키지
   path: ^1.8.0 # 파일 경로를 다루기 위한 패키지
   image_picker: ^0.8.5+3 # 갤러리 이미지 선택을 위한 패키지
+  dio: ^5.8.0 # 이미지 업로드를 위한 패키지
 
 dev_dependencies:
   flutter_test:

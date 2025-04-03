@@ -1,50 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:thewater/services/fish_api.dart';
+import 'package:provider/provider.dart';
+import 'package:thewater/models/fish_provider.dart';
+import 'package:thewater/providers/fish_provider.dart';
 
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
-
-  // 예시용 임시 데이터 (나중에 백엔드 연동 시 변경)
-  static const List<Map<String, String>> fishData = [
-    {"name": "갈치", "image": "assets/갈치.png"},
-    {"name": "광어", "image": "assets/광어.jpg"},
-    {"name": "감성돔", "image": "assets/감성돔.png"},
-    {"name": "갑오징어", "image": "assets/갑오징어.png"},
-    {"name": "갈치", "image": "assets/갈치.png"},
-    {"name": "광어", "image": "assets/광어.jpg"},
-    {"name": "감성돔", "image": "assets/감성돔.png"},
-    {"name": "갑오징어", "image": "assets/갑오징어.png"},
-    {"name": "갈치", "image": "assets/갈치.png"},
-    {"name": "광어", "image": "assets/광어.jpg"},
-    {"name": "감성돔", "image": "assets/감성돔.png"},
-    {"name": "갑오징어", "image": "assets/갑오징어.png"},
-    {"name": "갈치", "image": "assets/갈치.png"},
-    {"name": "광어", "image": "assets/광어.jpg"},
-    {"name": "감성돔", "image": "assets/감성돔.png"},
-    {"name": "갑오징어", "image": "assets/갑오징어.png"},
-  ];
 
   @override
   State<CollectionPage> createState() => _CollectionPageState();
 }
 
 class _CollectionPageState extends State<CollectionPage> {
-  final FishApi fishApi = FishApi();
-  List<dynamic> fishCardList = [];
   @override
   void initState() {
     super.initState();
-    fetchFishCardList(); // 화면이 로드될 때 물고기 카드 목록을 가져옴
-  }
-
-  Future<void> fetchFishCardList() async {
-    debugPrint("fetchFishCardList() 호출");
-    try {
-      fishCardList = await fishApi.getFishCardList();
-      setState(() {}); // 상태 업데이트
-    } catch (e) {
-      debugPrint("Error fetching fish card list: $e");
-    }
+    Provider.of<FishModel>(context, listen: false).getFishCardList();
   }
 
   @override
@@ -63,7 +33,7 @@ class _CollectionPageState extends State<CollectionPage> {
             // 상단에 이번달 포획한 횟수 표시
             const SizedBox(height: 16),
             Text(
-              "포획한 횟수 : ${fishCardList.length}마리",
+              "포획한 횟수 : ${Provider.of<FishModel>(context, listen: false).fishCardList.length}마리",
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -83,37 +53,99 @@ class _CollectionPageState extends State<CollectionPage> {
                   mainAxisSpacing: 10, // 세로 간격
                   childAspectRatio: 0.7, // 카드(가로:세로) 비율 조정
                 ),
-                itemCount: fishCardList.length,
+                itemCount:
+                    Provider.of<FishModel>(
+                      context,
+                      listen: true,
+                    ).fishCardList.length,
                 itemBuilder: (context, index) {
-                  final fishCard = fishCardList[index];
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 8),
-                      // 물고기 이름
-                      Text(
-                        fishCard["fishName"]!,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
+                  final fishCard =
+                      Provider.of<FishModel>(
+                        context,
+                        listen: false,
+                      ).fishCardList[index];
+                  return GestureDetector(
+                    onTap: () => _showFishDetailModal(context, fishCard),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // 물고기 이미지
+                        Image.asset("assets/광어.jpg"),
+                        const SizedBox(height: 8),
+                        // 물고기 이름
+                        Text(
+                          fishCard["fishName"]!,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      Text(
-                        "길이: ${fishCard["realSize"].toString()}cm",
-                        style: const TextStyle(
-                          fontSize: 14,
-                          color: Colors.black87,
+                        Text(
+                          "길이: ${fishCard["realSize"].toString()}cm",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 },
               ),
             ),
-            Text(fishCardList.toString()),
           ],
         ),
       ),
+    );
+  }
+
+  void _showFishDetailModal(
+    BuildContext context,
+    Map<String, dynamic> fishCard,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      backgroundColor: Colors.white,
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          height: MediaQuery.of(context).size.height * 0.9,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Text(
+                  fishCard["fishName"]!,
+                  style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Column(
+                  children: [
+                    Text("길이: ${fishCard["realSize"].toString()} cm"),
+                    // 📝 여기에 추가할 내용 넣으면 됨!
+                  ],
+                ),
+              ),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("닫기"),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
