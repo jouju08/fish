@@ -48,18 +48,12 @@ public class MemberController {
                     status(ResponseStatus.VALIDATION_FAILED).
                     message(ResponseMessage.VALIDATION_FAILED).
                     data("이미 사용중인 아이디입니다.").build();
-// 방법 2
-//            return ResponseEntity.status(409).body(
-//                    Map.of("available", false, "message", "이미 사용중인 아이디입니다.")
         }
 
         return ApiResponse.builder().
                 status(ResponseStatus.SUCCESS).
                 message(ResponseMessage.SUCCESS).
                 data("사용 가능한 아이디입니다.").build();
-// 방법 2
-//        return ResponseEntity.ok(
-//                Map.of("available", true, "message", "사용 가능한 아이디입니다.")
     }
 
     // 이메일 인증 코드 요청
@@ -183,5 +177,17 @@ public class MemberController {
                     .data("사용자 인증에 실패했습니다: " + e.getMessage())
                     .build();
         }
+    }
+
+    @SecurityRequirement(name="BearerAuth")
+    @DeleteMapping("/delete")
+    public ApiResponse<?> deleteMember(HttpServletRequest request) {
+        // JWT 토큰에서 회원 ID 추출
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        // 회원 탈퇴 처리
+        ApiResponse<?> response = memberService.deleteMember(memberId);
+        return response;
     }
 }
