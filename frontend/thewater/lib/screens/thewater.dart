@@ -9,6 +9,7 @@ import 'package:thewater/screens/collection.dart';
 import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
 import 'package:thewater/screens/guestbook.dart';
+import 'package:thewater/screens/ranking.dart';
 
 class TheWater extends StatefulWidget {
   const TheWater({super.key});
@@ -154,7 +155,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.png'),
+              image: AssetImage('assets/image/background.gif'),
               fit: BoxFit.cover,
             ),
           ),
@@ -196,6 +197,18 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       content: '다이어트 작심삼일',
       date: DateTime.utc(2011,06,23),
     ),
+    GuestBookEntry(
+      author: '홍재민',
+      content: '헤응!',
+      date: DateTime.utc(1998,10,06),
+    ),
+  ];
+  List<RankingEntry> rankingEntries = [
+    // RankingEntry(
+    //   author: '킹국건',
+    //   introduce: '저는 주로 여수에서 활동합니다.', 
+    //   price: 231341231,
+    // )
   ];
 
   final List<Map<String, String>> menuItems = [
@@ -231,16 +244,15 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   //Provider.of<CounterProvider>(context).count
 
   void _openGuestBookModal() {
-    final double topOffset = 200; // 사용자 정보 영역 높이에 맞춰 조절
+    final double topOffset = 200;
     final screenHeight = MediaQuery.of(context).size.height;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, // 둥근 모서리 등 디자인 위해 투명 처리
+      backgroundColor: Colors.transparent, 
       builder: (BuildContext context) {
         return Container(
-          // 화면 높이에서 상단 영역(topOffset)을 제외한 만큼만 높이를 설정
           height: screenHeight - topOffset,
           decoration: const BoxDecoration(
             color: Colors.white,
@@ -252,6 +264,33 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: GuestBookModal(entries: guestBookEntries),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openRankingModal() {
+    final double topOffset = 200;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent, 
+      builder: (BuildContext context) {
+        return Container(
+          height: screenHeight - topOffset,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: RankingModal(entries: rankingEntries),
           ),
         );
       },
@@ -327,7 +366,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final aquariumModel = Provider.of<AquariumModel>(context);
     return Stack(
       children: [
         // 상단 UI: 유저 정보, 수족관 가치 등
@@ -497,6 +535,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             }
             if (label == "방명록") {
               _openGuestBookModal();
+            }
+            if (label == "랭킹") {
+              _openRankingModal();
             }
 
             debugPrint("$label 메뉴 클릭");
