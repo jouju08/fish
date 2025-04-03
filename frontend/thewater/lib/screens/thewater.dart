@@ -186,6 +186,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       content: '어이어이 나 왔다 간다구~~~',
       date: DateTime.now(),
     ),
+    GuestBookEntry(
+      author: '황치치',
+      content: '보라색 점프홀더 깨면 커피',
+      date: DateTime.utc(2024,01,22),
+    ),
+    GuestBookEntry(
+      author: '킹주헌',
+      content: '다이어트 작심삼일',
+      date: DateTime.utc(2011,06,23),
+    ),
   ];
 
   final List<Map<String, String>> menuItems = [
