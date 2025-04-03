@@ -35,7 +35,7 @@ class MyApp extends StatelessWidget {
           ),
           useMaterial3: true, // 최신 Material3 스타일 적용
           primarySwatch: Colors.blue,
-          fontFamily: 'GrandifloraOne-Regular',
+          fontFamily: 'GrandifloraOne-regular', // 폰트 설정
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
             backgroundColor: Colors.blue, // FAB 색상
           ),

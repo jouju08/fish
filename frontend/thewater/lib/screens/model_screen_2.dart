@@ -131,49 +131,179 @@ class _ModelScreen2State extends State<ModelScreen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('잡은 물고기 사진을 넣어주세요')),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // 이미지를 선택했다면 해당 이미지를 화면에 표시
-              _image == null
-                  ? SizedBox(height: 15)
-                  : Image.file(_image!), // 선택한 이미지를 화면에 표시
-
-              SizedBox(height: 20),
-
-              // 버튼들
-              ElevatedButton(
-                onPressed: _pickImageFromGallery,
-                child: Text('갤러리에서 이미지 선택'),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _pickImageFromCamera,
-                child: Text('카메라로 사진 찍기'),
-              ),
-              _image == null
-                  ? SizedBox(height: 15)
-                  : Text.rich(
-                    TextSpan(
-                      children: [
-                        TextSpan(
-                          text: result, // 기본 텍스트
-                          style: TextStyle(color: Colors.blue, fontSize: 36),
+      appBar: AppBar(title: Text('물고기 사진을 넣어주세요')),
+      body:
+          _image == null
+              ? Column(
+                mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 갤러리 선택 버튼
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: ElevatedButton(
+                          onPressed: _pickImageFromGallery,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.photo, size: 40, color: Colors.black),
+                              SizedBox(height: 8),
+                              Text(
+                                '갤러리',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                        TextSpan(
-                          text: '를 잡았습니다 !!', // 기본 텍스트
-                          style: TextStyle(color: Colors.black, fontSize: 36),
+                      ),
+                      const SizedBox(width: 20), // 버튼 간격 조정
+                      // 카메라 버튼
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: ElevatedButton(
+                          onPressed: _pickImageFromCamera,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 40,
+                                color: Colors.black,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '카메라',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ],
+              )
+              : Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    width: 350,
+                    child: Card(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0), // 내부 여백 조정
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 물고기 이미지
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 300,
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Image.file(_image!, fit: BoxFit.cover),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // 물고기 이름
+                            Text(
+                              result,
+                              style: const TextStyle(
+                                fontSize: 22, // 더 크게
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+
+                            // 물고기 크기
+                            Text(
+                              "크기: 10cm",
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-            ],
-          ),
-        ),
-      ),
+                  const SizedBox(height: 20),
+
+                  // 버튼 정렬 조정
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              _image = null; // 이미지 초기화
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 14,
+                              horizontal: 30,
+                            ),
+                          ),
+                          child: Text("🔄 다시 찍기"),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 150, // 버튼 크기 조정
+                        child: ElevatedButton(
+                          onPressed: () {},
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(vertical: 14),
+                          ),
+                          child: Text("💾 저장"),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
     );
   }
 }

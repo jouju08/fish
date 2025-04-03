@@ -65,7 +65,7 @@ class _CollectionPageState extends State<CollectionPage> {
                         listen: false,
                       ).fishCardList[index];
                   return GestureDetector(
-                    onTap: () => _showFishDetailModal(context, fishCard),
+                    onTap: () => _showFishDetailDialog(context, fishCard),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -99,50 +99,45 @@ class _CollectionPageState extends State<CollectionPage> {
     );
   }
 
-  void _showFishDetailModal(
+  void _showFishDetailDialog(
     BuildContext context,
     Map<String, dynamic> fishCard,
   ) {
-    showModalBottomSheet(
-      isScrollControlled: true,
+    showDialog(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      backgroundColor: Colors.white,
+      barrierDismissible: true, // 바깥 영역 탭하면 닫히도록 설정
       builder: (context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          height: MediaQuery.of(context).size.height * 0.9,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Text(
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // 둥근 모서리 적용
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.8, // 가로 80% 차지
+            height: MediaQuery.of(context).size.height * 0.6, // 세로 60% 차지
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
                   fishCard["fishName"]!,
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 24,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: Column(
-                  children: [
-                    Text("길이: ${fishCard["realSize"].toString()} cm"),
-                    // 📝 여기에 추가할 내용 넣으면 됨!
-                  ],
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
+                const SizedBox(height: 16),
+                Image.asset("assets/광어.jpg", height: 200), // 예시 이미지
+                const SizedBox(height: 16),
+                Text("길이: ${fishCard["realSize"]} cm"),
+                const SizedBox(height: 16),
+                Text("기타 정보 추가 가능"),
+                const Spacer(), // ✅ 버튼을 하단으로 정렬
+                ElevatedButton(
                   onPressed: () => Navigator.pop(context),
                   child: const Text("닫기"),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
