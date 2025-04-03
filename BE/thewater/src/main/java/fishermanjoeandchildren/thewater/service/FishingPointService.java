@@ -13,15 +13,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class FishingPointService {
 
-    private final FishingPointRepository fishingPointRepository;
+    private final FishingPointRepository fishingPointRepository; // 레포지토리 의존성 주입
 
-    public List<FishingPointDto> getAllOfficialFishingPoints() {
-        return fishingPointRepository.findByOfficialTrue()
+    public List<FishingPointDto> getAllFishingPoints() {
+        return fishingPointRepository.findAll() // 소문자로 변경(인스턴스 메서드)
                 .stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
+    // convertToDto 메서드 추가
     private FishingPointDto convertToDto(FishingPoint fishingPoint) {
         return FishingPointDto.builder()
                 .id(fishingPoint.getId())
@@ -29,7 +30,6 @@ public class FishingPointService {
                 .latitude(fishingPoint.getLatitude())
                 .longitude(fishingPoint.getLongitude())
                 .address(fishingPoint.getAddress())
-                .official(fishingPoint.getOfficial())
                 .build();
     }
 }

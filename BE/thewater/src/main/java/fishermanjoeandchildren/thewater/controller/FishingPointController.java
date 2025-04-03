@@ -23,7 +23,7 @@ public class FishingPointController {
     @SecurityRequirement(name="BearerAuth")
     @GetMapping("/all")
     public ApiResponse<List<FishingPointDto>> getAllFishingPoints() {
-        List<FishingPointDto> fishingPoints = fishingPointService.getAllOfficialFishingPoints();
+        List<FishingPointDto> fishingPoints = fishingPointService.getAllFishingPoints();
 
         return ApiResponse.<List<FishingPointDto>>builder()
                 .status(ResponseStatus.SUCCESS)
