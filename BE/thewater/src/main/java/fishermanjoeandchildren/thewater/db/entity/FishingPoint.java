@@ -32,9 +32,9 @@ public class FishingPoint extends Common {
     @Column(nullable = false)
     private String address;
 
-    // 공개여부
-    @Column(nullable = false)
-    private Boolean official = false;
+    // 포인트 설명
+    @Column(name = "point_info")
+    private String comment;
 
 
 }
