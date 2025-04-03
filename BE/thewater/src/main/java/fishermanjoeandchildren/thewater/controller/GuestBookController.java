@@ -1,6 +1,7 @@
 package fishermanjoeandchildren.thewater.controller;
 
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
+import fishermanjoeandchildren.thewater.data.dto.GuestBookDto;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.GuestBookService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,5 +26,13 @@ public class GuestBookController {
         return result;
     }
 
+    @PostMapping("/write/{aquarium-id}")
+    public ApiResponse<?> writeGuestBookComment(@RequestBody GuestBookDto guestBookDto, @RequestParam("aquarium-id") Long aquariumId, HttpServletRequest request){
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
 
+        ApiResponse<?> result = guestBookService.writeComment(guestBookDto,aquariumId, memberId);
+
+        return result;
+    }
 }

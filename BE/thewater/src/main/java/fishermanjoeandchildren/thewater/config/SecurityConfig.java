@@ -31,8 +31,12 @@ public class SecurityConfig {
                                 "/api/users/request-verification", "/api/users/verify-code").permitAll()
                         .requestMatchers("/api/users/login").permitAll()
                         .requestMatchers("/api/env-info/**").permitAll()
-                        // Aquarium 관련 경로
+                        // aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**").authenticated()
+
+                        // guest book 관련 경로
+                        .requestMatchers("api/guest-book/read/").permitAll()
+                        .requestMatchers("api/guest-book/write/").authenticated()
 
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
