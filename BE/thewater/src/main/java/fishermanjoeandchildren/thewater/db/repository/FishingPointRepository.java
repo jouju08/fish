@@ -8,5 +8,4 @@ import java.util.List;
 
 @Repository
 public interface FishingPointRepository extends JpaRepository<FishingPoint, Long> {
-    List<FishingPoint> findByOfficialTrue();
 }
