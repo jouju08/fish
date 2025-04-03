@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
@@ -24,9 +25,15 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AquariumModel()),
         ChangeNotifierProvider(create: (_) => FishModel()),
         ChangeNotifierProvider(create: (_) => UserModel()),
+        ChangeNotifierProvider(create: (_) => PointModel()),
       ],
       child: MaterialApp(
         theme: ThemeData(
+          textTheme: const TextTheme(
+            bodyLarge: TextStyle(fontWeight: FontWeight.bold), // 기본 텍스트 (큰 텍스트)
+            bodyMedium: TextStyle(fontWeight: FontWeight.bold), // 기본 텍스트
+            bodySmall: TextStyle(fontWeight: FontWeight.bold), // 작은 텍스트
+          ),
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue, // 기본 테마 색상을 파란색으로 고정
             primary: Colors.blue, // 주요 색상
@@ -42,7 +49,7 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/': (context) => const TheWater(),
+          '/': (context) => const TheWater(pageIndex: 0),
           '/camera': (context) => const CameraScreen(),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),

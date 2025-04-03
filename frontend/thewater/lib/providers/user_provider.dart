@@ -47,26 +47,34 @@ class UserModel extends ChangeNotifier {
   /// 사용자 정보 가져오기
   Future<void> fetchUserInfo() async {
     final token = await _storage.read(key: 'token');
-    debugPrint("fetchUserInfo 의 토큰 확인: $token");
-    final url = Uri.parse('$baseUrl/users/me');
-    final headers = {'Authorization': 'Bearer $token'};
+    if (token == null) {
+      debugPrint("fetchUserInfo() Token is null"); // 토큰이 없을 경우 처리
+      return;
+    }
+    try {
+      debugPrint("fetchUserInfo 의 토큰 확인: $token");
+      final url = Uri.parse('$baseUrl/users/me');
+      final headers = {'Authorization': 'Bearer $token'};
 
-    final response = await http.get(url, headers: headers);
-    debugPrint("Response status: ${response.statusCode}");
+      final response = await http.get(url, headers: headers);
+      debugPrint("Response status: ${response.statusCode}");
 
-    if (response.statusCode == 200) {
-      final body = jsonDecode(utf8.decode(response.bodyBytes));
-      debugPrint("200 OK: $body");
-      _id = body['data']['id'];
-      _loginId = body['data']['loginId'];
-      _nickname = body['data']['nickname'];
-      _loginType = body['data']['loginType'];
-      _email = body['data']['email'];
-      _birthday = body['data']['birthday'];
-      _isLoggedIn = true;
-      notifyListeners();
-    } else {
-      throw Exception('fetchuser 오류: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        debugPrint("200 OK: $body");
+        _id = body['data']['id'];
+        _loginId = body['data']['loginId'];
+        _nickname = body['data']['nickname'];
+        _loginType = body['data']['loginType'];
+        _email = body['data']['email'];
+        _birthday = body['data']['birthday'];
+        _isLoggedIn = true;
+        notifyListeners();
+      } else {
+        throw Exception('fetchuser 오류: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint("fetchUserInfo() 오류: $e");
     }
   }
 

@@ -43,7 +43,6 @@ class FishModel extends ChangeNotifier {
     }
     final url = Uri.parse('$baseUrl/api/collection/myfish/all').toString();
     final fishCard = {
-      "id": 0,
       "fishName": fishName,
       "fishingPointId": 1,
       "realSize": realSize,
@@ -60,25 +59,30 @@ class FishModel extends ChangeNotifier {
       "fishCard": jsonEncode(fishCard), // JSON을 String으로 변환 후 추가
       "image": await MultipartFile.fromFile(imageFile.path),
     });
+    try {
+      // API 요청
+      Response response = await dio.post(
+        url,
+        data: formData,
+        options: Options(
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer $token",
+          },
+        ),
+      );
 
-    // API 요청
-    Response response = await dio.post(
-      url,
-      data: formData,
-      options: Options(
-        headers: {
-          "Content-Type": "multipart/form-data",
-          "Authorization": "Bearer $token",
-        },
-      ),
-    );
-
-    if (response.statusCode == 200) {
-      debugPrint("addFishCard() 성공: ${response.data}");
-    } else {
-      debugPrint("addFishCard() 실패 (${response.statusCode}): ${response.data}");
+      if (response.statusCode == 200) {
+        debugPrint("addFishCard() 성공: ${response.data}");
+      } else {
+        debugPrint(
+          "addFishCard() 실패 (${response.statusCode}): ${response.data}",
+        );
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint("addFishCard() 예외 발생: $e");
     }
-    notifyListeners();
   }
 
   void deleteFishCard(int cardId) async {
