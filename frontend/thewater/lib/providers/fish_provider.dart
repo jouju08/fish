@@ -34,6 +34,37 @@ class FishModel extends ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
+  void setFishVisible(int fishId) async {
+    final token = await _storage.read(key: 'token');
+    final url = Uri.parse('$baseUrl/collection/myfish/visible/$fishId');
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    final response = await http.patch(url, headers: headers);
+    if (response.statusCode == 200) {
+      debugPrint("✅ 물고기 표시 설정 완료 (id: $fishId)");
+      getFishCardList(); // 최신화
+    } else {
+      debugPrint("❌ 물고기 표시 설정 실패 (${response.statusCode})");
+    }
+  }
+
+  void unsetFishVisible(int fishId) async {
+    final token = await _storage.read(key: 'token');
+    final url = Uri.parse('$baseUrl/collection/myfish/unvisible/$fishId');
+    final headers = {'Authorization': 'Bearer $token'};
+
+    final response = await http.patch(url, headers: headers);
+    if (response.statusCode == 200) {
+      debugPrint("✅ 물고기 표시 해제 완료 (id: $fishId)");
+      getFishCardList(); // 최신화
+    } else {
+      debugPrint("❌ 물고기 표시 해제 실패 (${response.statusCode})");
+    }
+  }
+
   void addFishCard(String fishName, int realSize, File imageFile) async {
     Dio dio = Dio();
     final token = await _storage.read(key: 'token');
