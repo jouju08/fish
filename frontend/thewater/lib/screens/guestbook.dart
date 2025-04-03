@@ -124,17 +124,23 @@ class _GuestBookModalState extends State<GuestBookModal> {
                     itemCount: sortedEntries.length,
                     itemBuilder: (context, index) {
                       final entry = sortedEntries[index];
-                      return ListTile(
-                        title: Text(entry.author),
-                        subtitle: Text(entry.content),
-                        trailing: Text(
-                          "${entry.date.year}-${entry.date.month.toString().padLeft(2, '0')}-${entry.date.day.toString().padLeft(2, '0')}",
-                          style: const TextStyle(fontSize: 12),
-                        ),
+                      return Column(
+                        children: [
+                          ListTile(
+                            title: Text(entry.author),
+                            subtitle: Text(entry.content),
+                            trailing: Text(
+                              "${entry.date.year}-${entry.date.month.toString().padLeft(2, '0')}-${entry.date.day.toString().padLeft(2, '0')}",
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                          ),
+                          const Divider(height: 1,thickness: 0.5,color: Colors.grey,), // 구분선
+                        ],
                       );
                     },
                   ),
         ),
+        const Divider(height: 1),
       ],
     );
   }
