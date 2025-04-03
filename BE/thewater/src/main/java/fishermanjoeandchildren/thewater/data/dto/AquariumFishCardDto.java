@@ -10,15 +10,14 @@ import lombok.*;
 @Builder
 public class AquariumFishCardDto {
     private String fishName;
-    private Double realSize;
+    private Double fishSize;
     private String fishingPointName;
 
     //TODO 잡은 날짜
     public static AquariumFishCardDto fromEntity(FishCard fishCard) {
         return AquariumFishCardDto.builder()
                 .fishName(fishCard.getFish().getFishName())
-                .realSize(fishCard.getRealSize())
-                .fishingPointName(fishCard.getFishPoint().getPointName())
+                .fishSize(fishCard.getFishSize())
                 .build();
     }
 }

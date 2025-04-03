@@ -55,14 +55,14 @@ public class FishCardService {
                     .build();
         }
 
-        FishingPoint fishingPoint = fishingPointRepository.findById(fishCardDto.getFishingPointId()).orElse(null);
-        if (fishingPoint == null) {
-            return ApiResponse.builder()
-                    .status(ResponseStatus.NOT_FOUND)
-                    .message(ResponseMessage.NOT_FOUND)
-                    .data("낚시포인트 정보가 없습니다.")
-                    .build();
-        }
+//        FishingPoint fishingPoint = fishingPointRepository.findById(fishCardDto.getFishingPointId()).orElse(null);
+//        if (fishingPoint == null) {
+//            return ApiResponse.builder()
+//                    .status(ResponseStatus.NOT_FOUND)
+//                    .message(ResponseMessage.NOT_FOUND)
+//                    .data("낚시포인트 정보가 없습니다.")
+//                    .build();
+//        }
 
         Fish fish = fishRepository.findByFishname(fishCardDto.getFishName()).orElse(null);
         if (fish == null) {
@@ -77,7 +77,7 @@ public class FishCardService {
 
         String imagePath = fileUtil.saveImage(imageFile);
 
-        FishCard fishcard = fishCardDto.toEntity(member,fishingPoint,fish,aquarium);
+        FishCard fishcard = fishCardDto.toEntity(member,fish,aquarium);
         fishcard.setCardImg(imagePath);
         fishCardRepository.save(fishcard);
 
