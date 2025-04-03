@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class FishSelectModal extends StatefulWidget {
   final void Function(String) onToggleFish;
   final Set<String> selectedFish;
+  final List<String> fishImages;
 
   const FishSelectModal({
     Key? key,
     required this.onToggleFish,
     required this.selectedFish,
+    required this.fishImages,
   }) : super(key: key);
 
   @override
@@ -15,11 +17,11 @@ class FishSelectModal extends StatefulWidget {
 }
 
 class _FishSelectModalState extends State<FishSelectModal> {
-  final List<String> fishImages = [
-    'assets/image/삼치.png',
-    'assets/image/문어.gif',
-    'assets/image/갑오징어.png',
-  ];
+  // final List<String> fishImages = [
+  //   'assets/image/삼치.png',
+  //   'assets/image/문어.gif',
+  //   'assets/image/갑오징어.png',
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -49,12 +51,11 @@ class _FishSelectModalState extends State<FishSelectModal> {
             spacing: 20,
             runSpacing: 10,
             children:
-                fishImages.map((path) {
+                widget.fishImages.map((path) {
                   bool isSelected = widget.selectedFish.contains(path);
                   return GestureDetector(
                     onTap: () {
                       widget.onToggleFish(path);
-                      // 물고기를 탭하면 모달을 닫아서 메인 화면이 보이도록 함
                       Navigator.pop(context);
                     },
                     child: Container(
@@ -63,10 +64,7 @@ class _FishSelectModalState extends State<FishSelectModal> {
                       padding: const EdgeInsets.all(6),
                       decoration: BoxDecoration(
                         border: Border.all(
-                          color:
-                              isSelected
-                                  ? Colors.blue
-                                  : const Color.fromARGB(255, 225, 225, 225),
+                          color: isSelected ? Colors.blue : Colors.grey[300]!,
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(12),
