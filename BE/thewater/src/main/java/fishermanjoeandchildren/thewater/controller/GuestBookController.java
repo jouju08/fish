@@ -1,7 +1,7 @@
 package fishermanjoeandchildren.thewater.controller;
 
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
-import fishermanjoeandchildren.thewater.data.dto.GuestBookDto;
+import fishermanjoeandchildren.thewater.data.dto.GuestBookRequestDto;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.GuestBookService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -27,7 +27,7 @@ public class GuestBookController {
     }
 
     @PostMapping("/write/{aquarium-id}")
-    public ApiResponse<?> writeGuestBookComment(@RequestBody GuestBookDto guestBookDto, @RequestParam("aquarium-id") Long aquariumId, HttpServletRequest request){
+    public ApiResponse<?> writeGuestBookComment(@RequestBody GuestBookRequestDto guestBookDto, @RequestParam("aquarium-id") Long aquariumId, HttpServletRequest request){
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 

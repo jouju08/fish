@@ -3,7 +3,8 @@ package fishermanjoeandchildren.thewater.service;
 import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
-import fishermanjoeandchildren.thewater.data.dto.GuestBookDto;
+import fishermanjoeandchildren.thewater.data.dto.GuestBookRequestDto;
+import fishermanjoeandchildren.thewater.data.dto.GuestBookResponseDto;
 import fishermanjoeandchildren.thewater.db.entity.Aquarium;
 import fishermanjoeandchildren.thewater.db.entity.GuestBook;
 import fishermanjoeandchildren.thewater.db.entity.Member;
@@ -27,18 +28,18 @@ public class GuestBookService {
     public ApiResponse<?> getComments(Long aquariumId, Long currentMemberId){
         List<GuestBook> guestBook = guestBookRepository.findByAquariumId(aquariumId);
 
-        List<GuestBookDto> guestBookDtos = guestBook.stream()
-                .map(gb->GuestBookDto.fromEntity(gb,currentMemberId))
+        List<GuestBookResponseDto> guestBookResponseDtos = guestBook.stream()
+                .map(gb-> GuestBookResponseDto.fromEntity(gb,currentMemberId))
                 .collect(Collectors.toList());
 
         return ApiResponse.builder()
                 .status(ResponseStatus.SUCCESS)
                 .message(ResponseMessage.SUCCESS)
-                .data(guestBookDtos)
+                .data(guestBookResponseDtos)
                 .build();
     }
 
-    public ApiResponse<?> writeComment(GuestBookDto guestBookDto, Long aquariumId, Long currentMemberId){
+    public ApiResponse<?> writeComment(GuestBookRequestDto guestBookRequestDto, Long aquariumId, Long currentMemberId){
         Member guest = memberRepository.findById(currentMemberId).orElse(null);
 
         if(guest == null){
@@ -62,7 +63,7 @@ public class GuestBookService {
         GuestBook guestBook = GuestBook.builder()
                 .guest(guest)
                 .aquarium(aquarium)
-                .comment(guestBookDto.getGuestBookComment())
+                .comment(guestBookRequestDto.getGuestBookComment())
                 .build();
 
         guestBookRepository.save(guestBook);
