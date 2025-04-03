@@ -21,7 +21,7 @@ enum FishState { moving, idle }
 
 class SwimmingFish {
   final String imagePath;
-  // final String fishName; // 백엔드 연동할때 받을 String fishName
+  final String fishName; 
   double x;
   double y;
   double speed;
@@ -34,7 +34,7 @@ class SwimmingFish {
 
   SwimmingFish({
     required this.imagePath,
-    // required this.fishName, // 물고기 이름을 받아서 저장
+    required this.fishName, 
     required this.x,
     required this.y,
     required this.speed,
@@ -137,7 +137,7 @@ class FishSwimmingManager {
             fish.state = FishState.idle;
             fish.stateTime = 0.0;
             // 정지 시간: 0~4초 (기존대로)
-            fish.stateDuration = random.nextDouble() * 4.0;
+            fish.stateDuration = random.nextDouble() * 2.0;
           }
         } else {
           // idle 상태: 정지
@@ -148,21 +148,21 @@ class FishSwimmingManager {
             fish.dy = directions[index]['dy']!;
             fish.state = FishState.moving;
             fish.stateTime = 0.0;
-            // 이동 시간: 1초 ~ 3초
-            fish.stateDuration = 1.0 + random.nextDouble() * 2.0;
+            // 이동 시간: 2초 ~ 3초
+            fish.stateDuration = 2.0 + random.nextDouble() * 2.0;
           }
         }
       }
     });
   }
 
-  void addFallingFish(String imagePath) {
+  void addFallingFish(String imagePath, String fishName) {
     final newFish = FallingFish(imagePath: imagePath);
     fallingFishes.add(newFish);
-    animateFishFall(newFish);
+    animateFishFall(newFish, fishName);
   }
 
-  void animateFishFall(FallingFish fish) {
+  void animateFishFall(FallingFish fish, String fishName) {
     const double targetY = 400;
     const double baseSpeed = 20;
     const double fishSize = 80.0;
@@ -184,6 +184,7 @@ class FishSwimmingManager {
         double movingDuration = 1.0 + random.nextDouble() * 2.0; // 1~3초 이동
         SwimmingFish newSwimmingFish = SwimmingFish(
           imagePath: fish.imagePath,
+          fishName: fishName,
           x: MediaQuery.of(context).size.width / 2 - fishSize / 2,
           y: fish.top,
           speed: 1.2 + random.nextDouble(),
@@ -322,7 +323,7 @@ class FishSwimmingManager {
               if (fish.isPaused)
                 Positioned(
                   bottom: 50,
-                  child: Center(child: _buildFishNameOverlay("간지렁~!")),
+                  child: Center(child: _buildFishNameOverlay(fish.fishName)),
                 ),
             ],
           ),
