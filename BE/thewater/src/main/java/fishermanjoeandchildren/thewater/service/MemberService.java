@@ -1,5 +1,7 @@
 package fishermanjoeandchildren.thewater.service;
 
+import fishermanjoeandchildren.thewater.data.ResponseMessage;
+import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.*;
 import fishermanjoeandchildren.thewater.db.entity.Aquarium;
 import fishermanjoeandchildren.thewater.db.entity.Fish;
@@ -72,8 +74,6 @@ public class MemberService {
         Aquarium aquarium = new Aquarium();
         aquariumRepository.save(aquarium);
 
-
-
         // Member 객체 생성
         Member member = Member.builder()
                 .loginId(request.getLoginId())
@@ -88,9 +88,33 @@ public class MemberService {
 
         memberRepository.save(member);
 
-
-
         return new SignupResponse(true, "회원가입이 완료되었습니다.", member.getId());
+    }
+
+    @Transactional
+    public ApiResponse<?> deleteMember(Long memberId) {
+        // 회원 정보 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+
+        // 이미 탈퇴한 회원인지 확인
+        if (member.getHas_deleted()) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.CONFLICT)
+                    .message(ResponseMessage.CONFLICT)
+                    .data("이미 탈퇴한 회원입니다.")
+                    .build();
+        }
+
+        // 탈퇴 처리 (논리적 삭제)
+        member.setHas_deleted(true);
+        memberRepository.save(member);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("회원 탈퇴가 완료되었습니다.")
+                .build();
     }
 
     public MemberDto getUserInfo(Long userId) {
