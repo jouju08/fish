@@ -154,7 +154,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.gif'),
+              image: AssetImage('assets/image/background.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -199,13 +199,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     GuestBookEntry(
       author: '홍재민',
       content: '헤응!',
-      date: DateTime.utc(1998,10,06),
+      date: DateTime.utc(1998, 10, 06),
     ),
   ];
   List<RankingEntry> rankingEntries = [
     // RankingEntry(
     //   author: '킹국건',
-    //   introduce: '저는 주로 여수에서 활동합니다.', 
+    //   introduce: '저는 주로 여수에서 활동합니다.',
     //   price: 231341231,
     // )
   ];
@@ -249,7 +249,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
           height: screenHeight - topOffset,
@@ -276,7 +276,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
           height: screenHeight - topOffset,
