@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:thewater/providers/point_provider.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -10,6 +12,14 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PointModel>(context, listen: false).getPointList();
+    });
+  }
+
   final TextEditingController _markerNameController = TextEditingController(
     text: "낚시 포인트",
   );
@@ -17,7 +27,7 @@ class _SecondPageState extends State<SecondPage> {
 
   final LatLng _center = const LatLng(34.70, 127.66);
   final Set<Marker> _markers = {}; // 마커를 저장할 Set
-
+  Set<Marker> _markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
 
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
@@ -49,12 +59,24 @@ class _SecondPageState extends State<SecondPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('마커를 추가하시겠습니까?'),
+          title: const Text(
+            '마커를 추가하시겠습니까?',
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
           content: TextField(
             controller: _markerNameController,
             decoration: const InputDecoration(hintText: "마커 이름을 입력하세요"),
           ),
           actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text(
+                '취소',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
             TextButton(
               onPressed: () {
                 // 마커 추가
@@ -87,13 +109,10 @@ class _SecondPageState extends State<SecondPage> {
                 });
                 Navigator.of(context).pop();
               },
-              child: const Text('확인'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('취소'),
+              child: const Text(
+                '확인',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         );
@@ -105,8 +124,18 @@ class _SecondPageState extends State<SecondPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('낚시 포인트를 저장해보세요'),
-        backgroundColor: Colors.green[700],
+        actions: [
+          TextButton(
+            onPressed: () {
+              Provider.of<PointModel>(context, listen: false).getPointList();
+            },
+            child: Text("버튼"),
+          ),
+        ],
+        title: const Text(
+          '낚시 포인트',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
       ),
       body: GestureDetector(
         child: Stack(
@@ -117,7 +146,7 @@ class _SecondPageState extends State<SecondPage> {
                 target: _center,
                 zoom: 11.0,
               ),
-              markers: _markers, // 현재 마커를 GoogleMap에 표시
+              markers: _markersKorea.union(_markers), // 현재 마커를 GoogleMap에 표시
               onMapCreated: _onMapCreated,
               onLongPress: (LatLng tappedPoint) {
                 _lastTappedLocation = tappedPoint;
@@ -136,7 +165,10 @@ class _SecondPageState extends State<SecondPage> {
                 right: 20,
                 child: ElevatedButton(
                   onPressed: _deleteSelectedMarker,
-                  child: const Text('마커 삭제'),
+                  child: const Text(
+                    '마커 삭제',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 ),
               ),
           ],

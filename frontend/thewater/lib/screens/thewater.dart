@@ -11,7 +11,8 @@ import 'fish_swimming.dart';
 import 'package:thewater/screens/guestbook.dart';
 
 class TheWater extends StatefulWidget {
-  const TheWater({super.key});
+  final int pageIndex;
+  const TheWater({super.key, required this.pageIndex});
 
   @override
   State<TheWater> createState() => _TheWaterState();
@@ -20,15 +21,13 @@ class TheWater extends StatefulWidget {
 class _TheWaterState extends State<TheWater> {
   int bottomNavIndex = 0;
   int pageIndex = 0;
-
   @override
   void initState() {
     super.initState();
-
+    pageIndex = widget.pageIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
-
       // 사용자 정보 가져오고 기다림
       await userModel.fetchUserInfo();
 
@@ -74,7 +73,7 @@ class _TheWaterState extends State<TheWater> {
             children: [
               const DrawerHeader(
                 decoration: BoxDecoration(color: Colors.blue),
-                child: Text("그물"),
+                child: Text("그물", style: TextStyle(fontSize: 30)),
               ),
               ListTile(
                 title: const Text("회원가입"),
@@ -189,12 +188,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     GuestBookEntry(
       author: '황치치',
       content: '보라색 점프홀더 깨면 커피',
-      date: DateTime.utc(2024,01,22),
+      date: DateTime.utc(2024, 01, 22),
     ),
     GuestBookEntry(
       author: '킹주헌',
       content: '다이어트 작심삼일',
-      date: DateTime.utc(2011,06,23),
+      date: DateTime.utc(2011, 06, 23),
     ),
   ];
 
