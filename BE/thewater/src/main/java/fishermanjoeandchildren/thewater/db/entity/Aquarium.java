@@ -31,6 +31,9 @@ public class Aquarium extends Common {
     @Column(name="total_price", nullable = false)
     private int totalPrice;
 
+    @Column(name = "open", nullable = false)
+    private boolean open;
+
     @OneToOne(mappedBy = "aquarium")
     private Member member;
 
@@ -67,4 +70,10 @@ public class Aquarium extends Common {
         this.fishCnt--;
         this.totalPrice -= price;
     }
+
+    public boolean changeOpen(){
+        open = !open;
+        return open;
+    }
+
 }

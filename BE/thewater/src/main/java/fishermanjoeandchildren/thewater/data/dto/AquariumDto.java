@@ -44,6 +44,9 @@ public class AquariumDto {
     private int totalPrice;
 
     @NotNull
+    private boolean open = true;
+
+    @NotNull
     private Long member_id;
 
     private List<AquariumFishCardDto> visibleFishCards;
@@ -58,6 +61,7 @@ public class AquariumDto {
                 .likeCnt(likeCnt)
                 .fishCnt(fishCnt)
                 .totalPrice(totalPrice)
+                .open(open)
                 .member(owner)
                 .build();
         return aquarium;
@@ -79,6 +83,7 @@ public class AquariumDto {
                 .likeCnt(aquarium.getLikeCnt())
                 .fishCnt(aquarium.getFishCnt())
                 .totalPrice(aquarium.getTotalPrice())
+                .open(aquarium.isOpen())
                 .member_id(aquarium.getMember().getId())
                 .visibleFishCards(aquariumFishes)
                 .likedByMe(likedByMe)
