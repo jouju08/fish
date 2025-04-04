@@ -43,14 +43,15 @@ public class SecurityConfig {
                         .requestMatchers("/api/aquarium/ranking/top/**", "/api/aquarium/ranking/random/**").permitAll()
 
                         // guest book 관련 경로
-                        .requestMatchers("api/guest-book/read/").permitAll()
-                        .requestMatchers("api/guest-book/write/").authenticated()
+                        .requestMatchers("/api/guest-book/read/**").permitAll()
+                        .requestMatchers("/api/guest-book/write/**", "/api/guest-book/edit/**", "/api/guest-book/remove/**").authenticated()
+
 
                         // member 관련 정보
                         .requestMatchers("/api/users/me").authenticated()
 
                         // collection 관련 정보
-                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**").authenticated()
+                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**", "/api/collection/myfish/image/**").authenticated()
 
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()

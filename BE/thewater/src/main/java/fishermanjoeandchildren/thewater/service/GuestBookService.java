@@ -73,4 +73,62 @@ public class GuestBookService {
                 .data("성공적으로 방명록을 등록했습니다.")
                 .build();
     }
+
+    public ApiResponse<?> editComment(Long guestBookId, Long currentMemberId, GuestBookRequestDto requestDto) {
+        GuestBook guestBook = guestBookRepository.findById(guestBookId).orElse(null);
+
+        if (guestBook == null) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("해당 방명록을 찾을 수 없습니다.")
+                    .build();
+        }
+
+        if (!guestBook.getGuest().getId().equals(currentMemberId)) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("방명록 수정 권한이 없습니다.")
+                    .build();
+        }
+
+        guestBook.setComment(requestDto.getGuestBookComment());
+        guestBookRepository.save(guestBook);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("방명록이 수정되었습니다.")
+                .build();
+    }
+
+    public ApiResponse<?> deleteComment(Long guestBookId, Long currentMemberId) {
+        GuestBook guestBook = guestBookRepository.findById(guestBookId).orElse(null);
+
+        if (guestBook == null) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("해당 방명록을 찾을 수 없습니다.")
+                    .build();
+        }
+
+        if (!guestBook.getGuest().getId().equals(currentMemberId)) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("방명록 삭제 권한이 없습니다.")
+                    .build();
+        }
+
+        guestBookRepository.delete(guestBook);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("방명록이 삭제되었습니다.")
+                .build();
+    }
+
 }
