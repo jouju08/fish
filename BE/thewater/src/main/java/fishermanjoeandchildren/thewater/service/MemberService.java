@@ -124,4 +124,15 @@ public class MemberService {
 
         return MemberDto.fromEntity(member);
     }
+    // 멤버 닉네임 찾기
+    public List<MemberDto> searchMembersByNickname(String nickname) {
+        List<Member> members = memberRepository.findByNicknameContaining(nickname);
+        return members.stream()
+                .map(MemberDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    public List<String> getAllActiveNicknames() {
+        return memberRepository.findAllActiveNicknames();
+    }
 }
