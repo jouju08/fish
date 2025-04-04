@@ -44,35 +44,36 @@ class _FishSelectModalState extends State<FishSelectModal> {
             alignment: WrapAlignment.center,
             spacing: 20,
             runSpacing: 10,
-            children: widget.fishImages.map((path) {
-              final fishName = path.split('/').last.split('.').first;
-              final matchingFish = widget.fishDataList.firstWhere(
-                (data) => data['fishName'] == fishName,
-                orElse: () => {"id": null},
-              );
-              final fishId = matchingFish['id'];
-              final isSelected = widget.selectedFish.contains(path);
+            children:
+                widget.fishImages.map((path) {
+                  final fishName = path.split('/').last.split('.').first;
+                  final matchingFish = widget.fishDataList.firstWhere(
+                    (data) => data['fishName'] == fishName,
+                    orElse: () => {"id": null},
+                  );
+                  final fishId = matchingFish['id'];
+                  final isSelected = widget.selectedFish.contains(path);
 
-              return GestureDetector(
-                onTap: () {
-                  widget.onToggleFish(path, fishId);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: isSelected ? Colors.blue : Colors.grey[300]!,
-                      width: 2,
+                  return GestureDetector(
+                    onTap: () {
+                      widget.onToggleFish(path, fishId);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: isSelected ? Colors.blue : Colors.grey[300]!,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Image.asset(path),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset(path),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
         ],
       ),

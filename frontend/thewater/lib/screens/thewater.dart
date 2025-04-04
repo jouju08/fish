@@ -200,7 +200,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     GuestBookEntry(
       author: '홍재민',
       content: '헤응!',
-      date: DateTime.utc(1998,10,06),
+      date: DateTime.utc(1998, 10, 06),
     ),
   ];
   List<RankingEntry> rankingEntries = [
@@ -298,44 +298,52 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _openFishSelectModal() {
-  final fishCardList = Provider.of<FishModel>(context, listen: false).fishCardList;
+    final fishCardList =
+        Provider.of<FishModel>(context, listen: false).fishCardList;
 
-  final fishDataList = fishCardList
-      .map((card) => {"id": card["id"], "fishName": card["fishName"]})
-      .toList();
+    final fishDataList =
+        fishCardList
+            .map((card) => {"id": card["id"], "fishName": card["fishName"]})
+            .toList();
 
-  final uniqueFishNames =
-      fishCardList.map((card) => card['fishName'] as String).toSet();
+    final uniqueFishNames =
+        fishCardList.map((card) => card['fishName'] as String).toSet();
 
-  final fishImages =
-      uniqueFishNames.map((name) => "assets/image/$name.png").toList();
+    final fishImages =
+        uniqueFishNames.map((name) => "assets/image/$name.png").toList();
 
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: Colors.transparent,
-    isScrollControlled: true,
-    builder: (_) => FishSelectModal(
-      selectedFish: _selectedFish,
-      fishDataList: fishDataList,
-      fishImages: fishImages,
-      onToggleFish: (String path, int fishId) async {
-        setState(() {
-          if (_selectedFish.contains(path)) {
-            fishManager.removeFishWithFishingLine(path);
-            _selectedFish.remove(path);
-            Provider.of<FishModel>(context, listen: false).unsetFishVisible(fishId);
-          } else {
-            String fishName = path.split('/').last.split('.').first;
-            fishManager.addFallingFish(path, fishName);
-            _selectedFish.add(path);
-            Provider.of<FishModel>(context, listen: false).setFishVisible(fishId);
-          }
-        });
-      },
-    ),
-  );
-}
-
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder:
+          (_) => FishSelectModal(
+            selectedFish: _selectedFish,
+            fishDataList: fishDataList,
+            fishImages: fishImages,
+            onToggleFish: (String path, int fishId) async {
+              setState(() {
+                if (_selectedFish.contains(path)) {
+                  fishManager.removeFishWithFishingLine(path);
+                  _selectedFish.remove(path);
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).unsetFishVisible(fishId);
+                } else {
+                  String fishName = path.split('/').last.split('.').first;
+                  fishManager.addFallingFish(path, fishName);
+                  _selectedFish.add(path);
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).setFishVisible(fishId);
+                }
+              });
+            },
+          ),
+    );
+  }
 
   void _initMenuAnimation() {
     _menuController = AnimationController(

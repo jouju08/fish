@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:dio/dio.dart';
 
-const String baseUrl = 'http://j12c201.p.ssafy.io:8081/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
 class FishModel extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
