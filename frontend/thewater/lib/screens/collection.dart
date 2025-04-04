@@ -71,7 +71,10 @@ class _CollectionPageState extends State<CollectionPage> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // 물고기 이미지
-                        Image.asset("assets/광어.jpg"),
+                        Image.asset(
+                          "assets/image/${fishCard["fishName"]}.png",
+                          height: 100,
+                        ),
                         const SizedBox(height: 8),
                         // 물고기 이름
                         Text(
