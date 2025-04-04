@@ -27,17 +27,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // user관련
-                        .requestMatchers("/api/users/login",
-                                "/api/users/verify-code",
-                                "/api/users/request-verification").permitAll()
-                        .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers(
-                                "/api/users/**",
-                                "/api/users/search/**").permitAll()
+                                "/api/users/**").permitAll()
                         // 낚시 포인트 관련 API 추가
-                        .requestMatchers("/api/env-info/**").permitAll()
-                        .requestMatchers("/api/fishing-points/**").permitAll()
                         .requestMatchers("/api/fishing-points/**").authenticated()
+                        .requestMatchers("/api/env-info/**").permitAll()
 
                         // aquarium 관련 경로
                         .requestMatchers("/api/aquarium/stats/**", "/api/aquarium/info/**", "/api/aquarium/like/**", "/api/aquarium/visible/**", "/api/aquarium/visit/**", "/api/aquarium/open").authenticated()
