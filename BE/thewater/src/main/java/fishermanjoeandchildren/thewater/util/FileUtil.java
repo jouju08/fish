@@ -1,6 +1,8 @@
 package fishermanjoeandchildren.thewater.util;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,6 +28,18 @@ public class FileUtil {
             return filename;
         } catch (IOException e) {
             throw new RuntimeException("파일 저장 실패", e);
+        }
+    }
+
+    public Resource getImage(String filename)throws IOException{
+
+        try {
+            Path imagePath = Paths.get(uploadDir).resolve(filename).normalize();
+            Resource resource = new UrlResource(imagePath.toUri());
+            return resource;
+
+        } catch (IOException e){
+            return null;
         }
     }
 }
