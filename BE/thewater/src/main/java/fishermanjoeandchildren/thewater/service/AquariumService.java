@@ -47,7 +47,7 @@ public class AquariumService {
 
         }
 
-        if(!aquarium.isOpen()){
+        if(!currentMemberId.equals(aquarium.getMember().getId()) &&!aquarium.isOpen()){
             return ApiResponse.builder()
                     .status(ResponseStatus.AUTHROIZATION_FAILED)
                     .message(ResponseMessage.AUTHROIZATION_FAILED)
