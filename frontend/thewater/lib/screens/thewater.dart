@@ -10,6 +10,7 @@ import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
 import 'package:thewater/screens/guestbook.dart';
 import 'package:thewater/screens/ranking.dart';
+import 'package:thewater/screens/mypage.dart';
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -297,29 +298,44 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _openFishSelectModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder:
-          (_) => FishSelectModal(
-            selectedFish: _selectedFish,
-            onToggleFish: (String path) {
-              setState(() {
-                if (_selectedFish.contains(path)) {
-                  // 이미 추가된 경우: 수족관에서 제거
-                  fishManager.removeFishWithFishingLine(path);
-                  _selectedFish.remove(path);
-                } else {
-                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
-                  fishManager.addFallingFish(path);
-                  _selectedFish.add(path);
-                }
-              });
-            },
-          ),
-    );
-  }
+  final fishCardList = Provider.of<FishModel>(context, listen: false).fishCardList;
+
+  final fishDataList = fishCardList
+      .map((card) => {"id": card["id"], "fishName": card["fishName"]})
+      .toList();
+
+  final uniqueFishNames =
+      fishCardList.map((card) => card['fishName'] as String).toSet();
+
+  final fishImages =
+      uniqueFishNames.map((name) => "assets/image/$name.png").toList();
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (_) => FishSelectModal(
+      selectedFish: _selectedFish,
+      fishDataList: fishDataList,
+      fishImages: fishImages,
+      onToggleFish: (String path, int fishId) async {
+        setState(() {
+          if (_selectedFish.contains(path)) {
+            fishManager.removeFishWithFishingLine(path);
+            _selectedFish.remove(path);
+            Provider.of<FishModel>(context, listen: false).unsetFishVisible(fishId);
+          } else {
+            String fishName = path.split('/').last.split('.').first;
+            fishManager.addFallingFish(path, fishName);
+            _selectedFish.add(path);
+            Provider.of<FishModel>(context, listen: false).setFishVisible(fishId);
+          }
+        });
+      },
+    ),
+  );
+}
+
 
   void _initMenuAnimation() {
     _menuController = AnimationController(
@@ -386,11 +402,21 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            Provider.of<UserModel>(context).nickname,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MyPageScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              Provider.of<UserModel>(context).nickname,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           Text(
