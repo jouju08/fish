@@ -13,7 +13,7 @@ class PointModel extends ChangeNotifier {
 
   List<dynamic> get pointList => _pointList; // getter 함수로 pointList를 가져옴
 
-  void getPointList() async {
+  Future<void> getPointList() async {
     final token = await _storage.read(key: 'token');
     debugPrint("getPointList() Token: $token"); // 토큰 값 확인
     if (token == null) {
@@ -21,7 +21,7 @@ class PointModel extends ChangeNotifier {
       return;
     }
     try {
-      final url = Uri.parse('$baseUrl/api/fishing-point/all');
+      final url = Uri.parse('$baseUrl/api/fishing-points/all');
       final headers = {'Authorization': 'Bearer $token'};
       final response = await http.get(url, headers: headers);
       if (response.statusCode == 200) {

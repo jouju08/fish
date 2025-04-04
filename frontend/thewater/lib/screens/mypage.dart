@@ -10,114 +10,107 @@ class MyPageScreen extends StatelessWidget {
     final userModel = Provider.of<UserModel>(context);
 
     return Scaffold(
-      body: Stack(
-        children: [
-          // 배경 이미지
-          Positioned.fill(
-            child: Image.asset('assets/image/도감배경.png', fit: BoxFit.cover),
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/image/도감배경.png'),
+              fit: BoxFit.cover,
+            ),
           ),
-          SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
+                        const CircleAvatar(
+                          radius: 28,
+                          backgroundColor: Colors.grey,
+                          child: Icon(Icons.person, size: 30),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const CircleAvatar(
-                              radius: 28,
-                              backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, size: 30),
+                            Text(
+                              userModel.nickname,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  userModel.nickname,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                Text(
-                                  "이번달 누적 : ${userModel.isLoggedIn ? '8마리' : '0마리'}",
-                                ),
-                              ],
+                            Text(
+                              "이번달 누적 : ${userModel.isLoggedIn ? '8마리' : '0마리'}",
                             ),
                           ],
                         ),
-                        const Text("프로필 편집", style: TextStyle(fontSize: 12)),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text("안녕하세요. 내낚시 스몰어텁 낚시에 푹 빠져 살고있습니다."),
-                    const SizedBox(height: 8),
+                    const Text("프로필 편집", style: TextStyle(fontSize: 12)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Text("안녕하세요. 내낚시 스몰어텁 낚시에 푹 빠져 살고있습니다."),
+                const SizedBox(height: 8),
 
-                    // 👇 어항공개 버튼 Row로 감싸서 오른쪽 정렬
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.lock_open, size: 16),
-                          label: const Text(
-                            "어항공개",
-                            style: TextStyle(fontSize: 14),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                          ),
+                // 👇 어항공개 버튼 Row로 감싸서 오른쪽 정렬
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.lock_open, size: 16),
+                      label: const Text("어항공개", style: TextStyle(fontSize: 14)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _infoCard("즐겨찾는 포인트", "여수"),
-                        _infoCard("최근 출항일", "2025 - 03 - 09"),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _regionCard("활동지역", ["여수", "목포", "한강"]),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: _mostCaughtFishCard(
-                            "제일 많이 잡은",
-                            "assets/광어.jpg",
-                            "광어",
-                            15,
-                          ),
-                        ),
-                      ],
+                      ),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 16),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _infoCard("즐겨찾는 포인트", "여수"),
+                    _infoCard("최근 출항일", "2025 - 03 - 09"),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: _regionCard("활동지역", ["여수", "목포", "한강"])),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _mostCaughtFishCard(
+                        "제일 많이 잡은",
+                        "assets/광어.jpg",
+                        "광어",
+                        15,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
