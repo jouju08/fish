@@ -234,7 +234,8 @@ public class AquariumService {
 
         List<Long> allIds = aquariumRepository.findAllIds();
         Collections.shuffle(allIds);
-        List<Long> selectedIds = allIds.subList(0, number);
+        int end = Math.min(number, allIds.size());
+        List<Long> selectedIds = allIds.subList(0, end);
         List<Aquarium> randomAquariums = aquariumRepository.findAllById(selectedIds);
 
 
