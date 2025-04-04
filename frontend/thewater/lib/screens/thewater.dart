@@ -93,7 +93,11 @@ class _TheWaterState extends State<TheWater> {
                 title: const Text("로그아웃"),
                 onTap: () {
                   Provider.of<UserModel>(context, listen: false).logout();
-                  Navigator.pushNamed(context, '/');
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).clearFishCardList();
+                  Navigator.pop(context);
                 },
               ),
               ListTile(

@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:dio/dio.dart';
 
-const String baseUrl = 'http://j12c201.p.ssafy.io/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io';
 
 class FishModel extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
@@ -19,7 +19,7 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
-    final url = Uri.parse('$baseUrl/collection/myfish/all');
+    final url = Uri.parse('$baseUrl/api/collection/myfish/all');
     final headers = {'Authorization': 'Bearer $token'};
     final response = await http.get(url, headers: headers);
     if (response.statusCode == 200) {
@@ -36,7 +36,7 @@ class FishModel extends ChangeNotifier {
 
   void setFishVisible(int fishId) async {
     final token = await _storage.read(key: 'token');
-    final url = Uri.parse('$baseUrl/collection/myfish/visible/$fishId');
+    final url = Uri.parse('$baseUrl/api/collection/myfish/visible/$fishId');
     final headers = {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ class FishModel extends ChangeNotifier {
 
   void unsetFishVisible(int fishId) async {
     final token = await _storage.read(key: 'token');
-    final url = Uri.parse('$baseUrl/collection/myfish/unvisible/$fishId');
+    final url = Uri.parse('$baseUrl/api/collection/myfish/unvisible/$fishId');
     final headers = {'Authorization': 'Bearer $token'};
 
     final response = await http.patch(url, headers: headers);
@@ -72,16 +72,15 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
-    final url = Uri.parse('$baseUrl/api/collection/myfish/all').toString();
+    final url = Uri.parse('$baseUrl/api/collection/myfish/add').toString();
     final fishCard = {
       "fishName": fishName,
-      "fishingPointId": 1,
-      "realSize": realSize,
+      "fishSize": realSize,
       "sky": 0,
       "temperature": 0,
       "waterTemperature": 0,
-      "latitude": 0,
-      "longitude": 0,
+      "latitude": 1,
+      "longitude": 1,
       "tide": 0,
       "comment": "string",
       "hasVisible": true,
@@ -106,6 +105,7 @@ class FishModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         debugPrint("addFishCard() 성공: ${response.data}");
+        getFishCardList();
       } else {
         debugPrint(
           "addFishCard() 실패 (${response.statusCode}): ${response.data}",
@@ -131,5 +131,10 @@ class FishModel extends ChangeNotifier {
     } else {
       debugPrint("deleteFishCard() 실패 (${response.statusCode})");
     }
+  }
+
+  void clearFishCardList() {
+    _fishCardList = []; // 리스트 초기화
+    notifyListeners(); // 상태 변경 알림
   }
 }

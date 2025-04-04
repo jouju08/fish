@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = 'http://j12c201.p.ssafy.io/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io';
 
 class UserModel extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
@@ -32,13 +32,17 @@ class UserModel extends ChangeNotifier {
   /// 로그인
   Future<bool> login(String loginId, String password) async {
     try {
-      final url = Uri.parse('$baseUrl/users/login');
+      final url = Uri.parse('$baseUrl/api/users/login');
       final headers = {'Content-Type': 'application/json'};
       final body = jsonEncode({"loginId": loginId, "password": password});
 
       final response = await http.post(url, headers: headers, body: body);
+      debugPrint("Response status: ${response.statusCode}");
+      if (response.statusCode != 200) {
+        debugPrint("로그인 실패 (${response.statusCode})");
+        return false; // 로그인 실패 시 false 반환
+      }
       final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
-
       await _storage.write(key: 'token', value: decodedBody['data']['token']);
       await fetchUserInfo(); // fetchUserInfo가 완료될 때까지 기다림
 
@@ -59,7 +63,7 @@ class UserModel extends ChangeNotifier {
     }
     try {
       debugPrint("fetchUserInfo 의 토큰 확인: $token");
-      final url = Uri.parse('$baseUrl/users/me');
+      final url = Uri.parse('$baseUrl/api/users/me');
       final headers = {'Authorization': 'Bearer $token'};
 
       final response = await http.get(url, headers: headers);

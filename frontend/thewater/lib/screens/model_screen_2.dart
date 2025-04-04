@@ -245,25 +245,40 @@ class _ModelScreen2State extends State<ModelScreen2> {
                             const SizedBox(height: 12),
 
                             // 물고기 이름
-                            Text(
-                              result,
-                              style: const TextStyle(
-                                fontSize: 22, // 더 크게
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                            Container(
+                              width: 300,
+                              height: 50,
+                              child: Stack(
+                                children: [
+                                  Align(
+                                    alignment: Alignment.center, // 텍스트 중앙 정렬 유지
+                                    child: Text(
+                                      result,
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 10, // 텍스트 오른쪽에 배치
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.info_outline,
+                                        size: 20,
+                                        color: Colors.black54,
+                                      ),
+                                      onPressed: () {
+                                        // 인포 버튼 클릭 이벤트 추가
+                                      },
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            const SizedBox(height: 6),
-
-                            // 물고기 크기
-                            Text(
-                              "크기: 10cm",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
-                              ),
-                            ),
+                            const SizedBox(height: 10),
                           ],
                         ),
                       ),

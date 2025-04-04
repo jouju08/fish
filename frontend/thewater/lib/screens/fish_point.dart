@@ -63,7 +63,7 @@ class _SecondPageState extends State<SecondPage> {
     text: "낚시 포인트",
   );
   late GoogleMapController mapController;
-
+  bool onlyMyPoint = false; // 내 포인트만 보기
   final LatLng _center = const LatLng(34.70, 127.66);
   final Set<Marker> _markers = {}; // 마커를 저장할 Set
   Set<Marker> _markersKorea = {}; // 마커를 저장할 List
@@ -111,9 +111,21 @@ class _SecondPageState extends State<SecondPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                _selectedMarker?.infoWindow.title ?? "마커 정보",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _selectedMarker?.infoWindow.title ?? "마커 정보",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      _deleteSelectedMarker(); // 마커 삭제
+                      Navigator.pop(context); // 모달 닫기
+                    },
+                    child: Text("삭제"),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
               Text(_selectedMarker?.position.latitude.toString() ?? "위치 정보"),
@@ -183,10 +195,18 @@ class _SecondPageState extends State<SecondPage> {
                     },
                   );
                   // 생성된 마커를 _markers에 추가
+
                   _markers.add(newMarker);
-                  _markerNameController.text = "낚시 포인트";
+                  debugPrint("after add $_markers");
+                  _selectedMarker = _markersKorea
+                      .union(_markers)
+                      .firstWhere(
+                        (marker) => marker.markerId.value == markerIdStr,
+                      );
+                  debugPrint("selected Marker $_selectedMarker");
                 });
                 Navigator.of(context).pop();
+                _markerNameController.text = "낚시 포인트";
               },
               child: const Text(
                 '확인',
@@ -206,9 +226,11 @@ class _SecondPageState extends State<SecondPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Provider.of<PointModel>(context, listen: false).getPointList();
+              setState(() {
+                onlyMyPoint = !onlyMyPoint;
+              });
             },
-            child: Text("버튼"),
+            child: Text("내 포인트만"),
           ),
         ],
         title: const Text(
@@ -225,7 +247,10 @@ class _SecondPageState extends State<SecondPage> {
                 target: _center,
                 zoom: 11.0,
               ),
-              markers: _markersKorea.union(_markers), // 현재 마커를 GoogleMap에 표시
+              markers:
+                  onlyMyPoint
+                      ? _markers
+                      : _markersKorea.union(_markers), // 현재 마커를 GoogleMap에 표시
               onMapCreated: _onMapCreated,
               onLongPress: (LatLng tappedPoint) {
                 _lastTappedLocation = tappedPoint;
