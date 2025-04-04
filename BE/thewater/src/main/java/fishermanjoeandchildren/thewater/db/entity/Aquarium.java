@@ -32,7 +32,7 @@ public class Aquarium extends Common {
     private int totalPrice;
 
     @Column(name = "open", nullable = false)
-    private boolean open;
+    private boolean open = true;
 
     @OneToOne(mappedBy = "aquarium")
     private Member member;
