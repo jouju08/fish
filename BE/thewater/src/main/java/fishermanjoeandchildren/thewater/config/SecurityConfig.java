@@ -27,15 +27,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // user관련
-                        .requestMatchers("/api/users/me").authenticated()
+                        .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers(
-                                "/api/users/signup",
-                                "/api/users/check-id",
-                                "/api/users/check-email",
-                                "/api/users/check-nickname",
-                                "/api/users/request-verification",
-                                "/api/users/verify-code",
-                                "/api/users/login",
+                                "/api/users/**",
                                 "api/users/search/**").permitAll()
 
                         // 낚시 포인트 관련 API 추가

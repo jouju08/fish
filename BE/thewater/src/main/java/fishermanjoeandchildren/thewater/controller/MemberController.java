@@ -214,4 +214,17 @@ public class MemberController {
                 .data(nicknames)
                 .build();
     }
+
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("/update-comment")
+    public ApiResponse<?> updateMemberComment(
+            @RequestParam String comment,
+            HttpServletRequest request) {
+        // 토큰에서 사용자 ID 추출
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        // 코멘트 업데이트 및 결과 반환
+        return memberService.updateMemberComment(memberId, comment);
+    }
 }
