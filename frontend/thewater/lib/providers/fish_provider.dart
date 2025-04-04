@@ -80,9 +80,10 @@ class FishModel extends ChangeNotifier {
       "sky": 0,
       "temperature": 0,
       "waterTemperature": 0,
+      "latitude": 0,
+      "longitude": 0,
       "tide": 0,
       "comment": "string",
-      "cardImg": "string",
       "hasVisible": true,
     };
     // FormData 생성
