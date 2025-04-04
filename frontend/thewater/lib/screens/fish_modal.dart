@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 
 class FishSelectModal extends StatefulWidget {
-  final void Function(String) onToggleFish;
+  final void Function(String imagePath, int fishId) onToggleFish;
   final Set<String> selectedFish;
   final List<String> fishImages;
+  final List<Map<String, dynamic>> fishDataList;
 
   const FishSelectModal({
     Key? key,
     required this.onToggleFish,
     required this.selectedFish,
     required this.fishImages,
+    required this.fishDataList,
   }) : super(key: key);
 
   @override
@@ -17,12 +19,6 @@ class FishSelectModal extends StatefulWidget {
 }
 
 class _FishSelectModalState extends State<FishSelectModal> {
-  final List<String> fishImages = [
-    'assets/image/삼치.png',
-    'assets/image/문어.gif',
-    'assets/image/갑오징어.png',
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -35,7 +31,6 @@ class _FishSelectModalState extends State<FishSelectModal> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // 핸들바
           Container(
             width: 40,
             height: 5,
@@ -45,17 +40,23 @@ class _FishSelectModalState extends State<FishSelectModal> {
             ),
           ),
           const SizedBox(height: 12),
-          // 물고기 리스트 (Wrap)
           Wrap(
             alignment: WrapAlignment.center,
             spacing: 20,
             runSpacing: 10,
             children:
                 widget.fishImages.map((path) {
-                  bool isSelected = widget.selectedFish.contains(path);
+                  final fishName = path.split('/').last.split('.').first;
+                  final matchingFish = widget.fishDataList.firstWhere(
+                    (data) => data['fishName'] == fishName,
+                    orElse: () => {"id": null},
+                  );
+                  final fishId = matchingFish['id'];
+                  final isSelected = widget.selectedFish.contains(path);
+
                   return GestureDetector(
                     onTap: () {
-                      widget.onToggleFish(path);
+                      widget.onToggleFish(path, fishId);
                       Navigator.pop(context);
                     },
                     child: Container(

@@ -10,6 +10,7 @@ import 'package:thewater/screens/fish_modal.dart';
 import 'fish_swimming.dart';
 import 'package:thewater/screens/guestbook.dart';
 import 'package:thewater/screens/ranking.dart';
+import 'package:thewater/screens/mypage.dart';
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -92,7 +93,6 @@ class _TheWaterState extends State<TheWater> {
                 title: const Text("로그아웃"),
                 onTap: () {
                   Provider.of<UserModel>(context, listen: false).logout();
-
                   Navigator.pushNamed(context, '/');
                 },
               ),
@@ -298,24 +298,46 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _openFishSelectModal() {
+    final fishCardList =
+        Provider.of<FishModel>(context, listen: false).fishCardList;
+
+    final fishDataList =
+        fishCardList
+            .map((card) => {"id": card["id"], "fishName": card["fishName"]})
+            .toList();
+
+    final uniqueFishNames =
+        fishCardList.map((card) => card['fishName'] as String).toSet();
+
+    final fishImages =
+        uniqueFishNames.map((name) => "assets/image/$name.png").toList();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder:
           (_) => FishSelectModal(
-            fishImages: [],
             selectedFish: _selectedFish,
-            onToggleFish: (String path) {
+            fishDataList: fishDataList,
+            fishImages: fishImages,
+            onToggleFish: (String path, int fishId) async {
               setState(() {
                 if (_selectedFish.contains(path)) {
-                  // 이미 추가된 경우: 수족관에서 제거
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).unsetFishVisible(fishId);
                 } else {
-                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
-                  fishManager.addFallingFish(path, "");
+                  String fishName = path.split('/').last.split('.').first;
+                  fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).setFishVisible(fishId);
                 }
               });
             },
@@ -388,72 +410,80 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            Provider.of<UserModel>(context).nickname,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MyPageScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              Provider.of<UserModel>(context).nickname,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          if (Provider.of<UserModel>(context).isLoggedIn)
-                            Text(
-                              "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
-                              style: const TextStyle(fontSize: 14),
-                            ),
+                          Text(
+                            "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ],
                       ),
                     ],
                   ),
-                  if (Provider.of<UserModel>(context).isLoggedIn)
-                    Row(
-                      children: [
-                        const Text("today", style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 5),
-                        Consumer<AquariumModel>(
-                          builder: (context, aquariumModel, child) {
-                            return Text(
-                              '${aquariumModel.visitCount}',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 10),
+                  Row(
+                    children: [
+                      const Text("today", style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 5),
+                      Consumer<AquariumModel>(
+                        builder: (context, aquariumModel, child) {
+                          return Text(
+                            '${aquariumModel.visitCount}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 10),
 
-                        /// 좋아요 로직
-                        Consumer<AquariumModel>(
-                          builder: (context, aquariumModel, child) {
-                            return Row(
-                              children: [
-                                IconButton(
-                                  icon: Icon(
-                                    aquariumModel.likedByMe
-                                        ? Icons.favorite
-                                        : Icons.favorite_border,
-                                    color:
-                                        aquariumModel.likedByMe
-                                            ? Colors.blue
-                                            : Colors.grey,
-                                  ),
-                                  onPressed: () async {
-                                    await aquariumModel.toggleLikeAquarium();
-                                  },
+                      /// 좋아요 로직
+                      Consumer<AquariumModel>(
+                        builder: (context, aquariumModel, child) {
+                          return Row(
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  aquariumModel.likedByMe
+                                      ? Icons.favorite
+                                      : Icons.favorite_border,
+                                  color:
+                                      aquariumModel.likedByMe
+                                          ? Colors.blue
+                                          : Colors.grey,
                                 ),
-                                Text(
-                                  '${aquariumModel.likeCount}',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                onPressed: () async {
+                                  await aquariumModel.toggleLikeAquarium();
+                                },
+                              ),
+                              Text(
+                                '${aquariumModel.likeCount}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
