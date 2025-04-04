@@ -39,6 +39,21 @@ public class GuestBookService {
                 .build();
     }
 
+    public ApiResponse<?> getMyGeustBookComments(Long currentMemberId){
+        Long aquariumId = aquariumRepository.findByMemberId(currentMemberId).get().getId();
+        List<GuestBook> guestBook = guestBookRepository.findByAquariumId(aquariumId);
+
+        List<GuestBookResponseDto> guestBookResponseDtos = guestBook.stream()
+                .map(gb-> GuestBookResponseDto.fromEntity(gb,currentMemberId))
+                .collect(Collectors.toList());
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(guestBookResponseDtos)
+                .build();
+    }
+
     public ApiResponse<?> writeComment(GuestBookRequestDto guestBookRequestDto, Long aquariumId, Long currentMemberId){
         Member guest = memberRepository.findById(currentMemberId).orElse(null);
 
