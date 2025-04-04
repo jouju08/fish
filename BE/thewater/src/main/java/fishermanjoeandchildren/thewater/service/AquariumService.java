@@ -47,6 +47,14 @@ public class AquariumService {
 
         }
 
+        if(!aquarium.isOpen()){
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("어항 접근 권한이 없습니다.")
+                    .build();
+        }
+
         AquariumDto aquariumDto = AquariumDto.fromEntity(aquarium,currentMemberId);
         return ApiResponse.builder()
                 .status(ResponseStatus.SUCCESS)
@@ -163,17 +171,29 @@ public class AquariumService {
         Aquarium aquarium = aquariumRepository.findByMemberId(memberId).orElse(null);
         FishCard fishCard = fishCardRepository.findById(fishCardId).orElse(null);
 
-        if (aquarium == null || fishCard == null) {
+        if (aquarium == null) {
             return ApiResponse.builder()
                     .status(ResponseStatus.NOT_FOUND)
                     .message(ResponseMessage.NOT_FOUND)
-                    .data("어항 또는 물고기 정보가 없습니다.")
+                    .data("존재하지 않는 어항입니다.")
                     .build();
-        } else if (!memberId.equals(aquarium.getMember().getId()) || !fishCard.getMember().getId().equals(memberId)) {
+        } else if (fishCard == null) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("물고기 정보가 없습니다.")
+                    .build();
+        }else if (!memberId.equals(aquarium.getMember().getId())) {
             return ApiResponse.builder()
                     .status(ResponseStatus.AUTHROIZATION_FAILED)
                     .message(ResponseMessage.AUTHROIZATION_FAILED)
-                    .data("어항 또는 물고기 접근 권한이 없습니다.")
+                    .data("어항 접근 권한이 없습니다.")
+                    .build();
+        }else if (!fishCard.getMember().getId().equals(memberId)) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("물고기 접근 권한이 없습니다.")
                     .build();
         }
 
@@ -227,5 +247,36 @@ public class AquariumService {
                 .message(ResponseMessage.SUCCESS)
                 .data(randomAquariumRankingDtos)
                 .build();
+    }
+
+
+    public ApiResponse<?> changeAquariumOpen(Long memberId) {
+        Aquarium aquarium = aquariumRepository.findByMemberId(memberId).orElse(null);
+
+        if (aquarium == null) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.NOT_FOUND)
+                    .message(ResponseMessage.NOT_FOUND)
+                    .data("존재하지 않는 어항입니다.")
+                    .build();
+        }
+
+        boolean open = aquarium.changeOpen();
+        String responseData;
+        if (open) {
+            responseData = "어항이 공개 모드로 변경되었습니다.";
+        } else {
+            responseData = "어항이 비공개 모드로 변경되었습니다.";
+
+        }
+        aquariumRepository.save(aquarium);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(responseData)
+                .build();
+
+
     }
 }

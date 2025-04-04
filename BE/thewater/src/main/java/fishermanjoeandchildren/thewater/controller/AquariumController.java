@@ -99,4 +99,15 @@ public class AquariumController {
         return result;
     }
 
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("open")
+    public ApiResponse<?> changeAquariumOpen(HttpServletRequest request) {
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        ApiResponse<?> result = aquariumService.changeAquariumOpen(memberId);
+
+        return result;
+    }
+
 }
