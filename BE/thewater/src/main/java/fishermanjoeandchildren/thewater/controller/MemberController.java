@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -189,5 +190,28 @@ public class MemberController {
         // 회원 탈퇴 처리
         ApiResponse<?> response = memberService.deleteMember(memberId);
         return response;
+    }
+
+    // MemberController.java에 추가
+    @GetMapping("/search")
+    public ApiResponse<?> searchMembers(@RequestParam String nickname) {
+        List<MemberDto> members = memberService.searchMembersByNickname(nickname);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(members)
+                .build();
+    }
+
+    @GetMapping("search/all-nickname")
+    public ApiResponse<?> getAllNicknames() {
+        List<String> nicknames = memberService.getAllActiveNicknames();
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(nicknames)
+                .build();
     }
 }

@@ -19,8 +19,6 @@ public class GuestBookRequestDto {
 
     public static GuestBookRequestDto fromEntity(GuestBook guestBook, Long currentMember){
 
-        boolean myCommnet = guestBook.getId() == currentMember;
-
         return GuestBookRequestDto.builder()
                 .guestBookComment(guestBook.getComment())
                 .build();
