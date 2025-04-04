@@ -56,6 +56,9 @@ dependencies {
 
 	// XML 처리를 위한 의존성
 	implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
+
+	// 음력계산을 위한 의존성
+	implementation 'com.ibm.icu:icu4j:71.1'
 }
 
 tasks.named('test') {

@@ -1,5 +1,6 @@
 package fishermanjoeandchildren.thewater.service;
 
+import fishermanjoeandchildren.thewater.util.LunarCalendarUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class TideService {
@@ -30,6 +33,79 @@ public class TideService {
     private final RestTemplate restTemplate;
     private final ObservatoryService observatoryService;
     private final ObjectMapper objectMapper;
+
+    @Autowired
+    private LunarCalendarUtil lunarCalendarUtil;
+
+    // 남해물때 표
+    private static final Map<Integer, String> southSeaTides = new HashMap<>();
+    // 서해물때 표
+    private static final Map<Integer, String> westSeaTides = new HashMap<>();
+    static {
+        // 남해물때 초기화
+        southSeaTides.put(1, "여덟물");
+        southSeaTides.put(2, "아홉물");
+        southSeaTides.put(3, "열물");
+        southSeaTides.put(4, "열한물");
+        southSeaTides.put(5, "열두물");
+        southSeaTides.put(6, "열셋물");
+        southSeaTides.put(7, "열넷물");
+        southSeaTides.put(8, "조금");
+        southSeaTides.put(9, "한물");
+        southSeaTides.put(10, "두물");
+        southSeaTides.put(11, "세물");
+        southSeaTides.put(12, "네물");
+        southSeaTides.put(13, "다섯물");
+        southSeaTides.put(14, "여섯물");
+        southSeaTides.put(15, "일곱물");
+        southSeaTides.put(16, "여덟물");
+        southSeaTides.put(17, "아홉물");
+        southSeaTides.put(18, "열물");
+        southSeaTides.put(19, "열한물");
+        southSeaTides.put(20, "열두물");
+        southSeaTides.put(21, "열셋물");
+        southSeaTides.put(22, "열넷물");
+        southSeaTides.put(23, "조금");
+        southSeaTides.put(24, "한물");
+        southSeaTides.put(25, "두물");
+        southSeaTides.put(26, "세물");
+        southSeaTides.put(27, "네물");
+        southSeaTides.put(28, "다섯물");
+        southSeaTides.put(29, "여섯물");
+        southSeaTides.put(30, "일곱물");
+
+        // 서해물때 초기화
+        westSeaTides.put(1, "일곱물");
+        westSeaTides.put(2, "여덟물");
+        westSeaTides.put(3, "아홉물");
+        westSeaTides.put(4, "열물");
+        westSeaTides.put(5, "열한물");
+        westSeaTides.put(6, "열두물");
+        westSeaTides.put(7, "열셋물");
+        westSeaTides.put(8, "조금");
+        westSeaTides.put(9, "무시");
+        westSeaTides.put(10, "한물");
+        westSeaTides.put(11, "두물");
+        westSeaTides.put(12, "세물");
+        westSeaTides.put(13, "네물");
+        westSeaTides.put(14, "다섯물");
+        westSeaTides.put(15, "여섯물");
+        westSeaTides.put(16, "일곱물");
+        westSeaTides.put(17, "여덟물");
+        westSeaTides.put(18, "아홉물");
+        westSeaTides.put(19, "열물");
+        westSeaTides.put(20, "열한물");
+        westSeaTides.put(21, "열두물");
+        westSeaTides.put(22, "열셋물");
+        westSeaTides.put(23, "조금");
+        westSeaTides.put(24, "무시");
+        westSeaTides.put(25, "한물");
+        westSeaTides.put(26, "두물");
+        westSeaTides.put(27, "세물");
+        westSeaTides.put(28, "네물");
+        westSeaTides.put(29, "다섯물");
+        westSeaTides.put(30, "여섯물");
+    }
 
     // 병렬 API 요청을 위한 ExecutorService
     private final ExecutorService executorService = Executors.newFixedThreadPool(8);
@@ -202,12 +278,66 @@ public class TideService {
     }
 
     /**
-     * 오늘의 물때 정보를 가져옵니다.
-     * @param latitude 위도
-     * @param longitude 경도
-     * @return 물때 정보 JSON 문자열
+            * 오늘의 물때 정보를 가져옵니다.
+            * @return 남해와 서해의 물때 정보를 담은 Map
      */
-    public String getTodayTideInfo(double latitude, double longitude) {
-        return getTideInfo(latitude, longitude, null);
+    public Map<String, String> getTodayTide() {
+        int lunarDay = lunarCalendarUtil.getTodayLunarDay();
+        if (lunarDay == -1) {
+            // 음력 변환 실패
+            return createErrorResponse("음력 변환에 실패했습니다.");
+        }
+
+        return getTideByLunarDay(lunarDay);
+    }
+
+    /**
+     * 주어진 음력 일에 해당하는 물때 정보를 가져옵니다.
+     * @param lunarDay 음력 일(day)
+     * @return 남해와 서해의 물때 정보를 담은 Map
+     */
+    public Map<String, String> getTideByLunarDay(int lunarDay) {
+        Map<String, String> result = new HashMap<>();
+
+        if (lunarDay < 1 || lunarDay > 30) {
+            return createErrorResponse("유효하지 않은 음력일입니다. 1~30 사이의 값이어야 합니다.");
+        }
+
+        result.put("남해물때", southSeaTides.get(lunarDay));
+        result.put("서해물때", westSeaTides.get(lunarDay));
+
+        return result;
+    }
+
+    /**
+     * 어제부터 일주일치 물때 정보를 가져옵니다.
+     * @return 일주일치 물때 정보 목록
+     */
+    public List<Map<String, Object>> getWeeklyTides() {
+        List<Map<String, Object>> weeklyTides = new ArrayList<>();
+        LocalDate yesterday = LocalDate.now().minusDays(1);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        // 어제부터 일주일치
+        for (int i = 0; i < 7; i++) {
+            LocalDate date = yesterday.plusDays(i);
+            int[] lunarDate = lunarCalendarUtil.solarToLunar(date);
+            int lunarDay = lunarDate[2]; // 음력 일
+
+            Map<String, Object> dayTide = new HashMap<>();
+            dayTide.put("양력날짜", date.format(formatter));
+            dayTide.put("남해물때", southSeaTides.get(lunarDay));
+            dayTide.put("서해물때", westSeaTides.get(lunarDay));
+
+            weeklyTides.add(dayTide);
+        }
+
+        return weeklyTides;
+    }
+
+    private Map<String, String> createErrorResponse(String errorMessage) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", errorMessage);
+        return errorResponse;
     }
 }
