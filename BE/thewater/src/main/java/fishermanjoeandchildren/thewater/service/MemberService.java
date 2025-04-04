@@ -135,4 +135,30 @@ public class MemberService {
     public List<String> getAllActiveNicknames() {
         return memberRepository.findAllActiveNicknames();
     }
+
+    // 멤버 소개글 바꾸는 API
+    @Transactional
+    public ApiResponse<?> updateMemberComment(Long userId, String comment) {
+        try {
+            // 사용자 조회
+            Member member = memberRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            // 코멘트 업데이트
+            member.setComment(comment);
+            memberRepository.save(member);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data("코멘트가 성공적으로 업데이트되었습니다.")
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.BAD_REQUEST)
+                    .message(ResponseMessage.BAD_REQUEST)
+                    .data("코멘트 업데이트 실패: " + e.getMessage())
+                    .build();
+        }
+    }
 }
