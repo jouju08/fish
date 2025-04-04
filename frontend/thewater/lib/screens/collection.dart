@@ -13,6 +13,7 @@ class CollectionPage extends StatefulWidget {
 class _CollectionPageState extends State<CollectionPage> {
   @override
   void initState() {
+    debugPrint("collectionPage initState 실행됨");
     super.initState();
     Provider.of<FishModel>(context, listen: false).getFishCardList();
   }
