@@ -17,11 +17,11 @@ class FishSelectModal extends StatefulWidget {
 }
 
 class _FishSelectModalState extends State<FishSelectModal> {
-  // final List<String> fishImages = [
-  //   'assets/image/삼치.png',
-  //   'assets/image/문어.gif',
-  //   'assets/image/갑오징어.png',
-  // ];
+  final List<String> fishImages = [
+    'assets/image/삼치.png',
+    'assets/image/문어.gif',
+    'assets/image/갑오징어.png',
+  ];
 
   @override
   Widget build(BuildContext context) {

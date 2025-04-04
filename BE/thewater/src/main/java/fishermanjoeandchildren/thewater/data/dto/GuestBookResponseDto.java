@@ -25,7 +25,7 @@ public class GuestBookResponseDto {
 
     public static GuestBookResponseDto fromEntity(GuestBook guestBook, Long currentMember){
 
-        boolean myCommnet = guestBook.getId() == currentMember;
+        boolean myCommnet = guestBook.getGuest().getId().equals(currentMember);
 
         return GuestBookResponseDto.builder()
                 .guestBookId(guestBook.getId())
