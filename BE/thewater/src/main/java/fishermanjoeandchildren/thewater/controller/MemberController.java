@@ -3,6 +3,7 @@ package fishermanjoeandchildren.thewater.controller;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.dto.*;
+import fishermanjoeandchildren.thewater.db.repository.FishCardRepository;
 import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.EmailService;
@@ -32,6 +33,9 @@ public class MemberController {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private FishCardRepository fishCardRepository;
 
     @Autowired
     public MemberController(MemberService memberService,
@@ -226,5 +230,30 @@ public class MemberController {
 
         // 코멘트 업데이트 및 결과 반환
         return memberService.updateMemberComment(memberId, comment);
+    }
+
+    @SecurityRequirement(name="BearerAuth")
+    @GetMapping("/mypage")
+    public ApiResponse<?> getMyPage(HttpServletRequest request) {
+        try {
+            // Bearer 토큰에서 JWT 부분만 추출
+            String token = jwtUtil.resolveToken(request);
+            Long memberId = jwtUtil.extractUserId(token);
+
+            // 마이페이지 정보 조회
+            MypageResponseDto mypageInfo = memberService.getUserMypage(memberId);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(mypageInfo)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("사용자 인증에 실패했습니다: " + e.getMessage())
+                    .build();
+        }
     }
 }
