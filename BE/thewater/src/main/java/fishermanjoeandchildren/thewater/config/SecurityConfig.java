@@ -27,11 +27,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         // user관련
+                        .requestMatchers("/api/users/login",
+                                "/api/users/verify-code",
+                                "/api/users/request-verification").permitAll()
                         .requestMatchers("/api/users/**").authenticated()
                         .requestMatchers(
                                 "/api/users/**",
                                 "/api/users/search/**").permitAll()
-                        .requestMatchers("/api/login").permitAll()
                         // 낚시 포인트 관련 API 추가
                         .requestMatchers("/api/env-info/**").permitAll()
                         .requestMatchers("/api/fishing-points/**").permitAll()
