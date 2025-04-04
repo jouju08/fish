@@ -139,4 +139,28 @@ public class EnvInfoController {
                     .build();
         }
     }
+
+    /**
+     * 어제부터 일주일치 물때 정보를 제공합니다.
+     * @return 일주일치 물때 정보 목록
+     */
+    @GetMapping("/lunar-tide")
+    public ApiResponse<?> getWeeklyTides() {
+        try {
+            List<Map<String, Object>> weeklyTides = tideService.getWeeklyTides();
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(weeklyTides)
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SERVER_ERROR)
+                    .message(ResponseMessage.SERVER_ERROR)
+                    .data("음력 물때 정보를 가져오는 중 오류가 발생했습니다: " + e.getMessage())
+                    .build();
+        }
+    }
 }
