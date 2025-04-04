@@ -13,7 +13,7 @@ import java.util.Optional;
 @Repository
 public interface AquariumRepository extends JpaRepository<Aquarium, Long>{
 
-    @Query("SELECT a FROM Aquarium a ORDER BY a.totalPrice DESC")
+    @Query("SELECT a FROM Aquarium a WHERE a.open = true ORDER BY a.totalPrice DESC")
     List<Aquarium> findTopByOrderByTotalPriceDesc(Pageable pageable);
 
     default List<Aquarium> findTopByOrderByTotalPriceDesc(int limit) {
@@ -22,6 +22,6 @@ public interface AquariumRepository extends JpaRepository<Aquarium, Long>{
 
     Optional<Aquarium> findByMemberId(Long memberId);
 
-    @Query("SELECT a.id From Aquarium a")
+    @Query("SELECT a.id From Aquarium a WHERE a.open = true")
     List<Long> findAllIds();
 }
