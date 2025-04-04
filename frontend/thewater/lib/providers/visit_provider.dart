@@ -8,7 +8,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 class VisitApi {
   final String baseUrl;
 
-  VisitApi({this.baseUrl = "http://j12c201.p.ssafy.io:8081"});
+  VisitApi({this.baseUrl = "http://j12c201.p.ssafy.io"});
 
   /// 아쿠아리움(=유저)의 방문(조회수)을 증가시키는 API 호출
   Future<bool> visitAquarium({
@@ -60,7 +60,7 @@ Future<void> triggerVisitAquarium(BuildContext context) async {
   }
 }
 
-/// 동일 사용자가 자신의 아쿠아리움에 대해 중복 조회수 증가를 막기 위한 함수  
+/// 동일 사용자가 자신의 아쿠아리움에 대해 중복 조회수 증가를 막기 위한 함수
 /// (한 번 방문한 기록을 secure storage에 저장)
 Future<void> countVisitIfNeeded(BuildContext context) async {
   final userModel = Provider.of<UserModel>(context, listen: false);

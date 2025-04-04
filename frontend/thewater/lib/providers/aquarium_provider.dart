@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = 'http://j12c201.p.ssafy.io:8081/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
 class AquariumModel extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
@@ -107,26 +107,30 @@ class AquariumModel extends ChangeNotifier {
 
   /// 좋아요 기능 (POST /api/aquarium/like/{aquarium_id}) DELETE 까지 한번에
   Future<void> toggleLikeAquarium() async {
-    final tk = await token;
-    final url = Uri.parse('$baseUrl/aquarium/like/$_aquariumId');
-    final headers = {
-      'Authorization': 'Bearer $tk',
-      'Content-Type': 'application/json',
-    };
+    try {
+      final tk = await token;
+      final url = Uri.parse('$baseUrl/aquarium/like/$_aquariumId');
+      final headers = {
+        'Authorization': 'Bearer $tk',
+        'Content-Type': 'application/json',
+      };
 
-    http.Response response;
+      http.Response response;
 
-    if (_likedByMe) {
-      response = await http.delete(url, headers: headers);
-    } else {
-      response = await http.post(url, headers: headers);
-    }
+      if (_likedByMe) {
+        response = await http.delete(url, headers: headers);
+      } else {
+        response = await http.post(url, headers: headers);
+      }
 
-    if (response.statusCode == 200) {
-      // 서버 상태 업데이트 성공 후 최신 정보 받아오기
-      await fetchAquariumInfo(_aquariumId);
-    } else {
-      debugPrint('좋아요 상태 업데이트 실패: ${response.statusCode}');
+      if (response.statusCode == 200) {
+        // 서버 상태 업데이트 성공 후 최신 정보 받아오기
+        await fetchAquariumInfo(_aquariumId);
+      } else {
+        debugPrint('좋아요 상태 업데이트 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in toggleLikeAquarium: $e');
     }
   }
 

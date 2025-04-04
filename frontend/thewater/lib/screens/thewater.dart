@@ -92,6 +92,7 @@ class _TheWaterState extends State<TheWater> {
                 title: const Text("로그아웃"),
                 onTap: () {
                   Provider.of<UserModel>(context, listen: false).logout();
+
                   Navigator.pushNamed(context, '/');
                 },
               ),
@@ -403,63 +404,65 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
-                            style: const TextStyle(fontSize: 14),
-                          ),
+                          if (Provider.of<UserModel>(context).isLoggedIn)
+                            Text(
+                              "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
+                              style: const TextStyle(fontSize: 14),
+                            ),
                         ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: [
-                      const Text("today", style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 5),
-                      Consumer<AquariumModel>(
-                        builder: (context, aquariumModel, child) {
-                          return Text(
-                            '${aquariumModel.visitCount}',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(width: 10),
+                  if (Provider.of<UserModel>(context).isLoggedIn)
+                    Row(
+                      children: [
+                        const Text("today", style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 5),
+                        Consumer<AquariumModel>(
+                          builder: (context, aquariumModel, child) {
+                            return Text(
+                              '${aquariumModel.visitCount}',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(width: 10),
 
-                      /// 좋아요 로직
-                      Consumer<AquariumModel>(
-                        builder: (context, aquariumModel, child) {
-                          return Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  aquariumModel.likedByMe
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                  color:
-                                      aquariumModel.likedByMe
-                                          ? Colors.blue
-                                          : Colors.grey,
+                        /// 좋아요 로직
+                        Consumer<AquariumModel>(
+                          builder: (context, aquariumModel, child) {
+                            return Row(
+                              children: [
+                                IconButton(
+                                  icon: Icon(
+                                    aquariumModel.likedByMe
+                                        ? Icons.favorite
+                                        : Icons.favorite_border,
+                                    color:
+                                        aquariumModel.likedByMe
+                                            ? Colors.blue
+                                            : Colors.grey,
+                                  ),
+                                  onPressed: () async {
+                                    await aquariumModel.toggleLikeAquarium();
+                                  },
                                 ),
-                                onPressed: () async {
-                                  await aquariumModel.toggleLikeAquarium();
-                                },
-                              ),
-                              Text(
-                                '${aquariumModel.likeCount}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                Text(
+                                  '${aquariumModel.likeCount}',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                 ],
               ),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
@@ -26,6 +27,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => FishModel()),
         ChangeNotifierProvider(create: (_) => UserModel()),
         ChangeNotifierProvider(create: (_) => PointModel()),
+        ChangeNotifierProvider(create: (_) => EnvModel()),
       ],
       child: MaterialApp(
         theme: ThemeData(
