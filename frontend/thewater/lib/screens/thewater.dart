@@ -155,7 +155,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.png'),
+              image: AssetImage('assets/image/background.gif'),
               fit: BoxFit.cover,
             ),
           ),
@@ -298,36 +298,27 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _openFishSelectModal() {
-    final fishCardList =
-        Provider.of<FishModel>(context, listen: false).fishCardList;
-
-    final visibleCards =
-        fishCardList.where((card) => card['hasVisible'] == true).toList();
-
-    final fishImages =
-        visibleCards
-            .map((card) => "assets/image/${card['fishName']}.png")
-            .toList();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder:
           (_) => FishSelectModal(
+            fishImages: [],
             selectedFish: _selectedFish,
             onToggleFish: (String path) {
               setState(() {
                 if (_selectedFish.contains(path)) {
+                  // 이미 추가된 경우: 수족관에서 제거
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
                 } else {
-                  String fishName = path.split('/').last.split('.').first;
-                  fishManager.addFallingFish(path, fishName);
+                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
+                  fishManager.addFallingFish(path, "");
                   _selectedFish.add(path);
                 }
               });
             },
-            fishImages: fishImages, // ✅ 여기 전달
           ),
     );
   }
@@ -547,9 +538,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             }
             if (label == "방명록") {
               _openGuestBookModal();
-            }
-            if (label == "랭킹") {
-              _openRankingModal();
             }
 
             debugPrint("$label 메뉴 클릭");

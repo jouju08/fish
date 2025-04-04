@@ -20,8 +20,8 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   void _loadMarkers() async {
-    final points =
-        await Provider.of<PointModel>(context, listen: false).getPointList();
+    Provider.of<PointModel>(context, listen: false).getPointList();
+    final points = Provider.of<PointModel>(context, listen: false).pointList;
     setState(() {
       _markersKorea =
           points

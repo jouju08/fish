@@ -26,13 +26,20 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/users/signup", "/api/users/check-id",
-                                "/api/users/check-email", "/api/users/check-nickname",
-                                "/api/users/request-verification", "/api/users/verify-code").permitAll()
-                        .requestMatchers("/api/users/login").permitAll()
-                        .requestMatchers("/api/env-info/**").permitAll()
+                        // user관련
+                        .requestMatchers("/api/users/me").authenticated()
+                        .requestMatchers(
+                                "/api/users/signup",
+                                "/api/users/check-id",
+                                "/api/users/check-email",
+                                "/api/users/check-nickname",
+                                "/api/users/request-verification",
+                                "/api/users/verify-code",
+                                "/api/users/login",
+                                "api/users/search/**").permitAll()
 
                         // 낚시 포인트 관련 API 추가
+                        .requestMatchers("/api/env-info/**").permitAll()
                         .requestMatchers("/api/fishing-points/**").permitAll()
                         .requestMatchers("/api/fishing-points/**").authenticated()
 
@@ -43,14 +50,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/aquarium/ranking/top/**", "/api/aquarium/ranking/random/**").permitAll()
 
                         // guest book 관련 경로
-                        .requestMatchers("api/guest-book/read/").permitAll()
-                        .requestMatchers("api/guest-book/write/").authenticated()
+                        .requestMatchers("/api/guest-book/read/**").permitAll()
+                        .requestMatchers("/api/guest-book/write/**", "/api/guest-book/edit/**", "/api/guest-book/remove/**").authenticated()
 
-                        // member 관련 정보
-                        .requestMatchers("/api/users/me").authenticated()
 
                         // collection 관련 정보
-                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**").authenticated()
+                        .requestMatchers("/api/collection/myfish/add", "/api/collection/myfish/all", "/api/collection/myfish/delete/**", "/api/collection/myfish/image/**").authenticated()
 
                         // Swagger UI 관련 경로 허용
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
