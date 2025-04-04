@@ -88,15 +88,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed:
                           _isLoading
                               ? null
-                              : () {
-                                Provider.of<UserModel>(
+                              : () async {
+                                bool success = await Provider.of<UserModel>(
                                   context,
                                   listen: false,
                                 ).login(
                                   _loginIdController.text,
                                   _passwordController.text,
                                 );
-                                Navigator.pushReplacementNamed(context, '/');
+                                if (success) {
+                                  Navigator.pushReplacementNamed(context, '/');
+                                } else {
+                                  setState(() {
+                                    errorMessage = '로그인 실패. 다시 시도하세요.';
+                                  });
+                                }
                               },
                       child:
                           _isLoading

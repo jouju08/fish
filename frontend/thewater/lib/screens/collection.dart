@@ -127,7 +127,10 @@ class _CollectionPageState extends State<CollectionPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Image.asset("assets/광어.jpg", height: 200), // 예시 이미지
+                Image.asset(
+                  "assets/image/${fishCard["fishName"]}.png",
+                  height: 200,
+                ), // 예시 이미지
                 const SizedBox(height: 16),
                 Text("길이: ${fishCard["realSize"]} cm"),
                 const SizedBox(height: 16),

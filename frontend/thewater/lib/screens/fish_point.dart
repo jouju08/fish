@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 
 class SecondPage extends StatefulWidget {
@@ -15,8 +16,46 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<PointModel>(context, listen: false).getPointList();
+    _loadMarkers();
+  }
+
+  void _loadMarkers() async {
+    Provider.of<PointModel>(context, listen: false).getPointList();
+    final points = Provider.of<PointModel>(context, listen: false).pointList;
+    setState(() {
+      _markersKorea =
+          points
+              .map(
+                (point) => Marker(
+                  markerId: MarkerId(
+                    LatLng(
+                      double.parse(point['latitude']),
+                      double.parse(point['longitude']),
+                    ).toString(),
+                  ),
+                  position: LatLng(
+                    double.parse(point['latitude']),
+                    double.parse(point['longitude']),
+                  ),
+                  infoWindow: InfoWindow(title: point['pointName']),
+                  onTap: () {
+                    debugPrint("marker onTap 함수 호출");
+                    setState(() {
+                      _selectedMarker = _markersKorea
+                          .union(_markers)
+                          .firstWhere(
+                            (marker) =>
+                                marker.markerId.value ==
+                                LatLng(
+                                  double.parse(point['latitude']),
+                                  double.parse(point['longitude']),
+                                ).toString(),
+                          );
+                    });
+                  },
+                ),
+              )
+              .toSet();
     });
   }
 
@@ -37,6 +76,9 @@ class _SecondPageState extends State<SecondPage> {
     setState(() {
       if (_selectedMarker != null) {
         _markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
+        _markersKorea.removeWhere(
+          (marker) => marker == _selectedMarker,
+        ); // 마커 삭제
         _selectedMarker = null; // 선택된 마커 초기화
       }
     });
@@ -52,6 +94,41 @@ class _SecondPageState extends State<SecondPage> {
     _tapTimer = Timer(const Duration(milliseconds: 200), () {
       _showMarkerConfirmationDialog();
     });
+  }
+
+  void _showBottomSheet() {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: EdgeInsets.all(16),
+          height: MediaQuery.of(context).size.height * 0.95, // 모달 높이 지정
+          width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _selectedMarker?.infoWindow.title ?? "마커 정보",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Text(_selectedMarker?.position.latitude.toString() ?? "위치 정보"),
+              Text(_selectedMarker?.position.longitude.toString() ?? "위치 정보"),
+              Text("이곳에 원하는 정보를 넣으세요."),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context), // 모달 닫기
+                child: Text("닫기"),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   void _showMarkerConfirmationDialog() {
@@ -92,9 +169,11 @@ class _SecondPageState extends State<SecondPage> {
                     onTap: () {
                       debugPrint("marker onTap 함수 호출");
                       setState(() {
-                        _selectedMarker = _markers.firstWhere(
-                          (marker) => marker.markerId.value == markerIdStr,
-                        );
+                        _selectedMarker = _markersKorea
+                            .union(_markers)
+                            .firstWhere(
+                              (marker) => marker.markerId.value == markerIdStr,
+                            );
                       });
                     },
                     onDrag: (LatLng latlng) {
@@ -161,16 +240,34 @@ class _SecondPageState extends State<SecondPage> {
             ),
             if (_selectedMarker != null) // 선택된 마커가 있을 때만 나타나기
               Positioned(
-                top: 20,
-                right: 20,
+                bottom: 50, // 화면 높이 중앙 (버튼 높이 고려)
+                left:
+                    MediaQuery.of(context).size.width / 2 -
+                    65, // 화면 너비 중앙 (버튼 너비 고려)
                 child: ElevatedButton(
-                  onPressed: _deleteSelectedMarker,
+                  onPressed: _showBottomSheet,
                   child: const Text(
-                    '마커 삭제',
+                    '상세 정보 보기',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
+            // if (_selectedMarker != null) // 선택된 마커가 있을 때만 나타나기
+            //   Positioned(
+            //     top:
+            //         MediaQuery.of(context).size.height /
+            //         4, // 화면 높이 중앙 (버튼 높이 고려)
+            //     left:
+            //         MediaQuery.of(context).size.width / 2 -
+            //         50, // 화면 너비 중앙 (버튼 너비 고려)
+            //     child: ElevatedButton(
+            //       onPressed: _deleteSelectedMarker,
+            //       child: const Text(
+            //         '마커 삭제',
+            //         style: TextStyle(fontWeight: FontWeight.bold),
+            //       ),
+            //     ),
+            //   ),
           ],
         ),
       ),
