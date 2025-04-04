@@ -154,7 +154,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.gif'),
+              image: AssetImage('assets/image/background.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -199,13 +199,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     GuestBookEntry(
       author: '홍재민',
       content: '헤응!',
-      date: DateTime.utc(1998,10,06),
+      date: DateTime.utc(1998, 10, 06),
     ),
   ];
   List<RankingEntry> rankingEntries = [
     // RankingEntry(
     //   author: '킹국건',
-    //   introduce: '저는 주로 여수에서 활동합니다.', 
+    //   introduce: '저는 주로 여수에서 활동합니다.',
     //   price: 231341231,
     // )
   ];
@@ -249,7 +249,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
           height: screenHeight - topOffset,
@@ -276,7 +276,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.transparent, 
+      backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
         return Container(
           height: screenHeight - topOffset,
@@ -297,6 +297,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   }
 
   void _openFishSelectModal() {
+    final fishCardList =
+        Provider.of<FishModel>(context, listen: false).fishCardList;
+
+    final visibleCards =
+        fishCardList.where((card) => card['hasVisible'] == true).toList();
+
+    final fishImages =
+        visibleCards
+            .map((card) => "assets/image/${card['fishName']}.png")
+            .toList();
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -307,16 +317,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             onToggleFish: (String path) {
               setState(() {
                 if (_selectedFish.contains(path)) {
-                  // 이미 추가된 경우: 수족관에서 제거
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
                 } else {
-                  // 추가되지 않은 경우: 수족관에 추가 (낙하 애니메이션 시작)
-                  fishManager.addFallingFish(path);
+                  String fishName = path.split('/').last.split('.').first;
+                  fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
                 }
               });
             },
+            fishImages: fishImages, // ✅ 여기 전달
           ),
     );
   }
