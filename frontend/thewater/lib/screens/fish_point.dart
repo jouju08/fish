@@ -15,26 +15,8 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
-    _loadMarkers();
-  }
-
-  void _loadMarkers() async {
-    final points =
-        await Provider.of<PointModel>(context, listen: false).getPointList();
-    setState(() {
-      _markersKorea =
-          points
-              .map(
-                (point) => Marker(
-                  markerId: MarkerId(point['id'].toString()),
-                  position: LatLng(
-                    double.parse(point['latitude']),
-                    double.parse(point['longitude']),
-                  ),
-                  infoWindow: InfoWindow(title: point['pointName']),
-                ),
-              )
-              .toSet();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PointModel>(context, listen: false).getPointList();
     });
   }
 
