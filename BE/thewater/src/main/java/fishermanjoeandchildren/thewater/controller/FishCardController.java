@@ -67,11 +67,8 @@ public class FishCardController {
     @GetMapping("/myfish/image/{filename}")
     public ResponseEntity<Resource> getImage(@PathVariable String filename) throws IOException {
         Path imagePath = Paths.get(uploadDir).resolve(filename).normalize();
-        System.out.println(imagePath);
         Resource resource = new UrlResource(imagePath.toUri());
-        System.out.println("RESORCE!!!");
-        System.out.println(resource.exists());
-        System.out.println(resource.isReadable());
+
         if (resource.exists() && resource.isReadable()) {
             String contentType = Files.probeContentType(imagePath);
             System.out.println("CONTENT TYPE");
