@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/models/fish.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
@@ -226,7 +227,10 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
     _initMenuAnimation();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final fishModel = Provider.of<FishModel>(context, listen: false);
+      await fishModel.getFishCardList();
+
       fishManager = FishSwimmingManager(
         tickerProvider: this,
         context: context,
@@ -235,6 +239,20 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
         },
       );
       fishManager.startFishMovement();
+
+      final visibleFishList =
+          fishModel.fishCardList
+              .where((fish) => fish["hasVisible"] == true)
+              .toList();
+
+      for (var fish in visibleFishList) {
+        final fishName = fish["fishName"];
+        final path = "assets/image/$fishName.png";
+        fishManager.addFallingFish(path, fishName);
+
+        await Future.delayed(const Duration(milliseconds: 600));
+      }
+
       setState(() {
         fishManagerInitialized = true;
       });
@@ -297,20 +315,28 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
     );
   }
 
-  void _openFishSelectModal() {
-    final fishCardList =
-        Provider.of<FishModel>(context, listen: false).fishCardList;
+  void _openFishSelectModal() async {
+    final fishModel = Provider.of<FishModel>(context, listen: false);
+
+    // 최신 서버 데이터 가져오기 (중요!)
+    await fishModel.getFishCardList();
+    final fishCardList = fishModel.fishCardList;
 
     final fishDataList =
         fishCardList
-            .map((card) => {"id": card["id"], "fishName": card["fishName"]})
+            .map(
+              (card) => {
+                "id": card["id"],
+                "fishName": card["fishName"],
+                "hasVisible": card["hasVisible"] ?? false,
+              },
+            )
             .toList();
 
-    final uniqueFishNames =
-        fishCardList.map((card) => card['fishName'] as String).toSet();
-
     final fishImages =
-        uniqueFishNames.map((name) => "assets/image/$name.png").toList();
+        fishDataList
+            .map((data) => "assets/image/${data["fishName"]}.png")
+            .toList();
 
     showModalBottomSheet(
       context: context,
@@ -318,27 +344,29 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       isScrollControlled: true,
       builder:
           (_) => FishSelectModal(
-            selectedFish: _selectedFish,
             fishDataList: fishDataList,
             fishImages: fishImages,
-            onToggleFish: (String path, int fishId) async {
+            selectedFish:
+                fishDataList
+                    .where((fish) => fish["hasVisible"])
+                    .map((fish) => "assets/image/${fish["fishName"]}.png")
+                    .toSet(),
+            onToggleFish: (
+              String path,
+              int fishId,
+              bool currentHasVisible,
+            ) async {
               setState(() {
-                if (_selectedFish.contains(path)) {
+                if (currentHasVisible) {
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
-                  Provider.of<FishModel>(
-                    context,
-                    listen: false,
-                  ).unsetFishVisible(fishId);
                 } else {
                   String fishName = path.split('/').last.split('.').first;
                   fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
-                  Provider.of<FishModel>(
-                    context,
-                    listen: false,
-                  ).setFishVisible(fishId);
                 }
+                debugPrint("선택된 물고기 목록 : $_selectedFish");
+                fishModel.toggleFishVisibility(fishId);
               });
             },
           ),
@@ -522,6 +550,23 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           ],
         ),
         // 펼쳐지는 메뉴
+        if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
+
+        if (showMoreMenu)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  showMoreMenu = false;
+                  _menuController.reverse();
+                });
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
         Positioned(
           top: 120,
           right: 16,
@@ -531,9 +576,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
           ),
         ),
         // 물고기 애니메이션 위젯들
-        if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
-        if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
-        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
       ],
     );
   }

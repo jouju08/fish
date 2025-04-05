@@ -13,7 +13,7 @@ class FishModel extends ChangeNotifier {
   List<dynamic> get fishCardList =>
       _fishCardList; // getter 함수로 fishCardList를 가져옴
 
-  void getFishCardList() async {
+  Future<void> getFishCardList() async {
     final token = await _storage.read(key: 'token');
     if (token == null) {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
@@ -34,34 +34,28 @@ class FishModel extends ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
-  void setFishVisible(int fishId) async {
+  void toggleFishVisibility(int fishId) async {
     final token = await _storage.read(key: 'token');
-    final url = Uri.parse('$baseUrl/collection/myfish/visible/$fishId');
+    if (token == null) {
+      debugPrint("❌ 토큰이 없습니다.");
+      return;
+    }
+
+    final url = Uri.parse('$baseUrl/aquarium/visible/$fishId');
     final headers = {
       'Authorization': 'Bearer $token',
       'Content-Type': 'application/json',
     };
 
     final response = await http.patch(url, headers: headers);
-    if (response.statusCode == 200) {
-      debugPrint("✅ 물고기 표시 설정 완료 (id: $fishId)");
-      getFishCardList(); // 최신화
-    } else {
-      debugPrint("❌ 물고기 표시 설정 실패 (${response.statusCode})");
-    }
-  }
 
-  void unsetFishVisible(int fishId) async {
-    final token = await _storage.read(key: 'token');
-    final url = Uri.parse('$baseUrl/collection/myfish/unvisible/$fishId');
-    final headers = {'Authorization': 'Bearer $token'};
-
-    final response = await http.patch(url, headers: headers);
     if (response.statusCode == 200) {
-      debugPrint("✅ 물고기 표시 해제 완료 (id: $fishId)");
-      getFishCardList(); // 최신화
+      debugPrint("✅ hasVisible 토글 성공 (id: $fishId)");
+      getFishCardList(); // 서버 데이터 최신화
     } else {
-      debugPrint("❌ 물고기 표시 해제 실패 (${response.statusCode})");
+      debugPrint(
+        "❌ hasVisible 토글 실패 fishId : $fishId (${response.statusCode}), 응답내용: ${response.body}",
+      );
     }
   }
 
@@ -72,7 +66,7 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
-    final url = Uri.parse('$baseUrl/api/collection/myfish/all').toString();
+    final url = Uri.parse('$baseUrl/collection/myfish/all').toString();
     final fishCard = {
       "fishName": fishName,
       "fishingPointId": 1,
@@ -123,7 +117,7 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
-    final url = Uri.parse('$baseUrl/api/collection/myfish/delete/$cardId');
+    final url = Uri.parse('$baseUrl/collection/myfish/delete/$cardId');
     final headers = {'Authorization': 'Bearer $token'};
     final response = await http.delete(url, headers: headers);
     if (response.statusCode == 200) {

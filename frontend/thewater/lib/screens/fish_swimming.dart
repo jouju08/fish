@@ -159,9 +159,14 @@ class FishSwimmingManager {
   }
 
   void addFallingFish(String imagePath, String fishName) {
+    debugPrint("addFallingFish() 실행됨 : $fishName");
     final newFish = FallingFish(imagePath: imagePath);
     fallingFishes.add(newFish);
-    animateFishFall(newFish, fishName);
+    update();
+
+    Future.delayed(Duration.zero, () {
+      animateFishFall(newFish, fishName);
+    });
   }
 
   void animateFishFall(FallingFish fish, String fishName) {
@@ -173,9 +178,12 @@ class FishSwimmingManager {
       double progress = (fish.top / targetY).clamp(0.0, 1.0);
       double currentSpeed = baseSpeed * (1 - progress);
 
+      // debugPrint("낙하진행중 : top=${fish.top},speed=$currentSpeed");
+
       if (fish.top <= targetY - 2) {
         fish.top += currentSpeed;
       } else {
+        debugPrint("낙화완료 : $fishName 수영시작");
         fish.landed = true;
         timer.cancel();
 
@@ -183,7 +191,8 @@ class FishSwimmingManager {
         int index = random.nextInt(directions.length);
         double dx = directions[index]['dx']!;
         double dy = directions[index]['dy']!;
-        double movingDuration = 1.0 + random.nextDouble() * 2.0; // 1~3초 이동
+        double movingDuration = 1.0 + random.nextDouble() * 2.0; // 이동시간
+
         SwimmingFish newSwimmingFish = SwimmingFish(
           imagePath: fish.imagePath,
           fishName: fishName,
@@ -198,11 +207,13 @@ class FishSwimmingManager {
         );
         swimmingFishes.add(newSwimmingFish);
         fallingFishes.remove(fish);
+        update();
       }
     });
   }
 
   void removeFishWithFishingLine(String imagePath) {
+    debugPrint("물고기 제거 : $imagePath");
     final index = swimmingFishes.indexWhere(
       (fish) => fish.imagePath == imagePath,
     );
