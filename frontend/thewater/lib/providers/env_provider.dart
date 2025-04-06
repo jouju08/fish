@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'dart:io';
-import 'package:dio/dio.dart';
 
 const String baseUrl = 'http://j12c201.p.ssafy.io';
 
