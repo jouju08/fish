@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/point_provider.dart';
 
 const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
@@ -85,7 +88,7 @@ class UserModel extends ChangeNotifier {
   }
 
   /// 로그아웃
-  void logout() {
+  void logout(BuildContext context) {
     debugPrint("UserModel().logout() 함수 실행");
     _storage.delete(key: 'token');
     _id = 0;
@@ -95,6 +98,13 @@ class UserModel extends ChangeNotifier {
     _loginType = '';
     _email = '';
     _isLoggedIn = false;
+
+    // FishModel 접근해서 리스트 초기화
+    final fishModel = Provider.of<FishModel>(context, listen: false);
+    fishModel.clearFishCardList();
+
+    final pointModel = Provider.of<PointModel>(context, listen: false);
+    pointModel.clearPointList();
 
     notifyListeners();
   }

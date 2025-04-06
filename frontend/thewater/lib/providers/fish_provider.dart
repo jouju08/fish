@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,6 +36,11 @@ class FishModel extends ChangeNotifier {
     notifyListeners(); // 상태 변경 알림
   }
 
+  void clearFishCardList() {
+    _fishCardList = [];
+    notifyListeners();
+  }
+
   void toggleFishVisibility(int fishId) async {
     final token = await _storage.read(key: 'token');
     if (token == null) {
@@ -66,16 +73,15 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
-    final url = Uri.parse('$baseUrl/collection/myfish/all').toString();
+    final url = Uri.parse('$baseUrl/collection/myfish/add').toString();
     final fishCard = {
       "fishName": fishName,
-      "fishingPointId": 1,
-      "realSize": realSize,
+      "fishSize": realSize,
       "sky": 0,
       "temperature": 0,
       "waterTemperature": 0,
-      "latitude": 0,
-      "longitude": 0,
+      "latitude": 123,
+      "longitude": 32,
       "tide": 0,
       "comment": "string",
       "hasVisible": true,
@@ -100,18 +106,19 @@ class FishModel extends ChangeNotifier {
 
       if (response.statusCode == 200) {
         debugPrint("addFishCard() 성공: ${response.data}");
+        await getFishCardList(); // 전체 리스트 다시 불러오기
+        notifyListeners();
       } else {
         debugPrint(
           "addFishCard() 실패 (${response.statusCode}): ${response.data}",
         );
       }
-      notifyListeners();
     } catch (e) {
       debugPrint("addFishCard() 예외 발생: $e");
     }
   }
 
-  void deleteFishCard(int cardId) async {
+  void deleteFishCard(BuildContext context, int cardId) async {
     final token = await _storage.read(key: 'token');
     if (token == null) {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
@@ -122,8 +129,32 @@ class FishModel extends ChangeNotifier {
     final response = await http.delete(url, headers: headers);
     if (response.statusCode == 200) {
       debugPrint("deleteFishCard() 성공: ${response.body}");
+      await getFishCardList();
+      Navigator.pop(context);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('물고기 카드를 삭제했습니다')));
     } else {
       debugPrint("deleteFishCard() 실패 (${response.statusCode})");
+    }
+
+    notifyListeners();
+  }
+
+  Future<Uint8List> fetchImageBytes(String filename) async {
+    final token = await _storage.read(key: 'token');
+    if (token == null) {
+      debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
+    }
+    final headers = {'Authorization': 'Bearer $token'};
+    final url = Uri.parse("$baseUrl/collection/myfish/image/$filename");
+    final response = await http.get(url, headers: headers);
+    debugPrint("filename $filename ");
+    if (response.statusCode == 200) {
+      return response.bodyBytes; // ← 이미지 바이트 데이터
+    } else {
+      debugPrint("fetchImage 오류 ${response.statusCode}");
+      throw Exception('이미지 가져오기 실패');
     }
   }
 }

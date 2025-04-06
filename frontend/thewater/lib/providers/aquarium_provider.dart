@@ -71,7 +71,6 @@ class AquariumModel extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error in fetchAquariumInfo: $e');
-      rethrow;
     }
   }
 
