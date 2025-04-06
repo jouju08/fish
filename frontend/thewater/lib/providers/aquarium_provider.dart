@@ -133,6 +133,37 @@ class AquariumModel extends ChangeNotifier {
     }
   }
 
+  // 친구 수족관 좋아요 기능
+  Future<void> toggleLikeFriendAquarium(int friendAquariumId) async {
+    try {
+      final tk = await token;
+      final url = Uri.parse('$baseUrl/aquarium/like/$friendAquariumId');
+      final headers = {
+        'Authorization': 'Bearer $tk',
+        'Content-Type': 'application/json',
+      };
+
+      http.Response response;
+
+      // 현재 친구 수족관을 좋아요 했는지 여부를 확인
+      if (_likedByMe) {
+        response = await http.delete(url, headers: headers);
+      } else {
+        response = await http.post(url, headers: headers);
+      }
+
+      if (response.statusCode == 200) {
+        // 서버 상태 업데이트 성공 후 최신 정보 다시 받아오기
+        await fetchAquariumInfo(friendAquariumId);
+        notifyListeners();
+      } else {
+        debugPrint('친구 수족관 좋아요 실패: ${response.statusCode}');
+      }
+    } catch (e) {
+      debugPrint('Error in toggleLikeFriendAquarium: $e');
+    }
+  }
+
   /// 수족관 정보 리셋 (회원 탈퇴 등)
   void resetAquarium() {
     _aquariumId = 0;

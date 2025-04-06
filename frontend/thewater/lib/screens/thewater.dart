@@ -11,6 +11,7 @@ import 'fish_swimming.dart';
 import 'package:thewater/screens/guestbook.dart';
 import 'package:thewater/screens/ranking.dart';
 import 'package:thewater/screens/mypage.dart';
+import 'package:thewater/providers/search_provider.dart';
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -23,6 +24,8 @@ class TheWater extends StatefulWidget {
 class _TheWaterState extends State<TheWater> {
   int bottomNavIndex = 0;
   int pageIndex = 0;
+  String? userComment;
+
   @override
   void initState() {
     super.initState();
@@ -30,7 +33,10 @@ class _TheWaterState extends State<TheWater> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userModel = Provider.of<UserModel>(context, listen: false);
       final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
-      // 사용자 정보 가져오고 기다림
+      final searchProvider = Provider.of<SearchProvider>(
+        context,
+        listen: false,
+      );
       await userModel.fetchUserInfo();
 
       // user id 확인 후 수족관정보 가져오는거에 userid 대입해서 가져오는거
@@ -39,6 +45,13 @@ class _TheWaterState extends State<TheWater> {
         debugPrint("수족관 정보 불러오기 성공, userId : ${userModel.id}");
       } else {
         debugPrint("사용자 id가 아직 0입니다.");
+      }
+
+      await searchProvider.searchUsersByNickname(userModel.nickname);
+      if (searchProvider.searchResults.isNotEmpty) {
+        setState(() {
+          userComment = searchProvider.searchResults.first.comment;
+        });
       }
     });
   }
@@ -54,6 +67,13 @@ class _TheWaterState extends State<TheWater> {
     setState(() {
       pageIndex = 2;
     });
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]},',
+    );
   }
 
   @override
@@ -115,7 +135,11 @@ class _TheWaterState extends State<TheWater> {
         ),
         body: IndexedStack(
           index: pageIndex,
-          children: const [FirstPage(), SecondPage(), CollectionPage()],
+          children: [
+            FirstPage(userComment: userComment, formatPrice: _formatPrice),
+            SecondPage(),
+            CollectionPage(),
+          ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         floatingActionButton: FloatingActionButton(
@@ -150,7 +174,10 @@ class _TheWaterState extends State<TheWater> {
 }
 
 class FirstPage extends StatelessWidget {
-  const FirstPage({Key? key}) : super(key: key);
+  final String? userComment;
+  final String Function(int) formatPrice;
+  const FirstPage({Key? key, this.userComment, required this.formatPrice})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,11 +185,11 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.png'),
+              image: AssetImage('assets/image/background.gif'),
               fit: BoxFit.cover,
             ),
           ),
-          child: const MainPage(),
+          child: MainPage(userComment: userComment, formatPrice: formatPrice),
         ),
       ),
     );
@@ -170,7 +197,9 @@ class FirstPage extends StatelessWidget {
 }
 
 class MainPage extends StatefulWidget {
-  const MainPage({super.key});
+  final String? userComment;
+  final String Function(int) formatPrice;
+  const MainPage({super.key, this.userComment, required this.formatPrice});
   @override
   _MainPageState createState() => _MainPageState();
 }
@@ -447,9 +476,13 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                               ),
                             ),
                           ),
-                          Text(
-                            "이번달 누적 : ${Provider.of<FishModel>(context).fishCardList.length}마리",
-                            style: const TextStyle(fontSize: 14),
+                          Consumer<AquariumModel>(
+                            builder: (context, aquarium, _) {
+                              return Text(
+                                '수족관 가치 : ${widget.formatPrice(aquarium.totalPrice)}원',
+                                style: const TextStyle(fontSize: 15),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -511,12 +544,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
-                    "수족관 가치 : 3,600,000원",
-                    style: TextStyle(fontSize: 18),
-                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {
