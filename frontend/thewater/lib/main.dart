@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/guestbook_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
@@ -32,6 +33,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => EnvModel()),
         ChangeNotifierProvider(create: (_) => RankingProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
+        ChangeNotifierProvider(create: (_) => GuestBookProvider()),
       ],
       child: MaterialApp(
         theme: ThemeData(
