@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
-import 'package:thewater/providers/user_provider.dart';
-import 'package:thewater/providers/visit_provider.dart';
+import 'package:thewater/providers/guestbook_provider.dart';
 import 'fish_swimming.dart';
 
 class FriendAquarium extends StatefulWidget {
@@ -22,6 +21,7 @@ class _FriendAquariumState extends State<FriendAquarium>
     with TickerProviderStateMixin {
   late FishSwimmingManager fishManager;
   bool fishManagerInitialized = false;
+  final TextEditingController _guestBookController = TextEditingController();
 
   @override
   void initState() {
@@ -29,29 +29,7 @@ class _FriendAquariumState extends State<FriendAquarium>
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
-      final userModel = Provider.of<UserModel>(context, listen: false);
-
-      // 친구 수족관 정보 가져오기
       await aquariumModel.fetchAquariumInfo(widget.userId);
-
-      // 자신의 수족관이 아닐 경우만 친구 방문수 증가
-      if (userModel.id != widget.userId) {
-        final token = await userModel.token;
-        if (token != null) {
-          final visitApi = VisitApi();
-          final success = await visitApi.visitAquarium(
-            aquariumId: widget.userId, // 친구의 아쿠아리움 ID
-            token: token,
-          );
-          if (success) {
-            debugPrint("친구 수족관 방문 카운트 성공!");
-          } else {
-            debugPrint("친구 수족관 방문 카운트 실패!");
-          }
-        } else {
-          debugPrint("토큰이 존재하지 않습니다.");
-        }
-      }
 
       fishManager = FishSwimmingManager(
         tickerProvider: this,
@@ -81,6 +59,7 @@ class _FriendAquariumState extends State<FriendAquarium>
   @override
   void dispose() {
     fishManager.dispose();
+    _guestBookController.dispose();
     super.dispose();
   }
 
@@ -88,6 +67,98 @@ class _FriendAquariumState extends State<FriendAquarium>
     return price.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (match) => '${match[1]},',
+    );
+  }
+
+  void _showGuestBookModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.7,
+          maxChildSize: 0.95,
+          minChildSize: 0.5,
+          expand: false,
+          builder: (context, controller) {
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 5,
+                      margin: const EdgeInsets.only(top: 8, bottom: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[400],
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, bottom: 8),
+                    child: Text(
+                      "방명록",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                  Expanded(child: Center(child: Text('방명록 내용은 여기에 표시됩니다.'))),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _guestBookController,
+                            decoration: InputDecoration(
+                              hintText: '${widget.nickname} 님에게 방명록을 남겨보세요...',
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.send, color: Colors.blue),
+                          onPressed: () async {
+                            if (_guestBookController.text.trim().isEmpty)
+                              return;
+
+                            // Provider 사용 context를 명확하게 넘겨줌
+                            final success =
+                                await Provider.of<GuestBookProvider>(
+                                  context,
+                                  listen: false,
+                                ).writeGuestBook(
+                                  widget.userId,
+                                  _guestBookController.text,
+                                );
+
+                            if (success) {
+                              _guestBookController.clear();
+                              FocusScope.of(context).unfocus();
+                              Navigator.pop(context);
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -100,7 +171,7 @@ class _FriendAquariumState extends State<FriendAquarium>
             Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/image/background.gif'),
+                  image: AssetImage('assets/image/background.png'),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -120,26 +191,25 @@ class _FriendAquariumState extends State<FriendAquarium>
                           CircleAvatar(
                             radius: 24,
                             backgroundColor: Colors.grey[300],
-                            child: const Icon(Icons.person, size: 30),
+                            child: Icon(Icons.person, size: 30),
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 widget.nickname,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
                               Consumer<AquariumModel>(
-                                builder: (context, aquarium, _) {
-                                  return Text(
-                                    '수족관 가치 : ${_formatPrice(aquarium.totalPrice)}원',
-                                    style: const TextStyle(fontSize: 15),
-                                  );
-                                },
+                                builder:
+                                    (_, aquarium, __) => Text(
+                                      '수족관 가치 : ${_formatPrice(aquarium.totalPrice)}원',
+                                      style: TextStyle(fontSize: 15),
+                                    ),
                               ),
                             ],
                           ),
@@ -147,63 +217,76 @@ class _FriendAquariumState extends State<FriendAquarium>
                       ),
                       Row(
                         children: [
-                          const Text("박문수", style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 5),
+                          Text("방문수", style: TextStyle(fontSize: 12)),
+                          SizedBox(width: 5),
                           Consumer<AquariumModel>(
-                            builder: (context, aquariumModel, child) {
-                              return Text(
-                                '${aquariumModel.visitCount}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                            builder:
+                                (_, aquariumModel, __) => Text(
+                                  '${aquariumModel.visitCount}',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              );
-                            },
                           ),
-                          const SizedBox(width: 10),
+                          SizedBox(width: 10),
                           Consumer<AquariumModel>(
-                            builder: (context, aquariumModel, child) {
-                              return Row(
-                                children: [
-                                  IconButton(
-                                    icon: Icon(
-                                      aquariumModel.likedByMe
-                                          ? Icons.favorite
-                                          : Icons.favorite_border,
-                                      color:
-                                          aquariumModel.likedByMe
-                                              ? Colors.blue
-                                              : Colors.grey,
+                            builder:
+                                (_, aquariumModel, __) => Row(
+                                  children: [
+                                    IconButton(
+                                      icon: Icon(
+                                        aquariumModel.likedByMe
+                                            ? Icons.favorite
+                                            : Icons.favorite_border,
+                                        color:
+                                            aquariumModel.likedByMe
+                                                ? Colors.blue
+                                                : Colors.grey,
+                                      ),
+                                      onPressed: () async {
+                                        await aquariumModel
+                                            .toggleLikeFriendAquarium(
+                                              widget.userId,
+                                            );
+                                      },
                                     ),
-                                    onPressed: () async {
-                                      await aquariumModel
-                                          .toggleLikeFriendAquarium(
-                                            widget.userId,
-                                          );
-                                    },
-                                  ),
-                                  Text(
-                                    '${aquariumModel.likeCount}',
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
+                                    Text(
+                                      '${aquariumModel.likeCount}',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
+                                  ],
+                                ),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const Divider(color: Colors.grey),
+                Divider(color: Colors.grey),
               ],
             ),
             if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
             if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
-            if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: GestureDetector(
+                onTap: () => _showGuestBookModal(context),
+                child: Container(
+                  color: Colors.white,
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    '${widget.nickname}님에게 방명록을 남겨보세요...',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
