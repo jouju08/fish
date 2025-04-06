@@ -1,80 +1,73 @@
-// import 'package:flutter/material.dart';
-// import 'dart:convert';
-// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-// import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-// const String baseUrl = 'http://j12c201.p.ssafy.io:8081/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
-// class UserModel extends ChangeNotifier {
-//   final _storage = const FlutterSecureStorage();
+class RankingEntry {
+  final int aquariumId;
+  final int memberId;
+  final String nickname;
+  final int totalPrice;
+  final String? memberComment;
 
-//   int  _aquariumId = 0;
-//   int _memberId = 0;
-//   String _nickname = '익명의 사용자';
-//   int _totalPrice = 0;
-//   String _memberComment = '';
+  RankingEntry({
+    required this.aquariumId,
+    required this.memberId,
+    required this.nickname,
+    required this.totalPrice,
+    this.memberComment,
+  });
 
-//   // Getters
-//   int get aquariumId => _aquariumId;
-//   int get memberId = _memberId;
+  factory RankingEntry.fromJson(Map<String, dynamic> json) {
+    return RankingEntry(
+      aquariumId: json['aquariumId'],
+      memberId: json['memberId'],
+      nickname: json['nickname'],
+      totalPrice: json['totalPrice'],
+      memberComment: json['memberComment'],
+    );
+  }
+}
 
-//   Future<String?> get token async {
-//     return await _storage.read(key: 'token');
-//   }
+class RankingProvider extends ChangeNotifier {
+  List<RankingEntry> _topRanking = [];
+  List<RankingEntry> _randomRanking = [];
 
-//   /// 로그인
-//   Future<void> login(String loginId, String password) async {
-//     final url = Uri.parse('$baseUrl/users/login');
-//     final headers = {'Content-Type': 'application/json'};
-//     final body = jsonEncode({"loginId": loginId, "password": password});
+  List<RankingEntry> get topRanking => _topRanking;
+  List<RankingEntry> get randomRanking => _randomRanking;
 
-//     final response = await http.post(url, headers: headers, body: body);
-//     final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
+  Future<void> fetchTopRanking({int count = 30}) async {
+    final url = Uri.parse('$baseUrl/aquarium/ranking/top/$count');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'] as List;
+        _topRanking =
+            data.map((json) => RankingEntry.fromJson(json)).toList();
+        notifyListeners();
+      } else {
+        debugPrint("❌ Top 랭킹 호출 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Top 랭킹 예외 발생: $e");
+    }
+  }
 
-//     await _storage.write(key: 'token', value: decodedBody['data']['token']);
-//     await fetchUserInfo(); // fetchUserInfo가 완료될 때까지 기다림
-
-//     notifyListeners(); // 상태 변경을 알림
-//   }
-
-//   /// 사용자 정보 가져오기
-//   Future<void> fetchUserInfo() async {
-//     final token = await _storage.read(key: 'token');
-//     debugPrint("fetchUserInfo 의 토큰 확인: $token");
-//     final url = Uri.parse('$baseUrl/users/me');
-//     final headers = {'Authorization': 'Bearer $token'};
-
-//     final response = await http.get(url, headers: headers);
-//     debugPrint("Response status: ${response.statusCode}");
-
-//     if (response.statusCode == 200) {
-//       final body = jsonDecode(utf8.decode(response.bodyBytes));
-//       debugPrint("200 OK: $body");
-//       _id = body['data']['id'];
-//       _loginId = body['data']['loginId'];
-//       _nickname = body['data']['nickname'];
-//       _loginType = body['data']['loginType'];
-//       _email = body['data']['email'];
-//       _birthday = body['data']['birthday'];
-//       _isLoggedIn = true;
-//       notifyListeners();
-//     } else {
-//       throw Exception('fetchuser 오류: ${response.statusCode}');
-//     }
-//   }
-
-//   /// 로그아웃
-//   void logout() {
-//     debugPrint("UserModel().logout() 함수 실행");
-//     _storage.delete(key: 'token');
-//     _id = 0;
-//     _loginId = '';
-//     _nickname = '익명의 사용자';
-//     _birthday = '';
-//     _loginType = '';
-//     _email = '';
-//     _isLoggedIn = false;
-
-//     notifyListeners();
-//   }
-// }
+  Future<void> fetchRandomRanking({int count = 30}) async {
+    final url = Uri.parse('$baseUrl/aquarium/ranking/random/$count');
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'] as List;
+        _randomRanking =
+            data.map((json) => RankingEntry.fromJson(json)).toList();
+        notifyListeners();
+      } else {
+        debugPrint("❌ Random 랭킹 호출 실패: ${response.statusCode}");
+      }
+    } catch (e) {
+      debugPrint("❌ Random 랭킹 예외 발생: $e");
+    }
+  }
+}

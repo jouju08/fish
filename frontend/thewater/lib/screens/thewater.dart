@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:thewater/models/fish.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
@@ -156,7 +155,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.gif'),
+              image: AssetImage('assets/image/background.png'),
               fit: BoxFit.cover,
             ),
           ),
@@ -204,13 +203,6 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       date: DateTime.utc(1998, 10, 06),
     ),
   ];
-  List<RankingEntry> rankingEntries = [
-    // RankingEntry(
-    //   author: '킹국건',
-    //   introduce: '저는 주로 여수에서 활동합니다.',
-    //   price: 231341231,
-    // )
-  ];
 
   final List<Map<String, String>> menuItems = [
     {"label": "어항", "icon": "assets/icon/어항.png"},
@@ -245,17 +237,17 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               .where((fish) => fish["hasVisible"] == true)
               .toList();
 
-      for (var fish in visibleFishList) {
-        final fishName = fish["fishName"];
-        final path = "assets/image/$fishName.png";
-        fishManager.addFallingFish(path, fishName);
-
-        await Future.delayed(const Duration(milliseconds: 600));
-      }
-
       setState(() {
         fishManagerInitialized = true;
       });
+
+      for (var fish in visibleFishList) {
+        var fishName = fish["fishName"];
+        var path = "assets/image/$fishName.png";
+        fishManager.addFallingFish(path, fishName);
+
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
     });
   }
 
@@ -306,10 +298,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               topRight: Radius.circular(16),
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: RankingModal(entries: rankingEntries),
-          ),
+          child: RankingModal(),
         );
       },
     );
@@ -610,6 +599,9 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             }
             if (label == "방명록") {
               _openGuestBookModal();
+            }
+            if (label == "랭킹") {
+              _openRankingModal();
             }
 
             debugPrint("$label 메뉴 클릭");
