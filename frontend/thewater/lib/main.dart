@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
+import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
@@ -10,6 +11,7 @@ import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/thewater.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
+import 'package:thewater/providers/ranking_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,8 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => UserModel()),
         ChangeNotifierProvider(create: (_) => PointModel()),
         ChangeNotifierProvider(create: (_) => EnvModel()),
+        ChangeNotifierProvider(create: (_) => RankingProvider()),
+        ChangeNotifierProvider(create: (_) => SearchProvider()),
       ],
       child: MaterialApp(
         theme: ThemeData(

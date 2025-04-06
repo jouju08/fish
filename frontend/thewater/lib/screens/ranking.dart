@@ -19,10 +19,11 @@ class _RankingModalState extends State<RankingModal> {
   @override
   void initState() {
     super.initState();
-    final rankingProvider =
-        Provider.of<RankingProvider>(context, listen: false);
-    final searchProvider =
-        Provider.of<SearchProvider>(context, listen: false);
+    final rankingProvider = Provider.of<RankingProvider>(
+      context,
+      listen: false,
+    );
+    final searchProvider = Provider.of<SearchProvider>(context, listen: false);
 
     rankingProvider.fetchTopRanking();
     searchProvider.fetchAllNicknames();
@@ -33,9 +34,10 @@ class _RankingModalState extends State<RankingModal> {
     final rankingProvider = Provider.of<RankingProvider>(context);
     final searchProvider = Provider.of<SearchProvider>(context);
 
-    final List rankingList = isSearching
-        ? searchProvider.searchResults
-        : isRandom
+    final List rankingList =
+        isSearching
+            ? searchProvider.searchResults
+            : isRandom
             ? rankingProvider.randomRanking
             : rankingProvider.topRanking;
 
@@ -84,58 +86,70 @@ class _RankingModalState extends State<RankingModal> {
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
+
           Expanded(
-            child: rankingList.isEmpty
-                ? const Center(child: Text("데이터가 없습니다."))
-                : ListView.builder(
-                    itemCount: rankingList.length,
-                    itemBuilder: (context, index) {
-                      final item = rankingList[index];
-                      final isSearchResult = isSearching;
-
-                      final nickname = isSearchResult
-                          ? item.nickname
-                          : item.nickname;
-                      final comment = isSearchResult
-                          ? (item.comment ?? "한 줄 소개가 없습니다.")
-                          : (item.memberComment ?? "한 줄 소개가 없습니다.");
-                      final totalPrice = isSearchResult
-                          ? null
-                          : item.totalPrice;
-
-                      return ListTile(
-                        leading: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                        title: GestureDetector(
-                          onTap: () {
-                            int aquariumId = isSearchResult
-                                ? item.id
-                                : item.aquariumId;
-                            // 👇 TODO: 해당 유저 어항으로 이동 로직 작성
-                            debugPrint('유저 $nickname 의 어항으로 이동 (id: $aquariumId)');
-                            // Navigator.push(...) 등 활용
-                          },
-                          child: Text(
-                            nickname,
-                            style: const TextStyle(
-                                fontWeight: FontWeight.bold, fontSize: 16),
+            child:
+                rankingList.isEmpty
+                    ? const Center(child: Text("데이터가 없습니다."))
+                    : ListView.separated(
+                      itemCount: rankingList.length,
+                      separatorBuilder:
+                          (context, index) => const Divider(
+                            color: Colors.grey,
+                            thickness: 0.6,
+                            indent: 10,
+                            endIndent: 10,
                           ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (totalPrice != null)
-                              Text('어항 가치 : ₩${_formatPrice(totalPrice)}'),
-                            Text(comment),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                      itemBuilder: (context, index) {
+                        final item = rankingList[index];
+                        final isSearchResult = isSearching;
+
+                        final nickname =
+                            isSearchResult ? item.nickname : item.nickname;
+                        final comment =
+                            isSearchResult
+                                ? (item.comment ?? "한 줄 소개가 없습니다.")
+                                : (item.memberComment ?? "한 줄 소개가 없습니다.");
+                        final totalPrice =
+                            isSearchResult ? null : item.totalPrice;
+
+                        return ListTile(
+                          leading: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          title: GestureDetector(
+                            onTap: () {
+                              int aquariumId =
+                                  isSearchResult ? item.id : item.aquariumId;
+                              debugPrint(
+                                '유저 $nickname 의 어항으로 이동 (id: $aquariumId)',
+                              );
+                            },
+                            child: Text(
+                              nickname,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (totalPrice != null)
+                                Text('어항 가치 : ₩${_formatPrice(totalPrice)}'),
+                              Text(comment),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
           ),
+
           Align(
             alignment: Alignment.bottomRight,
             child: IconButton(
@@ -161,6 +175,8 @@ class _RankingModalState extends State<RankingModal> {
 
   String _formatPrice(int price) {
     return price.toString().replaceAllMapped(
-        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},');
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (Match m) => '${m[1]},',
+    );
   }
 }

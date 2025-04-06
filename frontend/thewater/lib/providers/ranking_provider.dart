@@ -42,15 +42,15 @@ class RankingProvider extends ChangeNotifier {
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body)['data'] as List;
-        _topRanking =
-            data.map((json) => RankingEntry.fromJson(json)).toList();
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes))['data'] as List;
+        _topRanking = data.map((json) => RankingEntry.fromJson(json)).toList();
         notifyListeners();
       } else {
-        debugPrint("❌ Top 랭킹 호출 실패: ${response.statusCode}");
+        debugPrint(" Top 랭킹 호출 실패: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("❌ Top 랭킹 예외 발생: $e");
+      debugPrint(" Top 랭킹 예외 발생: $e");
     }
   }
 
@@ -59,15 +59,16 @@ class RankingProvider extends ChangeNotifier {
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body)['data'] as List;
+        final data =
+            jsonDecode(utf8.decode(response.bodyBytes))['data'] as List;
         _randomRanking =
             data.map((json) => RankingEntry.fromJson(json)).toList();
         notifyListeners();
       } else {
-        debugPrint("❌ Random 랭킹 호출 실패: ${response.statusCode}");
+        debugPrint(" Random 랭킹 호출 실패: ${response.statusCode}");
       }
     } catch (e) {
-      debugPrint("❌ Random 랭킹 예외 발생: $e");
+      debugPrint(" Random 랭킹 예외 발생: $e");
     }
   }
 }
