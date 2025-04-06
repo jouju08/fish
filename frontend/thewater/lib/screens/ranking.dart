@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
 import 'package:thewater/providers/search_provider.dart';
+import 'package:thewater/screens/friend_aquarium.dart';
 
 class RankingModal extends StatefulWidget {
   const RankingModal({super.key});
@@ -10,7 +11,9 @@ class RankingModal extends StatefulWidget {
   State<RankingModal> createState() => _RankingModalState();
 }
 
-class _RankingModalState extends State<RankingModal> {
+class _RankingModalState extends State<RankingModal>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _iconController;
   bool isRandom = false;
   bool isSearching = false;
   String searchQuery = '';
@@ -19,14 +22,24 @@ class _RankingModalState extends State<RankingModal> {
   @override
   void initState() {
     super.initState();
+    _iconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    // 초기 데이터 로딩
     final rankingProvider = Provider.of<RankingProvider>(
       context,
       listen: false,
     );
     final searchProvider = Provider.of<SearchProvider>(context, listen: false);
-
     rankingProvider.fetchTopRanking();
     searchProvider.fetchAllNicknames();
+  }
+
+  @override
+  void dispose() {
+    _iconController.dispose();
+    super.dispose();
   }
 
   @override
@@ -45,7 +58,7 @@ class _RankingModalState extends State<RankingModal> {
 
     return Container(
       height: screenHeight * 0.8,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
@@ -53,6 +66,28 @@ class _RankingModalState extends State<RankingModal> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 핸들바
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[400],
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+
+          // 랭킹 제목 (모드에 따라 다르게)
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, bottom: 8),
+            child: Text(
+              isRandom ? "랭킹 둘러보기" : "주간 랭킹",
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+
           // 검색창
           Row(
             children: [
@@ -60,7 +95,7 @@ class _RankingModalState extends State<RankingModal> {
                 child: TextField(
                   controller: _controller,
                   decoration: const InputDecoration(
-                    hintText: '닉네임을 입력해주세요...',
+                    hintText: '닉네임을 입력해주세요..',
                     border: OutlineInputBorder(),
                     isDense: true,
                   ),
@@ -80,11 +115,9 @@ class _RankingModalState extends State<RankingModal> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          const Text(
-            "주간 랭킹",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
+
+          const SizedBox(height: 12),
+          const Divider(color: Colors.grey, thickness: 0.8),
           const SizedBox(height: 8),
 
           Expanded(
@@ -104,8 +137,7 @@ class _RankingModalState extends State<RankingModal> {
                         final item = rankingList[index];
                         final isSearchResult = isSearching;
 
-                        final nickname =
-                            isSearchResult ? item.nickname : item.nickname;
+                        final nickname = item.nickname;
                         final comment =
                             isSearchResult
                                 ? (item.comment ?? "한 줄 소개가 없습니다.")
@@ -113,9 +145,11 @@ class _RankingModalState extends State<RankingModal> {
                         final totalPrice =
                             isSearchResult ? null : item.totalPrice;
 
+                        final userId = isSearchResult ? item.id : item.memberId;
+
                         return ListTile(
                           leading: Text(
-                            '${index + 1}',
+                            isRandom ? '-' : '${index + 1}',
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -123,10 +157,15 @@ class _RankingModalState extends State<RankingModal> {
                           ),
                           title: GestureDetector(
                             onTap: () {
-                              int aquariumId =
-                                  isSearchResult ? item.id : item.aquariumId;
-                              debugPrint(
-                                '유저 $nickname 의 어항으로 이동 (id: $aquariumId)',
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => FriendsAquariumScreen(
+                                        userId: userId,
+                                        nickname: nickname,
+                                      ),
+                                ),
                               );
                             },
                             child: Text(
@@ -153,7 +192,10 @@ class _RankingModalState extends State<RankingModal> {
           Align(
             alignment: Alignment.bottomRight,
             child: IconButton(
-              icon: const Icon(Icons.cached, size: 30),
+              icon: AnimatedIcon(
+                icon: AnimatedIcons.view_list,
+                progress: _iconController,
+              ),
               onPressed: () async {
                 setState(() {
                   isSearching = false;
@@ -162,8 +204,10 @@ class _RankingModalState extends State<RankingModal> {
 
                 if (isRandom) {
                   await rankingProvider.fetchRandomRanking();
+                  _iconController.forward();
                 } else {
                   await rankingProvider.fetchTopRanking();
+                  _iconController.reverse();
                 }
               },
             ),
