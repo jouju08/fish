@@ -239,7 +239,7 @@ class _ModelScreen2State extends State<ModelScreen2> {
                                     color: Colors.grey.shade300,
                                   ),
                                 ),
-                                child: Image.file(_image!, fit: BoxFit.cover),
+                                child: Image.file(_image!, fit: BoxFit.contain),
                               ),
                             ),
                             const SizedBox(height: 12),

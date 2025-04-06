@@ -93,7 +93,10 @@ class _TheWaterState extends State<TheWater> {
               ListTile(
                 title: const Text("로그아웃"),
                 onTap: () {
-                  Provider.of<UserModel>(context, listen: false).logout();
+                  Provider.of<UserModel>(
+                    context,
+                    listen: false,
+                  ).logout(context);
                   Navigator.pushNamed(context, '/');
                 },
               ),
@@ -156,7 +159,7 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.gif'),
+              image: AssetImage('assets/image/background.png'),
               fit: BoxFit.cover,
             ),
           ),

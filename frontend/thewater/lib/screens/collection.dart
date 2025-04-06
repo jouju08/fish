@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
@@ -130,14 +132,33 @@ class _CollectionPageState extends State<CollectionPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                Image.asset(
-                  "assets/image/${fishCard["fishName"]}.png",
-                  height: 200,
-                ), // 예시 이미지
+                FutureBuilder<Uint8List>(
+                  future: Provider.of<FishModel>(
+                    context,
+                  ).fetchImageBytes(fishCard['cardImg']),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator();
+                    } else if (snapshot.hasError) {
+                      return Text('에러 발생: ${snapshot.error}');
+                    } else {
+                      return Image.memory(snapshot.data!); // ← 바로 화면에 표시
+                    }
+                  },
+                ),
                 const SizedBox(height: 16),
                 Text("길이: ${fishCard["realSize"]} cm"),
                 const SizedBox(height: 16),
                 Text("기타 정보 추가 가능"),
+                TextButton(
+                  onPressed: () {
+                    Provider.of<FishModel>(
+                      context,
+                      listen: false,
+                    ).deleteFishCard(context, fishCard['id']);
+                  },
+                  child: Text("삭제"),
+                ),
                 const Spacer(), // ✅ 버튼을 하단으로 정렬
                 ElevatedButton(
                   onPressed: () => Navigator.pop(context),

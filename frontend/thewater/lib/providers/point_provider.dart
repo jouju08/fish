@@ -14,7 +14,14 @@ class PointModel extends ChangeNotifier {
   List<dynamic> get pointList => _pointList; // getter 함수로 pointList를 가져옴
 
   Future<void> getPointList() async {
-    final token = await _storage.read(key: 'token');
+    // await _storage.deleteAll();
+    String? token;
+    try {
+      token = await _storage.read(key: 'token');
+    } catch (e) {
+      debugPrint("토큰 읽기 실패: $e");
+      return;
+    }
     debugPrint("getPointList() Token: $token"); // 토큰 값 확인
     if (token == null) {
       debugPrint("getPointList() Token is null"); // 토큰이 없을 경우 처리
@@ -37,5 +44,10 @@ class PointModel extends ChangeNotifier {
     } catch (e) {
       debugPrint("getPointList() 예외 발생: $e"); // 예외 발생 시 처리
     }
+  }
+
+  void clearPointList() {
+    _pointList = [];
+    notifyListeners();
   }
 }
