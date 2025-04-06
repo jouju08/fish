@@ -161,7 +161,7 @@ class _RankingModalState extends State<RankingModal>
                                 context,
                                 MaterialPageRoute(
                                   builder:
-                                      (_) => FriendsAquariumScreen(
+                                      (_) => FriendAquarium(
                                         userId: userId,
                                         nickname: nickname,
                                       ),
