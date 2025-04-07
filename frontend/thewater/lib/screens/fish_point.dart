@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:image/image.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
@@ -71,6 +73,38 @@ class _SecondPageState extends State<SecondPage> {
 
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
   Timer? _tapTimer; // 길게 누른 타이머
+  List<String> propertyList = [
+    '시간',
+    '환경',
+    '날씨',
+    '기온',
+    '강수',
+    '풍속',
+    '풍향',
+    '파고',
+    '수온',
+  ];
+  List<String> timeList = [
+    '00시',
+    '03시',
+    '06시',
+    '09시',
+    '12시',
+    '15시',
+    '18시',
+    '21시',
+  ];
+  List<List<dynamic>> data = [
+    ['00시', '03시', '06시', '09시', '12시', '15시', '18시', '21시'],
+    ['최적', '좋음', '보통', '나쁨', '매우나쁨', '최적', '좋음', '보통'],
+    ['구름', '구름', '구름', '구름', '구름', '구름', '구름', '구름'],
+    ['14도', '14도', '14도', '14도', '14도', '14도', '14도', '14도'],
+    ['0mm', '0mm', '0mm', '0mm', '0mm', '0mm', '0mm', '0mm'],
+    ['1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s'],
+    ['북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍'],
+    ['0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m'],
+    ['14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도'],
+  ];
 
   void _deleteSelectedMarker() {
     setState(() {
@@ -104,28 +138,186 @@ class _SecondPageState extends State<SecondPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16),
-          height: MediaQuery.of(context).size.height * 0.95, // 모달 높이 지정
-          width: double.infinity,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                _selectedMarker?.infoWindow.title ?? "마커 정보",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        double? lat = _selectedMarker?.position.latitude;
+        double? lon = _selectedMarker?.position.longitude;
+
+        if (lat == null || lon == null) {
+          return const Center(child: Text("위치 정보가 없습니다"));
+        }
+
+        // 여러 Future를 동시에 기다리기 위해 Future.wait 사용
+        final futures = Future.wait([
+          Provider.of<EnvModel>(
+            context,
+            listen: false,
+          ).getWaterTempList(lat, lon),
+          Provider.of<EnvModel>(context, listen: false).getTide(lat, lon),
+          Provider.of<EnvModel>(
+            context,
+            listen: false,
+          ).getRiseSetList(lat, lon),
+          Provider.of<EnvModel>(
+            context,
+            listen: false,
+          ).getWeatherList(lat, lon),
+        ]);
+
+        return FutureBuilder<List<dynamic>>(
+          future: futures,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text("에러 발생: ${snapshot.error}"));
+            } else if (!snapshot.hasData) {
+              return const Center(child: Text("데이터가 없습니다"));
+            }
+
+            final waterTempList = snapshot.data![0];
+            final tideList = snapshot.data![1];
+            final riseSetList = snapshot.data![2];
+            final weatherList = snapshot.data![3];
+
+            return Container(
+              padding: const EdgeInsets.all(16),
+              width: double.infinity,
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _selectedMarker?.infoWindow.title ?? "마커 정보",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                    Text(weatherList[0]["fcstDate"]),
+                    SizedBox(height: 10),
+                    Row(
+                      children: [
+                        // 2. 왼쪽 속성 고정
+                        Column(
+                          children:
+                              propertyList
+                                  .map(
+                                    (property) => Container(
+                                      height: 40,
+                                      alignment: Alignment.centerLeft,
+                                      width: 40,
+                                      child: Text(property),
+                                    ),
+                                  )
+                                  .toList(),
+                        ),
+                        // 3. 데이터 테이블 (가로 스크롤 영역)
+                        Expanded(
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: List.generate(weatherList.length, (
+                                colIdx,
+                              ) {
+                                return Column(
+                                  children: [
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        weatherList[colIdx]["fcstTime"],
+                                      ),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text("좋음"),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["SKY"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["TMP"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["PCP"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["WSD"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["VEC"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(weatherList[colIdx]["WAV"]),
+                                    ),
+                                    Container(
+                                      width: 60,
+                                      height: 40,
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        waterTempList[colIdx]["temperature"],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                                // return Row(
+                                //   children: List.generate(timeList.length, (
+                                //     colIdx,
+                                //   ) {
+                                //     final value = data[rowIdx][colIdx];
+                                //     return Container(
+                                //       width: 60,
+                                //       height: 40,
+                                //       alignment: Alignment.center,
+                                //       child: Text(value.toString()),
+                                //     );
+                                //   }),
+                                // );
+                              }),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // const SizedBox(height: 10),
+                    // Text("위도: ${lat.toStringAsFixed(6)}"),
+                    // Text("경도: ${lon.toStringAsFixed(6)}"),
+                    // const SizedBox(height: 16),
+                    Text("🌊 Tide List:\n${jsonEncode(tideList)}"),
+                    const SizedBox(height: 8),
+                    Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
+                    const SizedBox(height: 8),
+                    Text("☁️ Weather List:\n${jsonEncode(weatherList)}"),
+                    const SizedBox(height: 8),
+                    Text("🌡️ Water Temp List:\n${jsonEncode(waterTempList)}"),
+                  ],
+                ),
               ),
-              SizedBox(height: 10),
-              Text(_selectedMarker?.position.latitude.toString() ?? "위치 정보"),
-              Text(_selectedMarker?.position.longitude.toString() ?? "위치 정보"),
-              Text("이곳에 원하는 정보를 넣으세요."),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context), // 모달 닫기
-                child: Text("닫기"),
-              ),
-            ],
-          ),
+            );
+          },
         );
       },
     );
@@ -252,22 +444,6 @@ class _SecondPageState extends State<SecondPage> {
                   ),
                 ),
               ),
-            // if (_selectedMarker != null) // 선택된 마커가 있을 때만 나타나기
-            //   Positioned(
-            //     top:
-            //         MediaQuery.of(context).size.height /
-            //         4, // 화면 높이 중앙 (버튼 높이 고려)
-            //     left:
-            //         MediaQuery.of(context).size.width / 2 -
-            //         50, // 화면 너비 중앙 (버튼 너비 고려)
-            //     child: ElevatedButton(
-            //       onPressed: _deleteSelectedMarker,
-            //       child: const Text(
-            //         '마커 삭제',
-            //         style: TextStyle(fontWeight: FontWeight.bold),
-            //       ),
-            //     ),
-            //   ),
           ],
         ),
       ),
