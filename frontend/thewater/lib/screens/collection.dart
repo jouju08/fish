@@ -87,7 +87,7 @@ class _CollectionPageState extends State<CollectionPage> {
                           ),
                         ),
                         Text(
-                          "길이: ${fishCard["realSize"].toString()}cm",
+                          "길이: ${fishCard["fishSize"].toString()}cm",
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -117,12 +117,9 @@ class _CollectionPageState extends State<CollectionPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20), // 둥근 모서리 적용
           ),
-          child: Container(
-            width: MediaQuery.of(context).size.width * 0.8, // 가로 80% 차지
-            height: MediaQuery.of(context).size.height * 0.6, // 세로 60% 차지
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(16),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   fishCard["fishName"]!,
@@ -132,24 +129,33 @@ class _CollectionPageState extends State<CollectionPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                FutureBuilder<Uint8List>(
-                  future: Provider.of<FishModel>(
-                    context,
-                  ).fetchImageBytes(fishCard['cardImg']),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return CircularProgressIndicator();
-                    } else if (snapshot.hasError) {
-                      return Text('에러 발생: ${snapshot.error}');
-                    } else {
-                      return Image.memory(snapshot.data!); // ← 바로 화면에 표시
-                    }
-                  },
+                Container(
+                  width: 300,
+                  height: 300,
+                  child: FutureBuilder<Uint8List>(
+                    future: Provider.of<FishModel>(
+                      context,
+                    ).fetchImageBytes(fishCard['cardImg']),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('에러 발생: ${snapshot.error}');
+                      } else {
+                        return Image.memory(snapshot.data!); // ← 바로 화면에 표시
+                      }
+                    },
+                  ),
                 ),
-                const SizedBox(height: 16),
-                Text("길이: ${fishCard["realSize"]} cm"),
-                const SizedBox(height: 16),
-                Text("기타 정보 추가 가능"),
+                Text("길이: ${fishCard["fishSize"]} cm"),
+                Text("sky : ${fishCard["sky"]}"),
+                Text("temperature : ${fishCard["temperature"]}"),
+                Text("waterTemperature : ${fishCard["waterTemperature"]}"),
+                Text("tide : ${fishCard["tide"]}"),
+                Text("comment : ${fishCard["comment"]}"),
+                Text("latitude : ${fishCard["latitude"]}"),
+                Text("longitude : ${fishCard["longitude"]}"),
+                Text("collectDate : ${fishCard["collectDate"]}"),
                 TextButton(
                   onPressed: () {
                     Provider.of<FishModel>(
@@ -158,11 +164,6 @@ class _CollectionPageState extends State<CollectionPage> {
                     ).deleteFishCard(context, fishCard['id']);
                   },
                   child: Text("삭제"),
-                ),
-                const Spacer(), // ✅ 버튼을 하단으로 정렬
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text("닫기"),
                 ),
               ],
             ),
