@@ -17,6 +17,35 @@ class ModelScreen2 extends StatefulWidget {
 class _ModelScreen2State extends State<ModelScreen2> {
   File? _image;
   String result = "";
+  List<double> modelResult = [];
+  List fishList = [
+    '학공치',
+    '문절망둑',
+    '광어',
+    '복섬',
+    '문어',
+    '주꾸미',
+    '노래미',
+    '무늬오징어',
+    '농어',
+    '갈치',
+    '붕장어',
+    '고등어',
+    '독가시치',
+    '감성돔',
+    '삼치',
+    '성대',
+    '양태',
+    '갑오징어',
+    '전갱이',
+    '망상어',
+    '숭어',
+    '볼락',
+    '우럭',
+    '돌돔',
+    '벵에돔',
+    '참돔',
+  ];
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImageFromGallery() async {
@@ -92,41 +121,18 @@ class _ModelScreen2State extends State<ModelScreen2> {
     List<List<List<double>>> imageArray = await convertFileToArray(file);
     List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
     interpreter.run([imageArray], output);
-    List<double> modelResult = output[0];
+    modelResult = output[0];
     print(modelResult);
     int resultIndex = modelResult.indexOf(
       modelResult.reduce((a, b) => a > b ? a : b),
     );
-    List fishList = [
-      '학공치',
-      '문절망둑',
-      '광어',
-      '복섬',
-      '문어',
-      '주꾸미',
-      '노래미',
-      '무늬오징어',
-      '농어',
-      '갈치',
-      '붕장어',
-      '고등어',
-      '독가시치',
-      '감성돔',
-      '삼치',
-      '성대',
-      '양태',
-      '갑오징어',
-      '전갱이',
-      '망상어',
-      '숭어',
-      '볼락',
-      '우럭',
-      '돌돔',
-      '벵에돔',
-      '참돔',
-    ];
+
     setState(() {
-      result = fishList[resultIndex]!;
+      if (modelResult[resultIndex] > 0.5) {
+        result = fishList[resultIndex]!;
+      } else {
+        result = "찾을 수 없음";
+      }
     });
   }
 
@@ -245,25 +251,30 @@ class _ModelScreen2State extends State<ModelScreen2> {
                             const SizedBox(height: 12),
 
                             // 물고기 이름
-                            Text(
-                              result,
-                              style: const TextStyle(
-                                fontSize: 22, // 더 크게
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  result,
+                                  style: const TextStyle(
+                                    fontSize: 22, // 더 크게
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    showFishProbabilityDialog(context);
+                                  },
+                                  icon: Icon(
+                                    Icons.info_outline,
+                                    color: Colors.black54,
+                                    size: 20,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 6),
-
-                            // 물고기 크기
-                            Text(
-                              "크기: 10cm",
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black54,
-                              ),
-                            ),
                           ],
                         ),
                       ),
@@ -331,6 +342,70 @@ class _ModelScreen2State extends State<ModelScreen2> {
                   const SizedBox(height: 20),
                 ],
               ),
+    );
+  }
+
+  void showFishProbabilityDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Center(
+            child: Text("분류 결과", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          content: SizedBox(
+            width: 150,
+            child: Builder(
+              builder: (context) {
+                // 확률 기준으로 내림차순 정렬
+                final List<Map<String, dynamic>> combinedList = List.generate(
+                  fishList.length,
+                  (index) => {
+                    'name': fishList[index],
+                    'prob': modelResult[index],
+                  },
+                );
+
+                combinedList.sort((a, b) => b['prob'].compareTo(a['prob']));
+
+                return SingleChildScrollView(
+                  child: Table(
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(1),
+                    },
+                    children:
+                        combinedList.map((item) {
+                          return TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  item['name'],
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  item['prob'].toStringAsFixed(4),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
