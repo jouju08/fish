@@ -275,7 +275,11 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
-        var path = "assets/image/$fishName.png";
+        String path;
+        if(fishName == "문어" || fishName == "감성돔") {
+          path = "assets/image/$fishName.gif";
+        }
+        else {path = "assets/image/$fishName.png";}
         fishManager.addFallingFish(path, fishName);
 
         await Future.delayed(const Duration(milliseconds: 500));
