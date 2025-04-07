@@ -37,6 +37,7 @@ class GuestBookProvider with ChangeNotifier {
   Future<bool> writeGuestBook(int aquariumId, String content) async {
     final tokenValue = await token;
     debugPrint("방명록 작성 시 사용되는 토큰: $tokenValue");
+    debugPrint("방명록 작성 시 사용되는 aquariumId : $aquariumId");
     final url = Uri.parse('$baseUrl/guest-book/write/$aquariumId');
 
     final response = await http.post(
@@ -50,9 +51,12 @@ class GuestBookProvider with ChangeNotifier {
 
     if (response.statusCode == 200) {
       notifyListeners();
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      debugPrint('방명록 작성 성공!!!${response.statusCode},$body');
       return true;
     } else {
-      debugPrint("방명록 작성 실패 : ${response.statusCode}, ${response.body}");
+      final body = jsonDecode(utf8.decode(response.bodyBytes));
+      debugPrint("방명록 작성 실패 : ${response.statusCode},$body");
       return false;
     }
   }
@@ -68,7 +72,7 @@ class GuestBookProvider with ChangeNotifier {
         'Content-Type': 'application/json',
       },
       body: jsonEncode({"content": newContent}),
-    );
+    );// 문절망둑, 감성돔, 복섬, 우럭, 뽈락, (광어, 농어, 숭어, 양태 성대)
 
     return response.statusCode == 200;
   }

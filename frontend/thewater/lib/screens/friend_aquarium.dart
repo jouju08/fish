@@ -48,7 +48,11 @@ class _FriendAquariumState extends State<FriendAquarium>
 
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
-        var path = "assets/image/$fishName.png";
+        String path;
+        if ( fishName == "문어" || fishName == "감성돔" || fishName == "삼치") {
+          path = "assets/image/$fishName.png";
+        } else {path = "assets/image/$fishName.png"; }
+        
         fishManager.addFallingFish(path, fishName);
 
         await Future.delayed(const Duration(milliseconds: 500));
@@ -171,7 +175,7 @@ class _FriendAquariumState extends State<FriendAquarium>
             Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/image/background.png'),
+                  image: AssetImage('assets/image/background.gif'),
                   fit: BoxFit.cover,
                 ),
               ),
