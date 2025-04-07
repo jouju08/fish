@@ -17,7 +17,7 @@ public class GuestBookController {
     private final JwtUtil jwtUtil;
 
     @GetMapping("/read/{aquarium-id}")
-    public ApiResponse<?> getGuestBookComments(@RequestParam("aquarium-id") Long aquariumId, HttpServletRequest request){
+    public ApiResponse<?> getGuestBookComments(@PathVariable("aquarium-id") Long aquariumId, HttpServletRequest request){
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 
@@ -33,7 +33,7 @@ public class GuestBookController {
     }
 
     @PostMapping("/write/{aquarium-id}")
-    public ApiResponse<?> writeGuestBookComment(@RequestBody GuestBookRequestDto guestBookDto, @RequestParam("aquarium-id") Long aquariumId, HttpServletRequest request){
+    public ApiResponse<?> writeGuestBookComment(@RequestBody GuestBookRequestDto guestBookDto, @PathVariable("aquarium-id") Long aquariumId, HttpServletRequest request){
         String token = jwtUtil.resolveToken(request);
         Long memberId = jwtUtil.extractUserId(token);
 
