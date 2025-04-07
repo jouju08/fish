@@ -71,8 +71,8 @@ class GuestBookProvider with ChangeNotifier {
         'Authorization': 'Bearer $tokenValue',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({"content": newContent}),
-    );// 문절망둑, 감성돔, 복섬, 우럭, 뽈락, (광어, 농어, 숭어, 양태 성대)
+      body: jsonEncode({"guestBookComment": newContent}),
+    );
 
     return response.statusCode == 200;
   }
@@ -94,6 +94,7 @@ class GuestBookProvider with ChangeNotifier {
 
   Future<List<dynamic>> fetchMyGuestBook() async {
     final tokenValue = await token;
+    // debugPrint("fetchMyGuestBook 함수에서 토큰 들어오나 ? : $tokenValue"); 확인완료
     final url = Uri.parse('$baseUrl/guest-book/read/me');
 
     final response = await http.get(
