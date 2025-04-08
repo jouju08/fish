@@ -1,5 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.INTERNET" />
+        <!-- ✅ [1] 필요한 권한 추가 -->
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+
+    <!-- ✅ [2] ARCore 기능 명시 (필수 하드웨어 선언) -->
+    <uses-feature android:name="android.hardware.camera.ar" android:required="true" />
     <application
         android:label="그물"
         android:name="${applicationName}"
