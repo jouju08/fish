@@ -11,6 +11,7 @@ import fishermanjoeandchildren.thewater.service.MemberService;
 import fishermanjoeandchildren.thewater.db.entity.Member;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -255,5 +256,15 @@ public class MemberController {
                     .data("사용자 인증에 실패했습니다: " + e.getMessage())
                     .build();
         }
+    }
+
+    // 사용자 닉네임 변경하기
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("/update-nickname")
+    public ApiResponse<?> updateMemberNickname(@RequestBody String nickname, HttpServletRequest servletRequest){
+        String token = jwtUtil.resolveToken(servletRequest);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        return memberService.updateNickname(memberId, nickname);
     }
 }
