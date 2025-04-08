@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
+import 'package:thewater/screens/border_model.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
@@ -126,6 +127,17 @@ class _TheWaterState extends State<TheWater> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => const ModelScreen2(),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                title: const Text("누끼 따기"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const BorderModel(),
                     ),
                   );
                 },

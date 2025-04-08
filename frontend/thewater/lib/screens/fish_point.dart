@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image/image.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
+import 'package:thewater/screens/tide_chart.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -15,10 +17,58 @@ class SecondPage extends StatefulWidget {
 }
 
 class _SecondPageState extends State<SecondPage> {
+  final TextEditingController _markerNameController = TextEditingController(
+    text: "낚시 포인트",
+  );
+  final tableScrollController = ScrollController();
+  final chartScrollController = ScrollController();
+  final LatLng _center = const LatLng(34.70, 127.66);
+  final Set<Marker> _markers = {}; // 마커를 저장할 Set
+  late GoogleMapController mapController;
+  late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
+  Set<Marker> _markersKorea = {}; // 마커를 저장할 List
+  Marker? _selectedMarker; // 선택된 마커 저장
+  Timer? _tapTimer; // 길게 누른 타이머
+  List<String> propertyList = [
+    '시간',
+    '환경',
+    '날씨',
+    '기온',
+    '강수',
+    '풍속',
+    '풍향',
+    '파고',
+    '수온',
+  ];
+  int riseIndex = 0;
+
   @override
   void initState() {
     super.initState();
     _loadMarkers();
+    tableScrollController.addListener(_onScroll);
+    tableScrollController.addListener(() {
+      if (chartScrollController.hasClients &&
+          chartScrollController.offset != tableScrollController.offset) {
+        chartScrollController.jumpTo(tableScrollController.offset);
+      }
+    });
+
+    chartScrollController.addListener(() {
+      if (tableScrollController.hasClients &&
+          tableScrollController.offset != chartScrollController.offset) {
+        tableScrollController.jumpTo(chartScrollController.offset);
+      }
+    });
+  }
+
+  void _onScroll() {
+    final offset = tableScrollController.offset;
+    final calculatedIndex = (offset / 10).round();
+
+    setState(() {
+      riseIndex = calculatedIndex.clamp(0, 6);
+    });
   }
 
   void _loadMarkers() async {
@@ -60,51 +110,6 @@ class _SecondPageState extends State<SecondPage> {
               .toSet();
     });
   }
-
-  final TextEditingController _markerNameController = TextEditingController(
-    text: "낚시 포인트",
-  );
-  late GoogleMapController mapController;
-
-  final LatLng _center = const LatLng(34.70, 127.66);
-  final Set<Marker> _markers = {}; // 마커를 저장할 Set
-  Set<Marker> _markersKorea = {}; // 마커를 저장할 List
-  Marker? _selectedMarker; // 선택된 마커 저장
-
-  late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
-  Timer? _tapTimer; // 길게 누른 타이머
-  List<String> propertyList = [
-    '시간',
-    '환경',
-    '날씨',
-    '기온',
-    '강수',
-    '풍속',
-    '풍향',
-    '파고',
-    '수온',
-  ];
-  List<String> timeList = [
-    '00시',
-    '03시',
-    '06시',
-    '09시',
-    '12시',
-    '15시',
-    '18시',
-    '21시',
-  ];
-  List<List<dynamic>> data = [
-    ['00시', '03시', '06시', '09시', '12시', '15시', '18시', '21시'],
-    ['최적', '좋음', '보통', '나쁨', '매우나쁨', '최적', '좋음', '보통'],
-    ['구름', '구름', '구름', '구름', '구름', '구름', '구름', '구름'],
-    ['14도', '14도', '14도', '14도', '14도', '14도', '14도', '14도'],
-    ['0mm', '0mm', '0mm', '0mm', '0mm', '0mm', '0mm', '0mm'],
-    ['1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s', '1m/s'],
-    ['북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍', '북동풍'],
-    ['0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m', '0.2m'],
-    ['14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도', '14.3도'],
-  ];
 
   void _deleteSelectedMarker() {
     setState(() {
@@ -216,6 +221,7 @@ class _SecondPageState extends State<SecondPage> {
                         Expanded(
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
+                            controller: tableScrollController,
                             child: Row(
                               children: List.generate(weatherList.length, (
                                 colIdx,
@@ -282,37 +288,24 @@ class _SecondPageState extends State<SecondPage> {
                                     ),
                                   ],
                                 );
-                                // return Row(
-                                //   children: List.generate(timeList.length, (
-                                //     colIdx,
-                                //   ) {
-                                //     final value = data[rowIdx][colIdx];
-                                //     return Container(
-                                //       width: 60,
-                                //       height: 40,
-                                //       alignment: Alignment.center,
-                                //       child: Text(value.toString()),
-                                //     );
-                                //   }),
-                                // );
                               }),
                             ),
                           ),
                         ),
                       ],
                     ),
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      height: 360,
+                      child: TideChart(
+                        tideData: tideList,
+                        scrollController: chartScrollController,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(riseSetList[riseIndex]["sunrise"]),
 
-                    // const SizedBox(height: 10),
-                    // Text("위도: ${lat.toStringAsFixed(6)}"),
-                    // Text("경도: ${lon.toStringAsFixed(6)}"),
-                    // const SizedBox(height: 16),
-                    Text("🌊 Tide List:\n${jsonEncode(tideList)}"),
-                    const SizedBox(height: 8),
                     Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
-                    const SizedBox(height: 8),
-                    Text("☁️ Weather List:\n${jsonEncode(weatherList)}"),
-                    const SizedBox(height: 8),
-                    Text("🌡️ Water Temp List:\n${jsonEncode(waterTempList)}"),
                   ],
                 ),
               ),
@@ -392,6 +385,13 @@ class _SecondPageState extends State<SecondPage> {
   }
 
   @override
+  void dispose() {
+    // 타이머가 있다면 dispose 시 종료
+    _tapTimer?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -448,12 +448,5 @@ class _SecondPageState extends State<SecondPage> {
         ),
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    // 타이머가 있다면 dispose 시 종료
-    _tapTimer?.cancel();
-    super.dispose();
   }
 }
