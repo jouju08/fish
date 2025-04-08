@@ -25,6 +25,10 @@ dependencies:
   dio: ^5.8.0 # 이미지 업로드를 위한 패키지
   fl_chart: ^0.70.2 # 차트 그리기 위한 패키지
   intl: ^0.18.0 # 날짜 포맷을 위한 패키지
+  geolocator: ^9.0.2
+  permission_handler: ^11.3.1
+  ar_flutter_plugin:
+    path: "lib_plugins/ar_flutter_plugin-0.7.3"
 
 dev_dependencies:
   flutter_test:
