@@ -267,7 +267,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") {
+        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭") {
           path = "assets/image/$fishName.gif";
         } else {
           path = "assets/image/$fishName.png";
@@ -387,7 +387,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
             onToggleFish: (String path, int fishId, bool currentHasVisible) async {
               setState(() {
                 String fishName = path.split('/').last.split('.').first;
-                if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") { // 물고기 추후 추가 예정 gif 로 변환한것들
+                if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭" ) { // 물고기 추후 추가 예정 gif 로 변환한것들
                   path = "assets/image/${fishName}.gif";
                 }
                 if (currentHasVisible) {
