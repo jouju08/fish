@@ -63,7 +63,7 @@ class MyApp extends StatelessWidget {
           '/signup': (context) => SignupScreen(),
           '/fish_cards': (context) => FishCardScreen(),
         },
-        initialRoute: '/',
+        initialRoute: '/login',
       ),
     );
   }
