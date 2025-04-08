@@ -50,7 +50,7 @@ class _FriendAquariumState extends State<FriendAquarium>
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔" || fishName == "삼치") {
+        if (fishName == "문어" || fishName == "감성돔"  || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "문절망둑" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭") {
           path = "assets/image/$fishName.png";
         } else {
           path = "assets/image/$fishName.png";

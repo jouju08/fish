@@ -98,7 +98,7 @@ class UserModel extends ChangeNotifier {
     _loginType = '';
     _email = '';
     _isLoggedIn = false;
-
+    
     // FishModel 접근해서 리스트 초기화
     final fishModel = Provider.of<FishModel>(context, listen: false);
     fishModel.clearFishCardList();
