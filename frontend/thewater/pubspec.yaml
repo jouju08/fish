@@ -23,6 +23,8 @@ dependencies:
   path: ^1.8.0 # 파일 경로를 다루기 위한 패키지
   image_picker: ^0.8.5+3 # 갤러리 이미지 선택을 위한 패키지
   dio: ^5.8.0 # 이미지 업로드를 위한 패키지
+  fl_chart: ^0.70.2 # 차트 그리기 위한 패키지
+  intl: ^0.18.0 # 날짜 포맷을 위한 패키지
 
 dev_dependencies:
   flutter_test:

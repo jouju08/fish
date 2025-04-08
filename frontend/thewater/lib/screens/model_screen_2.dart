@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:thewater/providers/fish_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
 
 class ModelScreen2 extends StatefulWidget {
   const ModelScreen2({super.key});
@@ -81,6 +82,8 @@ class _ModelScreen2State extends State<ModelScreen2> {
         throw Exception('이미지를 디코딩할 수 없습니다');
       }
 
+      int width = decodedImage.width;
+      int height = decodedImage.height;
       // 이미지 리사이징 (224x224)
       img.Image resizedImage = img.copyResize(
         decodedImage,
@@ -89,22 +92,17 @@ class _ModelScreen2State extends State<ModelScreen2> {
         interpolation: img.Interpolation.linear,
       );
 
-      // 224x224x3 형태의 배열 생성
+      // [height][width][3] 형태의 배열 생성
       List<List<List<double>>> imageArray = List.generate(
-        224, // 높이
-        (y) => List.generate(
-          224, // 너비
-          (x) {
-            // 픽셀 값 가져오기
-            int pixel = resizedImage.getPixel(x, y);
-
-            return [
-              img.getBlue(pixel).toDouble(),
-              img.getGreen(pixel).toDouble(),
-              img.getRed(pixel).toDouble(),
-            ];
-          },
-        ),
+        224,
+        (y) => List.generate(224, (x) {
+          int pixel = resizedImage.getPixel(x, y);
+          return [
+            img.getBlue(pixel).toDouble(),
+            img.getGreen(pixel).toDouble(),
+            img.getRed(pixel).toDouble(),
+          ];
+        }),
       );
 
       return imageArray;
@@ -118,7 +116,16 @@ class _ModelScreen2State extends State<ModelScreen2> {
     final interpreter = await Interpreter.fromAsset(
       'assets/QAT_50model_mixed.tflite',
     );
+    final inputTensor = interpreter.getInputTensor(0);
+    debugPrint("Input shape: ${inputTensor.shape}"); // 예: [1, 224, 224, 3]
+    debugPrint("Input type: ${inputTensor.type}"); // 예: Float32
+
+    // 🔹 출력 정보 출력
+    final outputTensor = interpreter.getOutputTensor(0);
+    debugPrint("Output shape: ${outputTensor.shape}"); // 예: [1, 26]
+    debugPrint("Output type: ${outputTensor.type}"); // 예: Float32
     List<List<List<double>>> imageArray = await convertFileToArray(file);
+    debugPrint(imageArray.toString());
     List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
     interpreter.run([imageArray], output);
     modelResult = output[0];
