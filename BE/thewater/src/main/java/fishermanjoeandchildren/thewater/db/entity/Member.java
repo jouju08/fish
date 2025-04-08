@@ -1,5 +1,6 @@
 package fishermanjoeandchildren.thewater.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -45,6 +46,7 @@ public class Member extends Common {
     @Column(nullable = false)
     private Boolean has_deleted=false;
 
+    @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="aquarium_id")
     private Aquarium aquarium;
