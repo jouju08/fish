@@ -84,7 +84,7 @@ class FishModel extends ChangeNotifier {
       "longitude": 32,
       "tide": 0,
       "comment": "string",
-      "hasVisible": true,
+      "hasVisible": false,
     };
     // FormData 생성
     FormData formData = FormData.fromMap({

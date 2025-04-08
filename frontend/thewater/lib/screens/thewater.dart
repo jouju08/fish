@@ -118,7 +118,7 @@ class _TheWaterState extends State<TheWater> {
                     context,
                     listen: false,
                   ).logout(context);
-                  Navigator.pushNamed(context, '/');
+                  Navigator.pushNamed(context, '/login');
                 },
               ),
               ListTile(
@@ -384,17 +384,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     .where((fish) => fish["hasVisible"])
                     .map((fish) => "assets/image/${fish["fishName"]}.png")
                     .toSet(),
-            onToggleFish: (
-              String path,
-              int fishId,
-              bool currentHasVisible,
-            ) async {
+            onToggleFish: (String path, int fishId, bool currentHasVisible) async {
               setState(() {
+                String fishName = path.split('/').last.split('.').first;
+                if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") { // 물고기 추후 추가 예정 gif 로 변환한것들
+                  path = "assets/image/${fishName}.gif";
+                }
                 if (currentHasVisible) {
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
                 } else {
-                  String fishName = path.split('/').last.split('.').first;
                   fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
                 }
