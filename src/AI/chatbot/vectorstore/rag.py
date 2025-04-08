@@ -58,5 +58,3 @@ folder = "/home/juha/Desktop/git/S12P21C201/src/AI/chatbot/fishing_data"
 raw_docs = load_csv(folder)
 split_docs = split_documents(raw_docs)
 vectorstore = create_vector_store(split_docs)
-
-retriever=vectorstore.as_retriever()
