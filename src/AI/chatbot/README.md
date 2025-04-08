@@ -13,8 +13,10 @@
 
 - Prompt를 **System Prompt**와 **Human Prompt**로 나눠 질문 데이터 양이 많아짐에 따른 
 **지시사항 무시 현상**을 개선하였습니다.
-<img src="./assets/prompt.png">
----
+<img src="./assets/prompt.png">   
+
+---  
+
 ### 기술스택
   <img src="https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white"> 
    <img src="https://img.shields.io/badge/langchain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white"> 
