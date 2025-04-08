@@ -20,13 +20,16 @@ class _SecondPageState extends State<SecondPage> {
   final TextEditingController _markerNameController = TextEditingController(
     text: "낚시 포인트",
   );
+  final TextEditingController _commentController = TextEditingController(
+    text: "낚시 포인트 댓글",
+  );
   final tableScrollController = ScrollController();
   final chartScrollController = ScrollController();
   final LatLng _center = const LatLng(34.70, 127.66);
-  final Set<Marker> _markers = {}; // 마커를 저장할 Set
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
-  Set<Marker> _markersKorea = {}; // 마커를 저장할 List
+  Set<Marker> markers = {}; // 마커를 저장할 Set
+  Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
   Timer? _tapTimer; // 길게 누른 타이머
   List<String> propertyList = [
@@ -41,6 +44,7 @@ class _SecondPageState extends State<SecondPage> {
     '수온',
   ];
   int riseIndex = 0;
+  bool onlyMyPoint = false; // 내 마커만 보기
 
   @override
   void initState() {
@@ -73,55 +77,68 @@ class _SecondPageState extends State<SecondPage> {
 
   void _loadMarkers() async {
     await Provider.of<PointModel>(context, listen: false).getPointList();
+    await Provider.of<PointModel>(context, listen: false).getMyPointList();
+    // Provider에서 포인트 리스트 가져오기
     final points = Provider.of<PointModel>(context, listen: false).pointList;
+    final myPoints =
+        Provider.of<PointModel>(context, listen: false).myPointList;
     setState(() {
-      _markersKorea =
-          points
-              .map(
-                (point) => Marker(
-                  markerId: MarkerId(
-                    LatLng(
-                      double.parse(point['latitude']),
-                      double.parse(point['longitude']),
-                    ).toString(),
-                  ),
-                  position: LatLng(
-                    double.parse(point['latitude']),
-                    double.parse(point['longitude']),
-                  ),
-                  infoWindow: InfoWindow(title: point['pointName']),
-                  onTap: () {
-                    debugPrint("marker onTap 함수 호출");
-                    setState(() {
-                      _selectedMarker = _markersKorea
-                          .union(_markers)
-                          .firstWhere(
-                            (marker) =>
-                                marker.markerId.value ==
-                                LatLng(
-                                  double.parse(point['latitude']),
-                                  double.parse(point['longitude']),
-                                ).toString(),
-                          );
-                    });
-                  },
-                ),
-              )
-              .toSet();
+      debugPrint("포인트 리스트: $points");
+      debugPrint("내 포인트 리스트: $myPoints");
+      markers =
+          myPoints.map((point) {
+            final lat = point['latitude'];
+            final lon = point['longitude'];
+            final marker = Marker(
+              markerId: MarkerId(LatLng(lat, lon).toString()),
+              position: LatLng(lat, lon),
+              infoWindow: InfoWindow(title: point['pointName']),
+              onTap: () {
+                debugPrint("marker onTap 함수 호출");
+                setState(() {
+                  _selectedMarker = markers.firstWhere(
+                    (marker) =>
+                        marker.markerId.value == LatLng(lat, lon).toString(),
+                  );
+                });
+              },
+            );
+            return marker;
+          }).toSet();
+      // 마커 리스트를 가져오기
+      markersKorea =
+          points.map((point) {
+            final lat = double.parse(point['latitude']);
+            final lon = double.parse(point['longitude']);
+            return Marker(
+              markerId: MarkerId(LatLng(lat, lon).toString()),
+              position: LatLng(lat, lon),
+              infoWindow: InfoWindow(title: point['pointName']),
+              onTap: () {
+                debugPrint("marker onTap 함수 호출");
+                setState(() {
+                  _selectedMarker = markersKorea.firstWhere(
+                    (marker) =>
+                        marker.markerId.value == LatLng(lat, lon).toString(),
+                  );
+                });
+              },
+            );
+          }).toSet();
     });
   }
 
   void _deleteSelectedMarker() {
     setState(() {
       if (_selectedMarker != null) {
-        _markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
-        _markersKorea.removeWhere(
+        markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
+        markersKorea.removeWhere(
           (marker) => marker == _selectedMarker,
         ); // 마커 삭제
         _selectedMarker = null; // 선택된 마커 초기화
       }
     });
-    debugPrint("after delete $_markers");
+    debugPrint("after delete $markers");
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -342,20 +359,33 @@ class _SecondPageState extends State<SecondPage> {
             TextButton(
               onPressed: () {
                 // 마커 추가
+                Provider.of<PointModel>(context, listen: false)
+                    .addPoint(
+                      _markerNameController.text.trim(),
+                      _lastTappedLocation.latitude,
+                      _lastTappedLocation.longitude,
+                      _markerNameController.text.trim(),
+                    )
+                    .then((_) {
+                      debugPrint("마커 추가 Provider 함수 실행 완료");
+                    });
                 setState(() {
                   String markerIdStr =
                       _lastTappedLocation.toString(); // 마커 ID 저장
                   String markerName = _markerNameController.text.trim();
                   // 새 마커 생성
                   Marker newMarker = Marker(
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueBlue,
+                    ),
                     markerId: MarkerId(markerIdStr),
                     position: _lastTappedLocation,
                     infoWindow: InfoWindow(title: markerName),
                     onTap: () {
                       debugPrint("marker onTap 함수 호출");
                       setState(() {
-                        _selectedMarker = _markersKorea
-                            .union(_markers)
+                        _selectedMarker = markersKorea
+                            .union(markers)
                             .firstWhere(
                               (marker) => marker.markerId.value == markerIdStr,
                             );
@@ -368,7 +398,7 @@ class _SecondPageState extends State<SecondPage> {
                     },
                   );
                   // 생성된 마커를 _markers에 추가
-                  _markers.add(newMarker);
+                  markers.add(newMarker);
                   _markerNameController.text = "낚시 포인트";
                 });
                 Navigator.of(context).pop();
@@ -398,9 +428,20 @@ class _SecondPageState extends State<SecondPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Provider.of<PointModel>(context, listen: false).getPointList();
+              setState(() {
+                onlyMyPoint = !onlyMyPoint;
+              });
             },
-            child: Text("버튼"),
+            child:
+                onlyMyPoint
+                    ? Text(
+                      "모든 마커 보기",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                    : Text(
+                      "내 마커만 보기",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
           ),
         ],
         title: const Text(
@@ -417,7 +458,10 @@ class _SecondPageState extends State<SecondPage> {
                 target: _center,
                 zoom: 11.0,
               ),
-              markers: _markersKorea.union(_markers), // 현재 마커를 GoogleMap에 표시
+              markers:
+                  onlyMyPoint
+                      ? markers
+                      : markersKorea.union(markers), // 현재 마커를 GoogleMap에 표시
               onMapCreated: _onMapCreated,
               onLongPress: (LatLng tappedPoint) {
                 _lastTappedLocation = tappedPoint;
