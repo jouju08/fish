@@ -90,7 +90,10 @@ class _SecondPageState extends State<SecondPage> {
             final lat = point['latitude'];
             final lon = point['longitude'];
             final marker = Marker(
-              markerId: MarkerId(LatLng(lat, lon).toString()),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueBlue,
+              ),
+              markerId: MarkerId(point['pointId'].toString()),
               position: LatLng(lat, lon),
               infoWindow: InfoWindow(title: point['pointName']),
               onTap: () {
@@ -98,7 +101,7 @@ class _SecondPageState extends State<SecondPage> {
                 setState(() {
                   _selectedMarker = markers.firstWhere(
                     (marker) =>
-                        marker.markerId.value == LatLng(lat, lon).toString(),
+                        marker.markerId.value == point['pointId'].toString(),
                   );
                 });
               },
@@ -111,15 +114,14 @@ class _SecondPageState extends State<SecondPage> {
             final lat = double.parse(point['latitude']);
             final lon = double.parse(point['longitude']);
             return Marker(
-              markerId: MarkerId(LatLng(lat, lon).toString()),
+              markerId: MarkerId(point['id'].toString()),
               position: LatLng(lat, lon),
               infoWindow: InfoWindow(title: point['pointName']),
               onTap: () {
                 debugPrint("marker onTap 함수 호출");
                 setState(() {
                   _selectedMarker = markersKorea.firstWhere(
-                    (marker) =>
-                        marker.markerId.value == LatLng(lat, lon).toString(),
+                    (marker) => marker.markerId.value == point['id'].toString(),
                   );
                 });
               },
@@ -131,6 +133,12 @@ class _SecondPageState extends State<SecondPage> {
   void _deleteSelectedMarker() {
     setState(() {
       if (_selectedMarker != null) {
+        Provider.of<PointModel>(
+          context,
+          listen: false,
+        ).deletePoint(int.parse(_selectedMarker!.markerId.value)).then((_) {
+          debugPrint("마커 삭제 Provider 함수 실행 완료");
+        });
         markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
         markersKorea.removeWhere(
           (marker) => marker == _selectedMarker,
@@ -138,6 +146,7 @@ class _SecondPageState extends State<SecondPage> {
         _selectedMarker = null; // 선택된 마커 초기화
       }
     });
+    Navigator.pop(context); // BottomSheet 닫기
     debugPrint("after delete $markers");
   }
 
@@ -208,12 +217,21 @@ class _SecondPageState extends State<SecondPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _selectedMarker?.infoWindow.title ?? "마커 정보",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedMarker?.infoWindow.title ?? "마커 정보",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _deleteSelectedMarker,
+                          child: Text("삭제"),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 10),
                     Text(weatherList[0]["fcstDate"]),
@@ -321,7 +339,6 @@ class _SecondPageState extends State<SecondPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(riseSetList[riseIndex]["sunrise"]),
-
                     Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
                   ],
                 ),
