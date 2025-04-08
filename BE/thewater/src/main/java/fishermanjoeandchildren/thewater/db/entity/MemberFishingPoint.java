@@ -1,5 +1,6 @@
 package fishermanjoeandchildren.thewater.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -35,6 +36,7 @@ public class MemberFishingPoint extends Common {
     private String comment;
 
     // 연관 관계 - 읽기 전용
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "member_id", insertable = false, updatable = false)
     private Member member;
