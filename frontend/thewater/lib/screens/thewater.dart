@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/guestbook_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/border_model.dart';
 import 'package:thewater/screens/model_screen_2.dart';
@@ -224,29 +225,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
   late List<Animation<double>> _fadeAnimations;
-  List<GuestBookEntry> guestBookEntries = [
-    // 방명로끄 목업데이터
-    GuestBookEntry(
-      author: '킹수정',
-      content: '어이어이 나 왔다 간다구~~~',
-      date: DateTime.now(),
-    ),
-    GuestBookEntry(
-      author: '황치치',
-      content: '보라색 점프홀더 깨면 커피',
-      date: DateTime.utc(2024, 01, 22),
-    ),
-    GuestBookEntry(
-      author: '킹주헌',
-      content: '다이어트 작심삼일',
-      date: DateTime.utc(2011, 06, 23),
-    ),
-    GuestBookEntry(
-      author: '홍재민',
-      content: '헤응!',
-      date: DateTime.utc(1998, 10, 06),
-    ),
-  ];
+  List<GuestBookEntry> guestBookEntries = [];
 
   final List<Map<String, String>> menuItems = [
     {"label": "어항", "icon": "assets/icon/어항.png"},
@@ -287,7 +266,12 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
-        var path = "assets/image/$fishName.png";
+        String path;
+        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") {
+          path = "assets/image/$fishName.gif";
+        } else {
+          path = "assets/image/$fishName.png";
+        }
         fishManager.addFallingFish(path, fishName);
 
         await Future.delayed(const Duration(milliseconds: 500));
@@ -297,7 +281,23 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
 
   //Provider.of<CounterProvider>(context).count
 
-  void _openGuestBookModal() {
+  void _openGuestBookModal() async {
+    final guestBookProvider = Provider.of<GuestBookProvider>(
+      context,
+      listen: false,
+    );
+    try {
+      List<GuestBookEntry> fetchedEntries =
+          (await guestBookProvider.fetchMyGuestBook())
+              .map<GuestBookEntry>((data) => GuestBookEntry.fromJson(data))
+              .toList();
+      setState(() {
+        guestBookEntries = fetchedEntries;
+      });
+    } catch (e) {
+      debugPrint("방명록 데이터를 불러오는데 실패했습니다: $e");
+    }
+
     final double topOffset = 200;
     final screenHeight = MediaQuery.of(context).size.height;
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/guestbook_provider.dart';
+import 'package:thewater/screens/guestbook.dart';
 import 'fish_swimming.dart';
 
 class FriendAquarium extends StatefulWidget {
@@ -48,7 +49,13 @@ class _FriendAquariumState extends State<FriendAquarium>
 
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
-        var path = "assets/image/$fishName.png";
+        String path;
+        if (fishName == "문어" || fishName == "감성돔" || fishName == "삼치") {
+          path = "assets/image/$fishName.png";
+        } else {
+          path = "assets/image/$fishName.png";
+        }
+
         fishManager.addFallingFish(path, fishName);
 
         await Future.delayed(const Duration(milliseconds: 500));
@@ -92,28 +99,53 @@ class _FriendAquariumState extends State<FriendAquarium>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 5,
-                      margin: const EdgeInsets.only(top: 8, bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[400],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                  // Center(
+                  // child: Container(
+                  //   width: 40,
+                  //   height: 5,
+                  //   margin: const EdgeInsets.only(top: 8, bottom: 8),
+                  //   // decoration: BoxDecoration(
+                  //   //   color: Colors.grey[400],
+                  //   //   borderRadius: BorderRadius.circular(10),
+                  //   // ),
+                  // ),
+                  // ),
+                  const Padding(
+                    padding: EdgeInsets.only(left: 16.0, bottom: 8),
+                    // child: Text(
+                    //   "방명록",
+                    //   style: TextStyle(
+                    //     fontSize: 20,
+                    //     fontWeight: FontWeight.bold,
+                    //   ),
+                    // ),
+                  ),
+                  Expanded(
+                    child: FutureBuilder<List<dynamic>>(
+                      future: Provider.of<GuestBookProvider>(
+                        context,
+                        listen: false,
+                      ).fetchGuestBookEntries(widget.userId),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        } else if (snapshot.hasError) {
+                          return const Center(
+                            child: Text('방명록을 불러오는 중 오류가 발생했습니다.'),
+                          );
+                        } else {
+                          List<GuestBookEntry> entries =
+                              (snapshot.data as List)
+                                  .map((data) => GuestBookEntry.fromJson(data))
+                                  .toList();
+                          return GuestBookModal(entries: entries);
+                        }
+                      },
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16.0, bottom: 8),
-                    child: Text(
-                      "방명록",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                  Expanded(child: Center(child: Text('방명록 내용은 여기에 표시됩니다.'))),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -123,17 +155,16 @@ class _FriendAquariumState extends State<FriendAquarium>
                             controller: _guestBookController,
                             decoration: InputDecoration(
                               hintText: '${widget.nickname} 님에게 방명록을 남겨보세요...',
-                              border: OutlineInputBorder(),
+                              border: const OutlineInputBorder(),
                             ),
                           ),
                         ),
                         IconButton(
-                          icon: Icon(Icons.send, color: Colors.blue),
+                          icon: const Icon(Icons.send, color: Colors.blue),
                           onPressed: () async {
                             if (_guestBookController.text.trim().isEmpty)
                               return;
 
-                            // Provider 사용 context를 명확하게 넘겨줌
                             final success =
                                 await Provider.of<GuestBookProvider>(
                                   context,
@@ -171,7 +202,7 @@ class _FriendAquariumState extends State<FriendAquarium>
             Container(
               decoration: const BoxDecoration(
                 image: DecorationImage(
-                  image: AssetImage('assets/image/background.png'),
+                  image: AssetImage('assets/image/background.gif'),
                   fit: BoxFit.cover,
                 ),
               ),
