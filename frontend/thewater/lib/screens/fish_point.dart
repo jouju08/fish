@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:math' as math;
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:image/image.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
@@ -13,13 +10,13 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 
 class SecondPage extends StatefulWidget {
-  const SecondPage({super.key});
+  const SecondPage({Key? key}) : super(key: key);
 
   @override
-  State<SecondPage> createState() => _SecondPageState();
+  State<SecondPage> createState() => SecondPageState();
 }
 
-class _SecondPageState extends State<SecondPage> {
+class SecondPageState extends State<SecondPage> {
   final TextEditingController _markerNameController = TextEditingController(
     text: "낚시 포인트",
   );
@@ -54,30 +51,15 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
-    requestLocationPermission();
     _loadMarkers();
-    // tableScrollController.addListener(() {
-    //   debugPrint("listener 1 실행");
-    //   if (chartScrollController.hasClients &&
-    //       chartScrollController.offset != tableScrollController.offset) {
-    //     chartScrollController.jumpTo(tableScrollController.offset);
-    //   }
-    // });
-
-    // chartScrollController.addListener(() {
-    //   debugPrint("listener 2 실행");
-    //   if (tableScrollController.hasClients &&
-    //       tableScrollController.offset != chartScrollController.offset) {
-    //     tableScrollController.jumpTo(chartScrollController.offset);
-    //   }
-    // });
   }
 
-  void _updateRiseIndex() {
-    final newIndex = (tableScrollController.offset / 480).round();
-    if (newIndex != riseIndex) {
-      setState(() => riseIndex = newIndex);
-      debugPrint("newIndex : $riseIndex");
+  bool _hasRequested = false;
+
+  void onTabSelected() {
+    if (!_hasRequested) {
+      _hasRequested = true;
+      requestLocationPermission();
     }
   }
 
