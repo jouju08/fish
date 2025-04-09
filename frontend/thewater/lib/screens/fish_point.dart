@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/screens/tide_chart.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -20,13 +22,16 @@ class _SecondPageState extends State<SecondPage> {
   final TextEditingController _markerNameController = TextEditingController(
     text: "낚시 포인트",
   );
+  final TextEditingController _commentController = TextEditingController(
+    text: "낚시 포인트 댓글",
+  );
   final tableScrollController = ScrollController();
   final chartScrollController = ScrollController();
-  final LatLng _center = const LatLng(34.70, 127.66);
-  final Set<Marker> _markers = {}; // 마커를 저장할 Set
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
-  Set<Marker> _markersKorea = {}; // 마커를 저장할 List
+  LatLng _center = const LatLng(34.70, 127.66);
+  Set<Marker> markers = {}; // 마커를 저장할 Set
+  Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
   Timer? _tapTimer; // 길게 누른 타이머
   List<String> propertyList = [
@@ -41,10 +46,12 @@ class _SecondPageState extends State<SecondPage> {
     '수온',
   ];
   int riseIndex = 0;
+  bool onlyMyPoint = false; // 내 마커만 보기
 
   @override
   void initState() {
     super.initState();
+    requestLocationPermission();
     _loadMarkers();
     tableScrollController.addListener(_onScroll);
     tableScrollController.addListener(() {
@@ -62,6 +69,30 @@ class _SecondPageState extends State<SecondPage> {
     });
   }
 
+  Future<void> requestLocationPermission() async {
+    // 위치 권한 요청
+    PermissionStatus status = await Permission.location.request();
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low,
+    );
+    setState(() {
+      _center = LatLng(position.latitude, position.longitude);
+    });
+    mapController.animateCamera(CameraUpdate.newLatLngZoom(_center, 11.0));
+    // 권한 상태 확인
+    if (status.isGranted) {
+      // 권한이 허용된 경우
+      print('위치 권한이 허용되었습니다.');
+    } else if (status.isDenied) {
+      // 권한이 거부된 경우
+      print('위치 권한이 거부되었습니다.');
+      // 사용자에게 권한의 필요성을 설명하는 다이얼로그를 표시할 수 있습니다.
+    } else if (status.isPermanentlyDenied) {
+      // 권한이 영구적으로 거부된 경우 설정으로 이동하도록 안내
+      print('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 활성화해주세요.');
+    }
+  }
+
   void _onScroll() {
     final offset = tableScrollController.offset;
     final calculatedIndex = (offset / 10).round();
@@ -73,55 +104,77 @@ class _SecondPageState extends State<SecondPage> {
 
   void _loadMarkers() async {
     await Provider.of<PointModel>(context, listen: false).getPointList();
+    await Provider.of<PointModel>(context, listen: false).getMyPointList();
+    // Provider에서 포인트 리스트 가져오기
     final points = Provider.of<PointModel>(context, listen: false).pointList;
+    final myPoints =
+        Provider.of<PointModel>(context, listen: false).myPointList;
     setState(() {
-      _markersKorea =
-          points
-              .map(
-                (point) => Marker(
-                  markerId: MarkerId(
-                    LatLng(
-                      double.parse(point['latitude']),
-                      double.parse(point['longitude']),
-                    ).toString(),
-                  ),
-                  position: LatLng(
-                    double.parse(point['latitude']),
-                    double.parse(point['longitude']),
-                  ),
-                  infoWindow: InfoWindow(title: point['pointName']),
-                  onTap: () {
-                    debugPrint("marker onTap 함수 호출");
-                    setState(() {
-                      _selectedMarker = _markersKorea
-                          .union(_markers)
-                          .firstWhere(
-                            (marker) =>
-                                marker.markerId.value ==
-                                LatLng(
-                                  double.parse(point['latitude']),
-                                  double.parse(point['longitude']),
-                                ).toString(),
-                          );
-                    });
-                  },
-                ),
-              )
-              .toSet();
+      debugPrint("포인트 리스트: $points");
+      debugPrint("내 포인트 리스트: $myPoints");
+      markers =
+          myPoints.map((point) {
+            final lat = point['latitude'];
+            final lon = point['longitude'];
+            final marker = Marker(
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                BitmapDescriptor.hueBlue,
+              ),
+              markerId: MarkerId(point['pointId'].toString()),
+              position: LatLng(lat, lon),
+              infoWindow: InfoWindow(title: point['pointName']),
+              onTap: () {
+                debugPrint("marker onTap 함수 호출");
+                setState(() {
+                  _selectedMarker = markers.firstWhere(
+                    (marker) =>
+                        marker.markerId.value == point['pointId'].toString(),
+                  );
+                });
+              },
+            );
+            return marker;
+          }).toSet();
+      // 마커 리스트를 가져오기
+      markersKorea =
+          points.map((point) {
+            final lat = double.parse(point['latitude']);
+            final lon = double.parse(point['longitude']);
+            return Marker(
+              markerId: MarkerId(point['id'].toString()),
+              position: LatLng(lat, lon),
+              infoWindow: InfoWindow(title: point['pointName']),
+              onTap: () {
+                debugPrint("marker onTap 함수 호출");
+                setState(() {
+                  _selectedMarker = markersKorea.firstWhere(
+                    (marker) => marker.markerId.value == point['id'].toString(),
+                  );
+                });
+              },
+            );
+          }).toSet();
     });
   }
 
   void _deleteSelectedMarker() {
     setState(() {
       if (_selectedMarker != null) {
-        _markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
-        _markersKorea.removeWhere(
+        Provider.of<PointModel>(
+          context,
+          listen: false,
+        ).deletePoint(int.parse(_selectedMarker!.markerId.value)).then((_) {
+          debugPrint("마커 삭제 Provider 함수 실행 완료");
+        });
+        markers.removeWhere((marker) => marker == _selectedMarker); // 마커 삭제
+        markersKorea.removeWhere(
           (marker) => marker == _selectedMarker,
         ); // 마커 삭제
         _selectedMarker = null; // 선택된 마커 초기화
       }
     });
-    debugPrint("after delete $_markers");
+    Navigator.pop(context); // BottomSheet 닫기
+    debugPrint("after delete $markers");
   }
 
   void _onMapCreated(GoogleMapController controller) {
@@ -191,12 +244,21 @@ class _SecondPageState extends State<SecondPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _selectedMarker?.infoWindow.title ?? "마커 정보",
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _selectedMarker?.infoWindow.title ?? "마커 정보",
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _deleteSelectedMarker,
+                          child: Text("삭제"),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 10),
                     Text(weatherList[0]["fcstDate"]),
@@ -304,7 +366,6 @@ class _SecondPageState extends State<SecondPage> {
                     ),
                     const SizedBox(height: 10),
                     Text(riseSetList[riseIndex]["sunrise"]),
-
                     Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
                   ],
                 ),
@@ -342,20 +403,33 @@ class _SecondPageState extends State<SecondPage> {
             TextButton(
               onPressed: () {
                 // 마커 추가
+                Provider.of<PointModel>(context, listen: false)
+                    .addPoint(
+                      _markerNameController.text.trim(),
+                      _lastTappedLocation.latitude,
+                      _lastTappedLocation.longitude,
+                      _markerNameController.text.trim(),
+                    )
+                    .then((_) {
+                      debugPrint("마커 추가 Provider 함수 실행 완료");
+                    });
                 setState(() {
                   String markerIdStr =
                       _lastTappedLocation.toString(); // 마커 ID 저장
                   String markerName = _markerNameController.text.trim();
                   // 새 마커 생성
                   Marker newMarker = Marker(
+                    icon: BitmapDescriptor.defaultMarkerWithHue(
+                      BitmapDescriptor.hueBlue,
+                    ),
                     markerId: MarkerId(markerIdStr),
                     position: _lastTappedLocation,
                     infoWindow: InfoWindow(title: markerName),
                     onTap: () {
                       debugPrint("marker onTap 함수 호출");
                       setState(() {
-                        _selectedMarker = _markersKorea
-                            .union(_markers)
+                        _selectedMarker = markersKorea
+                            .union(markers)
                             .firstWhere(
                               (marker) => marker.markerId.value == markerIdStr,
                             );
@@ -368,7 +442,7 @@ class _SecondPageState extends State<SecondPage> {
                     },
                   );
                   // 생성된 마커를 _markers에 추가
-                  _markers.add(newMarker);
+                  markers.add(newMarker);
                   _markerNameController.text = "낚시 포인트";
                 });
                 Navigator.of(context).pop();
@@ -398,9 +472,20 @@ class _SecondPageState extends State<SecondPage> {
         actions: [
           TextButton(
             onPressed: () {
-              Provider.of<PointModel>(context, listen: false).getPointList();
+              setState(() {
+                onlyMyPoint = !onlyMyPoint;
+              });
             },
-            child: Text("버튼"),
+            child:
+                onlyMyPoint
+                    ? Text(
+                      "모든 마커 보기",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    )
+                    : Text(
+                      "내 마커만 보기",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
           ),
         ],
         title: const Text(
@@ -413,11 +498,17 @@ class _SecondPageState extends State<SecondPage> {
           children: [
             GoogleMap(
               mapToolbarEnabled: false,
+              myLocationEnabled: true, // 사용자의 현재 위치 표시
+              myLocationButtonEnabled: true, // 우측 하단 현위치 버튼
+              compassEnabled: true,
               initialCameraPosition: CameraPosition(
                 target: _center,
                 zoom: 11.0,
               ),
-              markers: _markersKorea.union(_markers), // 현재 마커를 GoogleMap에 표시
+              markers:
+                  onlyMyPoint
+                      ? markers
+                      : markersKorea.union(markers), // 현재 마커를 GoogleMap에 표시
               onMapCreated: _onMapCreated,
               onLongPress: (LatLng tappedPoint) {
                 _lastTappedLocation = tappedPoint;

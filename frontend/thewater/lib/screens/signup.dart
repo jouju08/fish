@@ -138,17 +138,24 @@ class _signupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('회원가입')),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.only(left: 50, right: 50, top: 100),
         child: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              Center(
+                child: Text(
+                  '회원가입',
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 50),
               // 1️⃣ 아이디 입력란 + 중복 확인 버튼
               Row(
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: 200,
                     child: TextField(
                       controller: _idController,
                       decoration: InputDecoration(
@@ -158,9 +165,12 @@ class _signupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   SizedBox(width: 10),
-                  ElevatedButton(
+                  TextButton(
                     onPressed: _checkIdAvailability,
-                    child: Text('중복 확인'),
+                    child: Text(
+                      '중복 확인',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -178,23 +188,29 @@ class _signupScreenState extends State<SignupScreen> {
                 ),
 
               // 2️⃣ 비밀번호 입력란
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 입력',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: '비밀번호 입력',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               SizedBox(height: 10),
 
               // 3️⃣ 비밀번호 확인 입력란
-              TextField(
-                controller: _confirmPasswordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  labelText: '비밀번호 확인',
-                  border: OutlineInputBorder(),
+              SizedBox(
+                width: 200,
+                child: TextField(
+                  controller: _confirmPasswordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: '비밀번호 확인',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
               SizedBox(height: 10),
@@ -202,7 +218,8 @@ class _signupScreenState extends State<SignupScreen> {
               // 4️⃣ 이메일 입력란 + 인증번호 발송 버튼
               Row(
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: 200,
                     child: TextField(
                       controller: _emailController,
                       decoration: InputDecoration(
@@ -211,10 +228,12 @@ class _signupScreenState extends State<SignupScreen> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 10),
-                  ElevatedButton(
+                  TextButton(
                     onPressed: _sendVerificationCode,
-                    child: Text('인증번호 발송'),
+                    child: Text(
+                      '인증번호 발송',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
                   ),
                 ],
               ),
@@ -223,7 +242,8 @@ class _signupScreenState extends State<SignupScreen> {
               // 5️⃣ 인증번호 입력란 + 확인 버튼
               Row(
                 children: [
-                  Expanded(
+                  SizedBox(
+                    width: 200,
                     child: TextField(
                       controller: _verificationCodeController,
                       decoration: InputDecoration(
@@ -233,18 +253,27 @@ class _signupScreenState extends State<SignupScreen> {
                     ),
                   ),
                   SizedBox(width: 10),
-                  ElevatedButton(onPressed: _verifyCode, child: Text('확인')),
+                  TextButton(
+                    onPressed: _verifyCode,
+                    child: Text(
+                      '확인',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ],
               ),
-              SizedBox(height: 20),
+              SizedBox(height: 50),
 
               // 6️⃣ 다음 버튼
-              ElevatedButton(
+              TextButton(
                 onPressed: _nextStep,
-                style: ElevatedButton.styleFrom(
+                style: TextButton.styleFrom(
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                 ),
-                child: Text('다음'),
+                child: Text(
+                  '다음',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
               ),
             ],
           ),

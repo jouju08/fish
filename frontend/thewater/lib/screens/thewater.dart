@@ -132,6 +132,25 @@ class _TheWaterState extends State<TheWater> {
                   );
                 },
               ),
+              if (!Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그인"),
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                ),
+              if (Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그아웃"),
+                  onTap: () {
+                    Provider.of<UserModel>(
+                      context,
+                      listen: false,
+                    ).logout(context);
+                    Navigator.pushReplacementNamed(context, '/');
+                  },
+                ),
+
               ListTile(
                 title: const Text("누끼 따기"),
                 onTap: () {
