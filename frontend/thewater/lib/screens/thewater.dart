@@ -87,12 +87,11 @@ class _TheWaterState extends State<TheWater> with RouteAware {
   }
 
   void _refreshUserData() async {
-    // 필요한 데이터 갱신 로직을 실행합니다.
     final userModel = Provider.of<UserModel>(context, listen: false);
     await userModel.fetchUserInfo();
-    // 만약 다른 Provider들도 갱신해야 한다면 여기에 추가로 호출합니다.
+    // 필요한 Provider들도 갱신해야 한다면 여기에 추가해서 호출
 
-    // setState()를 호출할 경우 UI 갱신 여부 확인.
+    // setState()를 호출할 경우 UI 갱신 여부 확인
     setState(() {});
   }
 
@@ -480,10 +479,8 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 debugPrint("선택된 물고기 목록 : $_selectedFish");
               });
 
-              // 서버에 물고기 가시성 상태 토글 요청
               fishModel.toggleFishVisibility(fishId);
 
-              // 최신 수족관 정보를 갱신하여 수족관 가치 업데이트
               final userModel = Provider.of<UserModel>(context, listen: false);
               final aquariumModel = Provider.of<AquariumModel>(
                 context,
