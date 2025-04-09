@@ -14,6 +14,7 @@ import 'package:thewater/screens/splash.dart';
 import 'package:thewater/screens/thewater.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
+import 'package:thewater/providers/mypage_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RankingProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => GuestBookProvider()),
+        ChangeNotifierProvider(create: (_) => MypageProvider()),
       ],
       child: MaterialApp(
         theme: ThemeData(

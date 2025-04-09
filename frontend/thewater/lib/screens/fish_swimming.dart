@@ -270,14 +270,13 @@ class FishSwimmingManager {
         fishY = data.startY; // 물고기는 고정
       } else {
         // 낚시줄과 함께 위로 이동 (0.8 ~ 1초)
-        double stageT = (t - 0.8) / 0.2; // 0 ~ 1 범위로 보정
-        // 물고기는 data.startY에서 화면 위(예: -fishSize)까지 이동
+        double stageT = (t - 0.8) / 0.2; // 0 ~ 1 범위로 
         fishY = data.startY + (-data.startY - fishSize) * stageT;
         // 낚시줄의 bottom도 같이 이동
         fishingLineBottomY =
             data.startY + (-data.startY + 50 - fishSize) * stageT;
       }
-      // 낚시줄의 x 위치: 물고기 중앙 기준 (fishSize/2)에서 낚시줄 width 절반만큼 왼쪽 이동
+      // 낚시줄의 x 위치 물고기 중앙 기준
       double lineX = data.startX + fishSize / 2 - lineWidth / 2;
       return Stack(
         children: [

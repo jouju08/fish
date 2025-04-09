@@ -102,7 +102,34 @@ class _TheWaterState extends State<TheWater> {
               ListTile(
                 title: const Text("회원가입"),
                 onTap: () {
-                  Navigator.pushReplacementNamed(context, '/signup');
+                  Navigator.pushNamed(context, '/signup');
+                },
+              ),
+              ListTile(
+                title: const Text("로그인"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                title: const Text("로그아웃"),
+                onTap: () {
+                  Provider.of<UserModel>(
+                    context,
+                    listen: false,
+                  ).logout(context);
+                  Navigator.pushNamed(context, '/login');
+                },
+              ),
+              ListTile(
+                title: const Text("물고기 판별"),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ModelScreen2(),
+                    ),
+                  );
                 },
               ),
               if (!Provider.of<UserModel>(context).isLoggedIn)
@@ -259,7 +286,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") {
+        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭") {
           path = "assets/image/$fishName.gif";
         } else {
           path = "assets/image/$fishName.png";
@@ -376,17 +403,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     .where((fish) => fish["hasVisible"])
                     .map((fish) => "assets/image/${fish["fishName"]}.png")
                     .toSet(),
-            onToggleFish: (
-              String path,
-              int fishId,
-              bool currentHasVisible,
-            ) async {
+            onToggleFish: (String path, int fishId, bool currentHasVisible) async {
               setState(() {
+                String fishName = path.split('/').last.split('.').first;
+                if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭" ) { // 물고기 추후 추가 예정 gif 로 변환한것들
+                  path = "assets/image/${fishName}.gif";
+                }
                 if (currentHasVisible) {
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
                 } else {
-                  String fishName = path.split('/').last.split('.').first;
                   fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
                 }
