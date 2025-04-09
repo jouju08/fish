@@ -63,17 +63,18 @@ class _MyPageScreenState extends State<MyPageScreen> {
     final comment =
         mypageProvider.comment.isNotEmpty
             ? mypageProvider.comment
-            : "안녕하세요. 내 나이 스물여덟 낚시에 푹 빠져 삽니다";
+            : "한줄소개가 아직 등록되어있지 않습니다.";
     final cumulativeVisits = 2;
     final aquariumPublic = true;
     final latestFishDate =
         mypageProvider.latestFishDate.isNotEmpty
-            ? mypageProvider.latestFishDate
-            : "2025-04-08";
+            ? mypageProvider.latestFishDate // 출항일 매핑 완료
+            : "출항기록 없음";
     final activityArea = "여수, 한강, 목포";
 
     return Scaffold(
       body: Container(
+        height:double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/도감배경.png'),
