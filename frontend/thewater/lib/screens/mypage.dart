@@ -21,7 +21,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("프로필 수정 - $title"),
+          title: Text("$title"),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(labelText: title),
