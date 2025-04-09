@@ -10,6 +10,9 @@ class MypageProvider extends ChangeNotifier {
 
   List<String> checknickname = [];
 
+  String _openAquariumMessage = "";
+  String get openAquariumMessage => _openAquariumMessage;
+
   String _nickname = '';
   String _loginId = '';
   String _latestFishDate = '';
@@ -98,7 +101,6 @@ class MypageProvider extends ChangeNotifier {
       return false;
     }
     try {
-      // comment 값을 URL의 쿼리 파라미터로 포함시킵니다.
       final url = Uri.parse(
         "$baseUrl/users/update-comment?comment=${Uri.encodeComponent(newComment)}",
       );
@@ -176,18 +178,15 @@ class MypageProvider extends ChangeNotifier {
   }
 
   Future<bool> checkNickName(String nickname) async {
-    // 토큰 읽어오기 및 검증
     final token = await _storage.read(key: 'token');
     if (token == null) {
       debugPrint("checkNickName: 토큰 없음");
       return false;
     }
 
-    // 쿼리 파라미터 형식으로 URL 구성
     final url = Uri.parse('$baseUrl/users/check-nickname?nickname=$nickname');
 
     try {
-      // Authorization 헤더와 accept 헤더 추가
       final response = await http.get(
         url,
         headers: {
@@ -206,7 +205,6 @@ class MypageProvider extends ChangeNotifier {
 
         debugPrint("checkNickName 응답 메시지: ${message}");
 
-        // status 값이 "SU"면 사용 가능한 닉네임, "VF"면 이미 사용중인 닉네임
         return status == "SU";
       } else {
         debugPrint("checkNickName: 서버 오류, statusCode: ${response.statusCode}");
@@ -215,6 +213,43 @@ class MypageProvider extends ChangeNotifier {
     } catch (e) {
       debugPrint("checkNickName() 오류: $e");
       return false;
+    }
+  }
+
+  Future<String?> openAquarium() async {
+    final tokenValue = await token;
+    if (tokenValue == null) {
+      debugPrint('openAquarium: 토큰 없음');
+      return null;
+    }
+
+    try {
+      final url = Uri.parse("$baseUrl/aquarium/open");
+      final headers = {
+        'Authorization':
+            tokenValue.startsWith("Bearer ")
+                ? tokenValue
+                : 'Bearer $tokenValue',
+        'accept': '*/*',
+      };
+
+      final response = await http.patch(url, headers: headers);
+      debugPrint("openAquarium Response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        _openAquariumMessage = body['data'];
+        debugPrint("openAquarium response body: $body");
+        final String message = body['data'];
+        notifyListeners();
+        return message;
+      } else {
+        debugPrint("openAquarium error: ${response.statusCode}");
+        return null;
+      }
+    } catch (e) {
+      debugPrint("openAquarium() 오류: $e");
+      return null;
     }
   }
 }

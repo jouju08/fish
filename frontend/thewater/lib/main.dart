@@ -14,6 +14,8 @@ import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
 import 'package:thewater/providers/mypage_provider.dart';
 
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
@@ -64,6 +66,7 @@ class MyApp extends StatelessWidget {
           '/signup': (context) => SignupScreen(),
         },
         initialRoute: '/splash',
+        navigatorObservers: [routeObserver],
       ),
     );
   }
