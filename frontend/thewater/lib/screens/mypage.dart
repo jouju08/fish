@@ -69,6 +69,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
   Widget build(BuildContext context) {
     final mypageProvider = Provider.of<MypageProvider>(context);
     final userProvider = Provider.of<UserModel>(context, listen: false);
+    final openMessage = mypageProvider.openAquariumMessage;
 
     final nickname =
         mypageProvider.nickname.isNotEmpty ? mypageProvider.nickname : "조태공";
@@ -76,7 +77,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         mypageProvider.comment.isNotEmpty
             ? mypageProvider.comment
             : "한줄소개가 아직 등록되어있지 않습니다.";
-    final aquariumPublic = true;
+    // final aquariumPublic = true;
     final latestFishDate =
         mypageProvider.latestFishDate.isNotEmpty
             ? mypageProvider
@@ -184,7 +185,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                             );
                                           }
                                         } else {
-                                          // 이미 사용중인 닉네임이면 스낵바만 띄우고 다이얼로그는 닫지 않음
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
@@ -263,7 +263,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                               Consumer<AquariumModel>(
                                 builder: (context, aquariumModel, child) {
                                   return Text(
-                                    '누적 방문수 : ${aquariumModel.visitCount}', // 두 문자열을 연결
+                                    '누적 방문수 ${aquariumModel.visitCount}',
                                     style: const TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
@@ -271,18 +271,35 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                   );
                                 },
                               ),
-                              Row(
-                                children: [
-                                  const Text("수족관 공개여부"),
-                                  const SizedBox(width: 4),
-                                  Icon(
-                                    aquariumPublic
-                                        ? Icons.lock_open
-                                        : Icons.lock,
-                                    size: 18,
-                                    color: Colors.black,
-                                  ),
-                                ],
+                              InkWell(
+                                onTap: () async {
+                                  final message =
+                                      await mypageProvider.openAquarium();
+                                  if (message != null) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text(message)),
+                                    );
+                                  } else {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("수족관 공개/비공개 처리에 실패했습니다."),
+                                      ),
+                                    );
+                                  }
+                                },
+                                child: Row(
+                                  children: [
+                                    const Text("수족관 공개여부"),
+                                    const SizedBox(width: 4),
+                                    Icon(
+                                      openMessage == "어항이 공개 모드로 변경되었습니다."
+                                          ? Icons.lock_open
+                                          : Icons.lock,
+                                      size: 18,
+                                      color: Colors.black,
+                                    ),
+                                  ],
+                                ),
                               ),
                             ],
                           ),

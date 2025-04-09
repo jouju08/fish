@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/main.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/guestbook_provider.dart';
@@ -23,7 +24,7 @@ class TheWater extends StatefulWidget {
   State<TheWater> createState() => _TheWaterState();
 }
 
-class _TheWaterState extends State<TheWater> {
+class _TheWaterState extends State<TheWater> with RouteAware {
   int bottomNavIndex = 0;
   int pageIndex = 0;
   String? userComment;
@@ -56,6 +57,43 @@ class _TheWaterState extends State<TheWater> {
         });
       }
     });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _refreshUserData();
+    _refreshMyAquariumInfo();
+  }
+
+  void _refreshMyAquariumInfo() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+    if (userModel.id != 0) {
+      await aquariumModel.fetchAquariumInfo(userModel.id);
+      setState(() {}); // 화면 갱신
+    }
+  }
+
+  void _refreshUserData() async {
+    // 필요한 데이터 갱신 로직을 실행합니다.
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    await userModel.fetchUserInfo();
+    // 만약 다른 Provider들도 갱신해야 한다면 여기에 추가로 호출합니다.
+
+    // setState()를 호출할 경우 UI 갱신 여부 확인.
+    setState(() {});
   }
 
   void onBottomNavTap(int newIndex) {
@@ -286,7 +324,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭") {
+        if (fishName == "문어" ||
+            fishName == "감성돔" ||
+            fishName == "문절망둑" ||
+            fishName == "광어" ||
+            fishName == "농어" ||
+            fishName == "볼락" ||
+            fishName == "성대" ||
+            fishName == "복섬" ||
+            fishName == "숭어" ||
+            fishName == "우럭") {
           path = "assets/image/$fishName.gif";
         } else {
           path = "assets/image/$fishName.png";
@@ -403,10 +450,24 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     .where((fish) => fish["hasVisible"])
                     .map((fish) => "assets/image/${fish["fishName"]}.png")
                     .toSet(),
-            onToggleFish: (String path, int fishId, bool currentHasVisible) async {
+            onToggleFish: (
+              String path,
+              int fishId,
+              bool currentHasVisible,
+            ) async {
               setState(() {
                 String fishName = path.split('/').last.split('.').first;
-                if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑" || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭" ) { // 물고기 추후 추가 예정 gif 로 변환한것들
+                if (fishName == "문어" ||
+                    fishName == "감성돔" ||
+                    fishName == "문절망둑" ||
+                    fishName == "광어" ||
+                    fishName == "농어" ||
+                    fishName == "볼락" ||
+                    fishName == "성대" ||
+                    fishName == "복섬" ||
+                    fishName == "숭어" ||
+                    fishName == "우럭") {
+                  // 물고기 추후 추가 예정 gif 로 변환한 것들
                   path = "assets/image/${fishName}.gif";
                 }
                 if (currentHasVisible) {
@@ -417,8 +478,18 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                   _selectedFish.add(path);
                 }
                 debugPrint("선택된 물고기 목록 : $_selectedFish");
-                fishModel.toggleFishVisibility(fishId);
               });
+
+              // 서버에 물고기 가시성 상태 토글 요청
+              fishModel.toggleFishVisibility(fishId);
+
+              // 최신 수족관 정보를 갱신하여 수족관 가치 업데이트
+              final userModel = Provider.of<UserModel>(context, listen: false);
+              final aquariumModel = Provider.of<AquariumModel>(
+                context,
+                listen: false,
+              );
+              await aquariumModel.fetchAquariumInfo(userModel.id);
             },
           ),
     );
