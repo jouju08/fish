@@ -101,7 +101,6 @@ class MypageProvider extends ChangeNotifier {
       return false;
     }
     try {
-      // comment 값을 URL의 쿼리 파라미터로 포함시킵니다.
       final url = Uri.parse(
         "$baseUrl/users/update-comment?comment=${Uri.encodeComponent(newComment)}",
       );
@@ -179,18 +178,15 @@ class MypageProvider extends ChangeNotifier {
   }
 
   Future<bool> checkNickName(String nickname) async {
-    // 토큰 읽어오기 및 검증
     final token = await _storage.read(key: 'token');
     if (token == null) {
       debugPrint("checkNickName: 토큰 없음");
       return false;
     }
 
-    // 쿼리 파라미터 형식으로 URL 구성
     final url = Uri.parse('$baseUrl/users/check-nickname?nickname=$nickname');
 
     try {
-      // Authorization 헤더와 accept 헤더 추가
       final response = await http.get(
         url,
         headers: {
@@ -209,7 +205,6 @@ class MypageProvider extends ChangeNotifier {
 
         debugPrint("checkNickName 응답 메시지: ${message}");
 
-        // status 값이 "SU"면 사용 가능한 닉네임, "VF"면 이미 사용중인 닉네임
         return status == "SU";
       } else {
         debugPrint("checkNickName: 서버 오류, statusCode: ${response.statusCode}");
