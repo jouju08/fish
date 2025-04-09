@@ -67,7 +67,7 @@ class FishModel extends ChangeNotifier {
     }
   }
 
-  void addFishCard(String fishName, int realSize, File imageFile) async {
+  void addFishCard(String fishName, double realSize, File imageFile) async {
     Dio dio = Dio();
     final token = await _storage.read(key: 'token');
     if (token == null) {
