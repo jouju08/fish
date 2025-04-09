@@ -101,25 +101,25 @@ public class EnvInfoController {
     }
 
     @GetMapping("/now")
-    public ApiResponse<?> getFullIntegratedEnvironmentInfo(
+    public ApiResponse<?> getFullIntegratedEnvironmentInfoAsMap(
             @RequestParam (defaultValue = "34.3503656") double lat,
             @RequestParam (defaultValue = "126.4737491") double lon) {
         try {
-            List<String> fullIntegratedInfo = weatherService.getFullIntegratedEnvironmentInfo(lat, lon);
+            Map<String, String> infoMap = weatherService.getFullIntegratedEnvironmentInfoAsMap(lat, lon);
 
-            // 에러 메시지 확인
-            if (fullIntegratedInfo.size() == 1 && fullIntegratedInfo.get(0).startsWith("Error:")) {
+            // 에러 확인
+            if (infoMap.containsKey("error")) {
                 return ApiResponse.builder()
                         .status(ResponseStatus.BAD_REQUEST)
                         .message(ResponseMessage.BAD_REQUEST)
-                        .data(fullIntegratedInfo.get(0))
+                        .data("통합 환경 정보를 가져오는 중 오류가 발생했습니다: " + infoMap.get("error"))
                         .build();
             }
 
             return ApiResponse.builder()
                     .status(ResponseStatus.SUCCESS)
                     .message(ResponseMessage.SUCCESS)
-                    .data(fullIntegratedInfo)
+                    .data(infoMap)
                     .build();
         } catch (Exception e) {
             return ApiResponse.builder()
