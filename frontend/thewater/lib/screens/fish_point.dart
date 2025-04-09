@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -55,20 +56,21 @@ class _SecondPageState extends State<SecondPage> {
     super.initState();
     requestLocationPermission();
     _loadMarkers();
-    tableScrollController.addListener(_updateRiseIndex);
-    tableScrollController.addListener(() {
-      if (chartScrollController.hasClients &&
-          chartScrollController.offset != tableScrollController.offset) {
-        chartScrollController.jumpTo(tableScrollController.offset);
-      }
-    });
+    // tableScrollController.addListener(() {
+    //   debugPrint("listener 1 실행");
+    //   if (chartScrollController.hasClients &&
+    //       chartScrollController.offset != tableScrollController.offset) {
+    //     chartScrollController.jumpTo(tableScrollController.offset);
+    //   }
+    // });
 
-    chartScrollController.addListener(() {
-      if (tableScrollController.hasClients &&
-          tableScrollController.offset != chartScrollController.offset) {
-        tableScrollController.jumpTo(chartScrollController.offset);
-      }
-    });
+    // chartScrollController.addListener(() {
+    //   debugPrint("listener 2 실행");
+    //   if (tableScrollController.hasClients &&
+    //       tableScrollController.offset != chartScrollController.offset) {
+    //     tableScrollController.jumpTo(chartScrollController.offset);
+    //   }
+    // });
   }
 
   void _updateRiseIndex() {
@@ -245,6 +247,22 @@ class _SecondPageState extends State<SecondPage> {
                   newIndex < riseSetList.length &&
                   newIndex != riseIndexNotifier.value) {
                 riseIndexNotifier.value = newIndex;
+              }
+            });
+
+            tableScrollController.addListener(() {
+              if (chartScrollController.hasClients &&
+                  chartScrollController.offset !=
+                      tableScrollController.offset) {
+                chartScrollController.jumpTo(tableScrollController.offset);
+              }
+            });
+
+            chartScrollController.addListener(() {
+              if (tableScrollController.hasClients &&
+                  tableScrollController.offset !=
+                      chartScrollController.offset) {
+                tableScrollController.jumpTo(chartScrollController.offset);
               }
             });
 
@@ -514,7 +532,19 @@ class BottomSheetContent extends StatelessWidget {
                             _dataCell("${weatherList[colIdx]["TMP"]}°C"),
                             _dataCell(weatherList[colIdx]["PCP"], fontSize: 12),
                             _dataCell("${weatherList[colIdx]["WSD"]}m/s"),
-                            _dataCell(weatherList[colIdx]["VEC"]),
+                            Container(
+                              width: 60,
+                              height: 40,
+                              alignment: Alignment.center,
+                              child: Transform.rotate(
+                                angle:
+                                    double.parse(weatherList[colIdx]["VEC"]) *
+                                        math.pi /
+                                        180 +
+                                    math.pi,
+                                child: Icon(Icons.navigation),
+                              ),
+                            ),
                             _dataCell("${weatherList[colIdx]["WAV"]}m"),
                             _dataCell(
                               "${waterTempList[colIdx]["temperature"]}°C",
@@ -528,6 +558,15 @@ class BottomSheetContent extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(riseSetList[riseIndex]["date"]),
+                Text("일출 ${riseSetList[riseIndex]["sunrise"]}"),
+                Text("일몰 ${riseSetList[riseIndex]["sunset"]}"),
+              ],
+            ),
+            const SizedBox(height: 10),
             SizedBox(
               height: 360,
               child: TideChart(
@@ -535,17 +574,8 @@ class BottomSheetContent extends StatelessWidget {
                 scrollController: chartScrollController,
               ),
             ),
+
             const SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                Text(riseSetList[riseIndex]["date"]),
-                Text(riseSetList[riseIndex]["sunrise"]),
-                Text(riseSetList[riseIndex]["sunset"]),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
             TextButton(
               onPressed: onDelete,
               child: const Text(
