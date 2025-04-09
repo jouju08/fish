@@ -121,7 +121,6 @@ class _CollectionPageState extends State<CollectionPage> {
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context); // 다이얼로그 닫고
                   Provider.of<FishModel>(
                     context,
                     listen: false,

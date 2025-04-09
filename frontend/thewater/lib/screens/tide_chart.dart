@@ -47,7 +47,7 @@ class TideChart extends StatelessWidget {
           children: List.generate(
             7, // 예: 0 ~ 300까지 50 단위로 표시
             (index) {
-              final value = 300 - index * 50;
+              final value = 600 - index * 100;
               return SizedBox(
                 height: 30, // 간격 조정
                 child: Text(
@@ -73,7 +73,7 @@ class TideChart extends StatelessWidget {
                   minX: 0,
                   maxX: spots.length - 1,
                   minY: 0,
-                  maxY: 300, // 최대 타이드 레벨 기준으로 조정
+                  maxY: 600, // 최대 타이드 레벨 기준으로 조정
                   lineTouchData: LineTouchData(
                     enabled: true,
                     touchTooltipData: LineTouchTooltipData(
@@ -91,7 +91,7 @@ class TideChart extends StatelessWidget {
                   gridData: FlGridData(
                     show: true,
                     drawVerticalLine: true,
-                    horizontalInterval: 50,
+                    horizontalInterval: 100,
                   ),
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
