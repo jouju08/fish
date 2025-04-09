@@ -8,12 +8,14 @@ const String baseUrl = "http://j12c201.p.ssafy.io/api";
 class MypageProvider extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
 
+  List<String> checknickname = [];
+
   String _nickname = '';
   String _loginId = '';
   String _latestFishDate = '';
   String _latestFishLocation = '';
   int _totalFishCaught = 0;
-  String _comment = ''; 
+  String _comment = '';
 
   String get nickname => _nickname;
   String get loginId => _loginId;
@@ -96,16 +98,18 @@ class MypageProvider extends ChangeNotifier {
       return false;
     }
     try {
-      final url = Uri.parse("$baseUrl/users/update-comment");
-      final headers = {
-        'Authorization': 'Bearer $tokenValue',
-        'Content-Type': 'application/json',
-      };
-      final response = await http.patch(
-        url,
-        headers: headers,
-        body: jsonEncode({"comment": newComment}),
+      // comment 값을 URL의 쿼리 파라미터로 포함시킵니다.
+      final url = Uri.parse(
+        "$baseUrl/users/update-comment?comment=${Uri.encodeComponent(newComment)}",
       );
+      final headers = {
+        'Authorization':
+            tokenValue.startsWith("Bearer ")
+                ? tokenValue
+                : 'Bearer $tokenValue',
+        'accept': '*/*',
+      };
+      final response = await http.patch(url, headers: headers);
       debugPrint("updateComment Response status: ${response.statusCode}");
       if (response.statusCode == 200) {
         _comment = newComment;
@@ -145,5 +149,72 @@ class MypageProvider extends ChangeNotifier {
     }
   }
 
-  
+  Future<void> getUserComment() async {
+    final token = await _storage.read(key: 'token');
+    if (token == null) {
+      debugPrint("getUserComment() 토큰 없음");
+      return;
+    }
+    try {
+      // debugPrint("getUserComment() 토큰 확인 : $token"); 확인완료 마지막에 지우길
+      final url = Uri.parse('$baseUrl/users/me');
+      final headers = {'Authorization': 'Bearer $token'};
+
+      final response = await http.get(url, headers: headers);
+      // debugPrint("Response status: ${response.statusCode}"); 확인완료 지워도됨 마지막에
+      if (response.statusCode == 200) {
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        // debugPrint("200 OK : $body"); 확인완료
+        _comment = body['data']['comment'];
+        notifyListeners();
+      } else {
+        throw Exception('getUserComment 오류 : ${response.statusCode}');
+      }
+    } catch (e) {
+      // debugPrint("getUserComment() 오류 : $e"); 확인완료
+    }
+  }
+
+  Future<bool> checkNickName(String nickname) async {
+    // 토큰 읽어오기 및 검증
+    final token = await _storage.read(key: 'token');
+    if (token == null) {
+      debugPrint("checkNickName: 토큰 없음");
+      return false;
+    }
+
+    // 쿼리 파라미터 형식으로 URL 구성
+    final url = Uri.parse('$baseUrl/users/check-nickname?nickname=$nickname');
+
+    try {
+      // Authorization 헤더와 accept 헤더 추가
+      final response = await http.get(
+        url,
+        headers: {
+          'Authorization':
+              token.startsWith("Bearer ") ? token : 'Bearer $token',
+          'accept': '*/*',
+        },
+      );
+
+      debugPrint("checkNickName Response status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final body = jsonDecode(response.body);
+        final String status = body['status'];
+        final String message = body['data'];
+
+        debugPrint("checkNickName 응답 메시지: ${message}");
+
+        // status 값이 "SU"면 사용 가능한 닉네임, "VF"면 이미 사용중인 닉네임
+        return status == "SU";
+      } else {
+        debugPrint("checkNickName: 서버 오류, statusCode: ${response.statusCode}");
+        return false;
+      }
+    } catch (e) {
+      debugPrint("checkNickName() 오류: $e");
+      return false;
+    }
+  }
 }

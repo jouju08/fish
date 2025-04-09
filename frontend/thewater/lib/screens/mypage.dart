@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/mypage_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
+import 'package:thewater/providers/aquarium_provider.dart';
 
 class MyPageScreen extends StatefulWidget {
   const MyPageScreen({Key? key}) : super(key: key);
@@ -48,8 +49,19 @@ class _MyPageScreenState extends State<MyPageScreen> {
   void initState() {
     super.initState();
     // 화면 진입 후 마이페이지 데이터 로드
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MypageProvider>(context, listen: false).getMyPage();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final mypageProvider = Provider.of<MypageProvider>(
+        context,
+        listen: false,
+      );
+      mypageProvider.getMyPage();
+      mypageProvider.getUserComment();
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+      await userModel.fetchUserInfo();
+      if (userModel.id != 0) {
+        await aquariumModel.fetchAquariumInfo(userModel.id);
+      }
     });
   }
 
@@ -64,17 +76,20 @@ class _MyPageScreenState extends State<MyPageScreen> {
         mypageProvider.comment.isNotEmpty
             ? mypageProvider.comment
             : "한줄소개가 아직 등록되어있지 않습니다.";
-    final cumulativeVisits = 2;
     final aquariumPublic = true;
     final latestFishDate =
         mypageProvider.latestFishDate.isNotEmpty
-            ? mypageProvider.latestFishDate // 출항일 매핑 완료
+            ? mypageProvider
+                .latestFishDate // 출항일 매핑 완료
             : "출항기록 없음";
-    final activityArea = "여수, 한강, 목포";
+    final activityArea =
+        mypageProvider.latestFishLocation == "알 수 없음"
+            ? "활동기록 없음"
+            : mypageProvider.latestFishLocation;
 
     return Scaffold(
       body: Container(
-        height:double.infinity,
+        height: double.infinity,
         decoration: const BoxDecoration(
           image: DecorationImage(
             image: AssetImage('assets/image/도감배경.png'),
@@ -142,14 +157,41 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                       title: "닉네임 수정",
                                       initialText: nickname,
                                       onSave: (newText) async {
-                                        bool success = await mypageProvider
-                                            .updateNickname(newText);
-                                        if (!success) {
+                                        // 닉네임 중복 체크 및 업데이트 로직
+                                        bool available = await mypageProvider
+                                            .checkNickName(newText);
+                                        if (available) {
+                                          // 닉네임 업데이트 수행
+                                          bool success = await mypageProvider
+                                              .updateNickname(newText);
+                                          if (!success) {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text(
+                                                  "닉네임 업데이트에 실패했습니다.",
+                                                ),
+                                              ),
+                                            );
+                                          } else {
+                                            ScaffoldMessenger.of(
+                                              context,
+                                            ).showSnackBar(
+                                              const SnackBar(
+                                                content: Text("닉네임 변경완료!"),
+                                              ),
+                                            );
+                                          }
+                                        } else {
+                                          // 이미 사용중인 닉네임이면 스낵바만 띄우고 다이얼로그는 닫지 않음
                                           ScaffoldMessenger.of(
                                             context,
                                           ).showSnackBar(
                                             const SnackBar(
-                                              content: Text("닉네임 수정 실패"),
+                                              content: Text(
+                                                "이미 사용중인 닉네임입니다. 변경실패",
+                                              ),
                                             ),
                                           );
                                         }
@@ -165,11 +207,47 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     ),
 
                     const SizedBox(height: 8),
-                    Text(
-                      comment,
-                      style: const TextStyle(fontSize: 14),
-                      textAlign: TextAlign.center,
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            comment,
+                            style: const TextStyle(fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        IconButton(
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                          icon: const Icon(
+                            Icons.edit,
+                            size: 18,
+                            color: Colors.blue,
+                          ),
+                          onPressed: () {
+                            _showEditDialog(
+                              title: "한줄소개 수정",
+                              initialText: comment,
+                              onSave: (newText) async {
+                                bool success = await mypageProvider
+                                    .updateComment(newText);
+                                if (!success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("자기소개 업데이트에 실패했습니다."),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ],
                     ),
+
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -182,7 +260,17 @@ class _MyPageScreenState extends State<MyPageScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text("누적 방문수 $cumulativeVisits"),
+                              Consumer<AquariumModel>(
+                                builder: (context, aquariumModel, child) {
+                                  return Text(
+                                    '누적 방문수 : ${aquariumModel.visitCount}', // 두 문자열을 연결
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  );
+                                },
+                              ),
                               Row(
                                 children: [
                                   const Text("수족관 공개여부"),
