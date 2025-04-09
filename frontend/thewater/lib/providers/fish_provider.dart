@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:dio/dio.dart';
@@ -73,6 +74,9 @@ class FishModel extends ChangeNotifier {
       debugPrint("getFishCardList() Token is null"); // 토큰이 없을 경우 처리
       return;
     }
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low,
+    );
     final url = Uri.parse('$baseUrl/collection/myfish/add').toString();
     final fishCard = {
       "fishName": fishName,
@@ -80,10 +84,10 @@ class FishModel extends ChangeNotifier {
       "sky": 0,
       "temperature": 0,
       "waterTemperature": 0,
-      "latitude": 123,
-      "longitude": 32,
+      "latitude": position.latitude,
+      "longitude": position.longitude,
       "tide": 0,
-      "comment": "string",
+      "comment": "memo",
       "hasVisible": true,
     };
     // FormData 생성

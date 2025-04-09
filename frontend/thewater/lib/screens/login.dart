@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   String? errorMessage;
   final bool _isLoading = false;
+  void _login() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -97,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _passwordController.text,
                                 );
                                 if (success) {
+                                  Navigator.pop(context);
                                   Navigator.pushReplacementNamed(context, '/');
                                 } else {
                                   setState(() {

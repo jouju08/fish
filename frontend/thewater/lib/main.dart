@@ -10,6 +10,7 @@ import 'package:thewater/screens/camera_screen.dart';
 import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
+import 'package:thewater/screens/splash.dart';
 import 'package:thewater/screens/thewater.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
@@ -57,13 +58,14 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         routes: {
+          '/splash': (context) => const SplashScreen(),
           '/': (context) => const TheWater(pageIndex: 0),
           '/camera': (context) => const CameraScreen(),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),
           '/fish_cards': (context) => FishCardScreen(),
         },
-        initialRoute: '/login',
+        initialRoute: '/splash',
       ),
     );
   }

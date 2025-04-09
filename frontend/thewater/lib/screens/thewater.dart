@@ -102,36 +102,28 @@ class _TheWaterState extends State<TheWater> {
               ListTile(
                 title: const Text("회원가입"),
                 onTap: () {
-                  Navigator.pushNamed(context, '/signup');
+                  Navigator.pushReplacementNamed(context, '/signup');
                 },
               ),
-              ListTile(
-                title: const Text("로그인"),
-                onTap: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
-              ListTile(
-                title: const Text("로그아웃"),
-                onTap: () {
-                  Provider.of<UserModel>(
-                    context,
-                    listen: false,
-                  ).logout(context);
-                  Navigator.pushNamed(context, '/');
-                },
-              ),
-              ListTile(
-                title: const Text("물고기 판별"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen2(),
-                    ),
-                  );
-                },
-              ),
+              if (!Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그인"),
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                ),
+              if (Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그아웃"),
+                  onTap: () {
+                    Provider.of<UserModel>(
+                      context,
+                      listen: false,
+                    ).logout(context);
+                    Navigator.pushReplacementNamed(context, '/');
+                  },
+                ),
+
               ListTile(
                 title: const Text("누끼 따기"),
                 onTap: () {
