@@ -2,6 +2,8 @@ package fishermanjoeandchildren.thewater.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import fishermanjoeandchildren.thewater.util.LunarCalendarUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +31,16 @@ public class WeatherService {
     public WeatherService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
+
+    @Autowired
+    private TideService tideService;
+    @Autowired
+    private WaterTempService waterTempService;
+    @Autowired
+    private ReverseGeocodingService reverseGeocodingService;
+    @Autowired
+    private LunarCalendarUtil lunarCalendarUtil;
+
 
     public String getWeatherData(double lat, double lon) {
         try {
@@ -260,5 +272,102 @@ public class WeatherService {
         if (hour == 15 || hour == 16 || hour == 17) return 15;
         if (hour == 18 || hour == 19 || hour == 20) return 18;
         return 21; // 21, 22, 23시는 21시로 매핑
+    }
+
+    /**
+     * 현재 위치의 날씨, 조위, 수온 정보를 통합하여 제공합니다.
+     * @param lat 위도
+     * @param lon 경도
+     * @return 통합된 환경 정보 목록
+     */
+    public List<String> getIntegratedEnvironmentInfo(double lat, double lon) {
+        try {
+            // 1. 기존 날씨 정보 가져오기
+            List<String> weatherInfo = getNowWeather(lat, lon);
+
+            // 2. 조위 정보 가져오기 (TideService에서 getLatestTideData 메소드 호출)
+            Map<String, Object> tideData = tideService.getLatestTideData(lat, lon);
+
+            // 3. 수온 정보 가져오기 (WaterTempService에서 getLatestWaterTempData 메소드 호출)
+            Map<String, Object> waterTempData = waterTempService.getLatestWaterTempData(lat, lon);
+
+            // 4. 조위 정보 추가
+            if (tideData.containsKey("tideLevel")) {
+                weatherInfo.add("tideLevel: " + tideData.get("tideLevel"));
+            }
+
+            // 5. 수온 정보 추가
+            if (waterTempData.containsKey("waterTemp")) {
+                weatherInfo.add("waterTemp: " + waterTempData.get("waterTemp"));
+            }
+
+            return weatherInfo;
+
+        } catch (Exception e) {
+            throw new RuntimeException("통합 환경 정보를 가져오는데 실패했습니다: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 현재 위치의 날씨, 조위, 수온, 주소, 물때 정보를 통합하여 Map 형태로 제공합니다.
+     * @param lat 위도
+     * @param lon 경도
+     * @return 통합된 환경 정보 맵
+     */
+    public Map<String, String> getFullIntegratedEnvironmentInfoAsMap(double lat, double lon) {
+        try {
+            Map<String, String> resultMap = new HashMap<>();
+
+            // 1. 날씨 정보 가져오기
+            List<String> weatherInfo = getNowWeather(lat, lon);
+
+            // 날씨 정보를 맵으로 변환
+            for (String info : weatherInfo) {
+                String[] parts = info.split(":\\s*", 2);
+                if (parts.length == 2) {
+                    resultMap.put(parts[0].trim(), parts[1].trim());
+                }
+            }
+
+            // 2. 주소 정보 가져오기
+            String address = reverseGeocodingService.getAddressFromCoordinates(lat, lon);
+            resultMap.put("주소", address != null ? address : "주소 정보 없음");
+
+            // 3. 조위 정보 가져오기
+            Map<String, Object> tideData = tideService.getLatestTideData(lat, lon);
+            if (tideData.containsKey("tideLevel")) {
+                resultMap.put("tideLevel", tideData.get("tideLevel").toString());
+            }
+
+            // 4. 수온 정보 가져오기
+            Map<String, Object> waterTempData = waterTempService.getLatestWaterTempData(lat, lon);
+            if (waterTempData.containsKey("waterTemp")) {
+                resultMap.put("waterTemp", waterTempData.get("waterTemp").toString());
+            }
+
+            // 5. 물때 정보 가져오기
+            int lunarDay = lunarCalendarUtil.getTodayLunarDay();
+            Map<String, String> tideInfo = tideService.getTideByLunarDay(lunarDay);
+
+            // 위치에 따라 남해/서해 물때 선택
+            String tideName;
+            if (lon > 127.0) {  // 대략적인 경도 기준으로 동/서 구분
+                tideName = tideInfo.get("남해물때");
+            } else {
+                tideName = tideInfo.get("서해물때");
+            }
+
+            if (tideName != null) {
+                resultMap.put("물때", tideName);
+            }
+
+            return resultMap;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, String> errorMap = new HashMap<>();
+            errorMap.put("error", e.getMessage());
+            return errorMap;
+        }
     }
 }

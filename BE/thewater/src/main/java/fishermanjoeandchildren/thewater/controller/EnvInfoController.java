@@ -6,16 +6,15 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.dto.ApiResponse;
-import fishermanjoeandchildren.thewater.service.RiseSetService;
-import fishermanjoeandchildren.thewater.service.TideService;
-import fishermanjoeandchildren.thewater.service.WaterTempService;
-import fishermanjoeandchildren.thewater.service.WeatherService;
+import fishermanjoeandchildren.thewater.service.*;
+import fishermanjoeandchildren.thewater.util.LunarCalendarUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,6 +32,10 @@ public class EnvInfoController {
     private TideService tideService;
     @Autowired
     private ObjectMapper objectMapper;
+    @Autowired
+    private ReverseGeocodingService reverseGeocodingService;
+    @Autowired
+    private LunarCalendarUtil lunarCalendarUtil;
 
     public EnvInfoController(WeatherService weatherService) {
         this.weatherService = weatherService;
@@ -97,6 +100,36 @@ public class EnvInfoController {
         }
     }
 
+    @GetMapping("/now")
+    public ApiResponse<?> getFullIntegratedEnvironmentInfoAsMap(
+            @RequestParam (defaultValue = "34.3503656") double lat,
+            @RequestParam (defaultValue = "126.4737491") double lon) {
+        try {
+            Map<String, String> infoMap = weatherService.getFullIntegratedEnvironmentInfoAsMap(lat, lon);
+
+            // 에러 확인
+            if (infoMap.containsKey("error")) {
+                return ApiResponse.builder()
+                        .status(ResponseStatus.BAD_REQUEST)
+                        .message(ResponseMessage.BAD_REQUEST)
+                        .data("통합 환경 정보를 가져오는 중 오류가 발생했습니다: " + infoMap.get("error"))
+                        .build();
+            }
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(infoMap)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.BAD_REQUEST)
+                    .message(ResponseMessage.BAD_REQUEST)
+                    .data("통합 환경 정보를 가져오는 중 오류가 발생했습니다: " + e.getMessage())
+                    .build();
+        }
+    }
+
     @GetMapping("/now/weather")
     public ApiResponse<?> getNowWeather(
             @RequestParam (defaultValue = "34.3503656") double lat,
@@ -112,7 +145,65 @@ public class EnvInfoController {
             return ApiResponse.builder()
                     .status(ResponseStatus.BAD_REQUEST)
                     .message(ResponseMessage.BAD_REQUEST)
-                    .data("실황 날씨 데이터를 가져오는 중 오류가 발생했습니다." + e.getMessage())
+                    .data("실황 데이터를 가져오는 중 오류가 발생했습니다." + e.getMessage())
+                    .build();
+        }
+    }
+
+    @GetMapping("/now/tide")
+    public ApiResponse<?> getLatestTideData(
+            @RequestParam (defaultValue = "35.096") double lat,
+            @RequestParam (defaultValue = "129.035") double lon) {
+        try {
+            Map<String, Object> tideData = tideService.getLatestTideData(lat, lon);
+
+            if (tideData.containsKey("error")) {
+                return ApiResponse.builder()
+                        .status(ResponseStatus.BAD_REQUEST)
+                        .message(ResponseMessage.BAD_REQUEST)
+                        .data(tideData.get("error"))
+                        .build();
+            }
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(tideData)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SERVER_ERROR)
+                    .message(ResponseMessage.SERVER_ERROR)
+                    .data("최신 조위 데이터를 가져오는 중 오류가 발생했습니다: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @GetMapping("now/water-temp")
+    public ApiResponse<?> getLatestWaterTemp(
+            @RequestParam (defaultValue = "35.096") double lat,
+            @RequestParam (defaultValue = "129.035") double lon) {
+        try {
+            Map<String, Object> waterTempData = waterTempService.getLatestWaterTempData(lat, lon);
+
+            if (waterTempData.containsKey("error")) {
+                return ApiResponse.builder()
+                        .status(ResponseStatus.BAD_REQUEST)
+                        .message(ResponseMessage.BAD_REQUEST)
+                        .data(waterTempData.get("error"))
+                        .build();
+            }
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(waterTempData)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SERVER_ERROR)
+                    .message(ResponseMessage.SERVER_ERROR)
+                    .data("최신 수온 데이터를 가져오는 중 오류가 발생했습니다: " + e.getMessage())
                     .build();
         }
     }
