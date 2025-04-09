@@ -15,6 +15,9 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">
+        <meta-data
+        android:name="com.kakao.sdk.AppKey"
+        android:value="여기에_카카오_네이티브_앱_키" />
         <activity
             android:name=".MainActivity"
             android:enableOnBackInvokedCallback="true"
