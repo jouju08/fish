@@ -8,6 +8,8 @@ import 'package:provider/provider.dart';
 import 'package:thewater/providers/env_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/screens/tide_chart.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:geolocator/geolocator.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -25,9 +27,9 @@ class _SecondPageState extends State<SecondPage> {
   );
   final tableScrollController = ScrollController();
   final chartScrollController = ScrollController();
-  final LatLng _center = const LatLng(34.70, 127.66);
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
+  LatLng _center = const LatLng(34.70, 127.66);
   Set<Marker> markers = {}; // 마커를 저장할 Set
   Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
@@ -49,6 +51,7 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
+    requestLocationPermission();
     _loadMarkers();
     tableScrollController.addListener(_onScroll);
     tableScrollController.addListener(() {
@@ -64,6 +67,30 @@ class _SecondPageState extends State<SecondPage> {
         tableScrollController.jumpTo(chartScrollController.offset);
       }
     });
+  }
+
+  Future<void> requestLocationPermission() async {
+    // 위치 권한 요청
+    PermissionStatus status = await Permission.location.request();
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.low,
+    );
+    setState(() {
+      _center = LatLng(position.latitude, position.longitude);
+    });
+    mapController.animateCamera(CameraUpdate.newLatLngZoom(_center, 11.0));
+    // 권한 상태 확인
+    if (status.isGranted) {
+      // 권한이 허용된 경우
+      print('위치 권한이 허용되었습니다.');
+    } else if (status.isDenied) {
+      // 권한이 거부된 경우
+      print('위치 권한이 거부되었습니다.');
+      // 사용자에게 권한의 필요성을 설명하는 다이얼로그를 표시할 수 있습니다.
+    } else if (status.isPermanentlyDenied) {
+      // 권한이 영구적으로 거부된 경우 설정으로 이동하도록 안내
+      print('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 활성화해주세요.');
+    }
   }
 
   void _onScroll() {
@@ -471,6 +498,9 @@ class _SecondPageState extends State<SecondPage> {
           children: [
             GoogleMap(
               mapToolbarEnabled: false,
+              myLocationEnabled: true, // 사용자의 현재 위치 표시
+              myLocationButtonEnabled: true, // 우측 하단 현위치 버튼
+              compassEnabled: true,
               initialCameraPosition: CameraPosition(
                 target: _center,
                 zoom: 11.0,
