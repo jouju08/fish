@@ -148,14 +148,14 @@ class _CollectionPageState extends State<CollectionPage> {
                   ),
                 ),
                 Text("길이: ${fishCard["fishSize"]} cm"),
-                Text("sky : ${fishCard["sky"]}"),
-                Text("temperature : ${fishCard["temperature"]}"),
-                Text("waterTemperature : ${fishCard["waterTemperature"]}"),
-                Text("tide : ${fishCard["tide"]}"),
-                Text("comment : ${fishCard["comment"]}"),
-                Text("latitude : ${fishCard["latitude"]}"),
-                Text("longitude : ${fishCard["longitude"]}"),
-                Text("collectDate : ${fishCard["collectDate"]}"),
+                Text("날씨 : ${fishCard["sky"]}"),
+                Text("기온 : ${fishCard["temperature"]}"),
+                Text("수온 : ${fishCard["waterTemperature"]}"),
+                Text("물때 : ${fishCard["tide"]}"),
+                Text("메모 : ${fishCard["comment"]}"),
+                Text("위도 : ${fishCard["latitude"]}"),
+                Text("경도 : ${fishCard["longitude"]}"),
+                Text("잡은날 : ${fishCard["collectDate"]}"),
                 TextButton(
                   onPressed: () {
                     Provider.of<FishModel>(

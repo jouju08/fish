@@ -234,4 +234,38 @@ public class MemberService {
         return address; // 파싱 실패시 원본 반환
     }
 
+    // 닉네임 변경
+    public ApiResponse<?> updateNickname(Long memberId, String newNickname) {
+        // 입력값 검증
+        if (newNickname == null || newNickname.trim().isEmpty()) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.VALIDATION_FAILED)
+                    .message(ResponseMessage.VALIDATION_FAILED)
+                    .data("닉네임이 유효하지 않습니다.")
+                    .build();
+        }
+
+        // 닉네임 중복 확인
+        if (checkNicknameDuplicate(newNickname)) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.CONFLICT)
+                    .message(ResponseMessage.CONFLICT)
+                    .data("이미 사용 중인 닉네임입니다.")
+                    .build();
+        }
+
+        // 회원 조회
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 닉네임 업데이트
+        member.setNickname(newNickname);
+        memberRepository.save(member);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data("닉네임이 성공적으로 변경되었습니다.")
+                .build();
+    }
 }
