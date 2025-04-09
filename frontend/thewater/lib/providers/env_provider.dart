@@ -8,6 +8,31 @@ const String baseUrl = 'http://j12c201.p.ssafy.io';
 class EnvModel extends ChangeNotifier {
   final _storage = const FlutterSecureStorage();
 
+  Future<dynamic> getNowEnv(double lat, double lon) async {
+    try {
+      final token = await _storage.read(key: 'token');
+      if (token == null) {
+        debugPrint("getNowEnv() Token is null");
+        return null;
+      }
+      final url = Uri.parse('$baseUrl/api/env-info/now?lat=$lat&lon=$lon');
+      final header = {'Authorization': 'Bearer $token'};
+      final response = await http.get(url, headers: header);
+
+      if (response.statusCode == 200) {
+        debugPrint("getNowEnv() 성공 (${response.statusCode})");
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        return body['data'];
+      } else {
+        debugPrint("getNowEnv() 실패 (${response.statusCode})");
+        return [];
+      }
+    } catch (e) {
+      debugPrint("Error fetching nowEnv data: $e");
+      return [];
+    }
+  }
+
   Future<dynamic> getTide(double lat, double lon) async {
     try {
       final token = await _storage.read(key: 'token');

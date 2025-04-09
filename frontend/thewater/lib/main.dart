@@ -6,8 +6,6 @@ import 'package:thewater/providers/guestbook_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/splash.dart';
@@ -60,10 +58,8 @@ class MyApp extends StatelessWidget {
         routes: {
           '/splash': (context) => const SplashScreen(),
           '/': (context) => const TheWater(pageIndex: 0),
-          '/camera': (context) => const CameraScreen(),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),
-          '/fish_cards': (context) => FishCardScreen(),
         },
         initialRoute: '/splash',
       ),
