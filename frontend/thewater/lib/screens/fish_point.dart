@@ -34,9 +34,10 @@ class _SecondPageState extends State<SecondPage> {
   Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
   Timer? _tapTimer; // 길게 누른 타이머
+  int riseIndex = 0;
   List<String> propertyList = [
+    '날짜',
     '시간',
-    '환경',
     '날씨',
     '기온',
     '강수',
@@ -45,15 +46,16 @@ class _SecondPageState extends State<SecondPage> {
     '파고',
     '수온',
   ];
-  int riseIndex = 0;
+
   bool onlyMyPoint = false; // 내 마커만 보기
+  Map<String, String> skyMap = {"1": "맑음", "2": "구름조금", "3": "구름많음", "4": "흐림"};
 
   @override
   void initState() {
     super.initState();
     requestLocationPermission();
     _loadMarkers();
-    tableScrollController.addListener(_onScroll);
+    tableScrollController.addListener(_updateRiseIndex);
     tableScrollController.addListener(() {
       if (chartScrollController.hasClients &&
           chartScrollController.offset != tableScrollController.offset) {
@@ -67,6 +69,14 @@ class _SecondPageState extends State<SecondPage> {
         tableScrollController.jumpTo(chartScrollController.offset);
       }
     });
+  }
+
+  void _updateRiseIndex() {
+    final newIndex = (tableScrollController.offset / 480).round();
+    if (newIndex != riseIndex) {
+      setState(() => riseIndex = newIndex);
+      debugPrint("newIndex : $riseIndex");
+    }
   }
 
   Future<void> requestLocationPermission() async {
@@ -91,15 +101,6 @@ class _SecondPageState extends State<SecondPage> {
       // 권한이 영구적으로 거부된 경우 설정으로 이동하도록 안내
       print('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 활성화해주세요.');
     }
-  }
-
-  void _onScroll() {
-    final offset = tableScrollController.offset;
-    final calculatedIndex = (offset / 10).round();
-
-    setState(() {
-      riseIndex = calculatedIndex.clamp(0, 6);
-    });
   }
 
   void _loadMarkers() async {
@@ -203,7 +204,6 @@ class _SecondPageState extends State<SecondPage> {
           return const Center(child: Text("위치 정보가 없습니다"));
         }
 
-        // 여러 Future를 동시에 기다리기 위해 Future.wait 사용
         final futures = Future.wait([
           Provider.of<EnvModel>(
             context,
@@ -226,7 +226,7 @@ class _SecondPageState extends State<SecondPage> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
             } else if (snapshot.hasError) {
-              return Center(child: Text("에러 발생: ${snapshot.error}"));
+              return Center(child: Text("에러 발생: \${snapshot.error}"));
             } else if (!snapshot.hasData) {
               return const Center(child: Text("데이터가 없습니다"));
             }
@@ -236,140 +236,34 @@ class _SecondPageState extends State<SecondPage> {
             final riseSetList = snapshot.data![2];
             final weatherList = snapshot.data![3];
 
-            return Container(
-              padding: const EdgeInsets.all(16),
-              width: double.infinity,
-              height: MediaQuery.of(context).size.height * 0.8,
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _selectedMarker?.infoWindow.title ?? "마커 정보",
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: _deleteSelectedMarker,
-                          child: Text("삭제"),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    Text(weatherList[0]["fcstDate"]),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        // 2. 왼쪽 속성 고정
-                        Column(
-                          children:
-                              propertyList
-                                  .map(
-                                    (property) => Container(
-                                      height: 40,
-                                      alignment: Alignment.centerLeft,
-                                      width: 40,
-                                      child: Text(property),
-                                    ),
-                                  )
-                                  .toList(),
-                        ),
-                        // 3. 데이터 테이블 (가로 스크롤 영역)
-                        Expanded(
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            controller: tableScrollController,
-                            child: Row(
-                              children: List.generate(weatherList.length, (
-                                colIdx,
-                              ) {
-                                return Column(
-                                  children: [
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        weatherList[colIdx]["fcstTime"],
-                                      ),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text("좋음"),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["SKY"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["TMP"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["PCP"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["WSD"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["VEC"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(weatherList[colIdx]["WAV"]),
-                                    ),
-                                    Container(
-                                      width: 60,
-                                      height: 40,
-                                      alignment: Alignment.center,
-                                      child: Text(
-                                        waterTempList[colIdx]["temperature"],
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              }),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      height: 360,
-                      child: TideChart(
-                        tideData: tideList,
-                        scrollController: chartScrollController,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    Text(riseSetList[riseIndex]["sunrise"]),
-                    Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
-                  ],
-                ),
-              ),
+            final chartScrollController = ScrollController();
+            final ValueNotifier<int> riseIndexNotifier = ValueNotifier<int>(0);
+
+            chartScrollController.addListener(() {
+              final newIndex = (chartScrollController.offset / 480).floor();
+              if (newIndex >= 0 &&
+                  newIndex < riseSetList.length &&
+                  newIndex != riseIndexNotifier.value) {
+                riseIndexNotifier.value = newIndex;
+              }
+            });
+
+            return ValueListenableBuilder<int>(
+              valueListenable: riseIndexNotifier,
+              builder: (context, riseIndex, _) {
+                return BottomSheetContent(
+                  markerTitle: _selectedMarker?.infoWindow.title,
+                  weatherList: weatherList,
+                  waterTempList: waterTempList,
+                  tideList: tideList,
+                  riseSetList: riseSetList,
+                  onDelete: _deleteSelectedMarker,
+                  chartScrollController: chartScrollController,
+                  riseIndex: riseIndex,
+                  propertyList: propertyList,
+                  tableScrollController: tableScrollController,
+                );
+              },
             );
           },
         );
@@ -538,6 +432,139 @@ class _SecondPageState extends State<SecondPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class BottomSheetContent extends StatelessWidget {
+  final List<dynamic> waterTempList;
+  final Map<String, dynamic> tideList;
+  final List<dynamic> riseSetList;
+  final List<dynamic> weatherList;
+  final List<String> propertyList;
+  final ScrollController tableScrollController;
+  final ScrollController chartScrollController;
+  final int riseIndex;
+  final String? markerTitle;
+  final VoidCallback onDelete;
+
+  const BottomSheetContent({
+    super.key,
+    required this.waterTempList,
+    required this.tideList,
+    required this.riseSetList,
+    required this.weatherList,
+    required this.propertyList,
+    required this.tableScrollController,
+    required this.chartScrollController,
+    required this.riseIndex,
+    required this.markerTitle,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    Map<String, String> skyMap = {
+      "1": "맑음",
+      "2": "구름조금",
+      "3": "구름많음",
+      "4": "흐림",
+    };
+    return Container(
+      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      height: MediaQuery.of(context).size.height * 0.8,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              markerTitle ?? "마커 정보",
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Column(
+                  children:
+                      propertyList.map((property) {
+                        return Container(
+                          height: 40,
+                          alignment: Alignment.centerLeft,
+                          width: 40,
+                          child: Text(property),
+                        );
+                      }).toList(),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    controller: tableScrollController,
+                    child: Row(
+                      children: List.generate(weatherList.length, (colIdx) {
+                        return Column(
+                          children: [
+                            _dataCell(
+                              weatherList[colIdx]["fcstDate"]
+                                  .toString()
+                                  .substring(4),
+                            ),
+                            _dataCell(weatherList[colIdx]["fcstTime"]),
+                            _dataCell(skyMap[weatherList[colIdx]["SKY"]] ?? ""),
+                            _dataCell("${weatherList[colIdx]["TMP"]}°C"),
+                            _dataCell(weatherList[colIdx]["PCP"], fontSize: 12),
+                            _dataCell("${weatherList[colIdx]["WSD"]}m/s"),
+                            _dataCell(weatherList[colIdx]["VEC"]),
+                            _dataCell("${weatherList[colIdx]["WAV"]}m"),
+                            _dataCell(
+                              "${waterTempList[colIdx]["temperature"]}°C",
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 360,
+              child: TideChart(
+                tideData: tideList,
+                scrollController: chartScrollController,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Text(riseSetList[riseIndex]["date"]),
+                Text(riseSetList[riseIndex]["sunrise"]),
+                Text(riseSetList[riseIndex]["sunset"]),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Text("🌞 Rise/Set List:\n${jsonEncode(riseSetList)}"),
+            TextButton(
+              onPressed: onDelete,
+              child: const Text(
+                "삭제",
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _dataCell(String text, {double fontSize = 14}) {
+    return Container(
+      width: 60,
+      height: 40,
+      alignment: Alignment.center,
+      child: Text(text, style: TextStyle(fontSize: fontSize)),
     );
   }
 }

@@ -366,31 +366,32 @@ class _ModelScreen2State extends State<ModelScreen2> {
                           ),
                         ),
                       ),
-                      SizedBox(
-                        width: 150, // 버튼 크기 조정
-                        child: TextButton(
-                          onPressed: () {
-                            Provider.of<FishModel>(
-                              context,
-                              listen: false,
-                            ).addFishCard(result, 10, _image!);
-                            Navigator.pop(context);
-                          },
-                          style: ElevatedButton.styleFrom(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
+                      if (result != "찾을 수 없음")
+                        SizedBox(
+                          width: 150, // 버튼 크기 조정
+                          child: TextButton(
+                            onPressed: () {
+                              Provider.of<FishModel>(
+                                context,
+                                listen: false,
+                              ).addFishCard(result, 10, _image!);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14),
                             ),
-                            padding: EdgeInsets.symmetric(vertical: 14),
-                          ),
-                          child: Text(
-                            "💾 저장",
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                            child: Text(
+                              "💾 저장",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                     ],
                   ),
                   const SizedBox(height: 20),
