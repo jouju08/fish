@@ -303,47 +303,57 @@ class FishSwimmingManager {
   }
 
   List<Widget> buildSwimmingFishes() {
-    return swimmingFishes.map((fish) {
-      return Positioned(
-        top: fish.y,
-        left: fish.x,
-        child: GestureDetector(
-          onPanStart: (_) {
-            fish.isDragging = true;
-            fish.isPaused = true;
-          },
-          onPanUpdate: (details) {
-            fish.x += details.delta.dx;
-            fish.y += details.delta.dy;
-            update(); // 위치 갱신
-          },
-          onPanEnd: (_) {
-            fish.isDragging = false;
-            Timer(const Duration(milliseconds: 1500), () {
-              fish.isPaused = false;
-              update();
-            });
-          },
+  const double fishSize = 80;
+  return swimmingFishes.map((fish) {
+    return Positioned(
+      top: fish.y,
+      left: fish.x,
+      child: GestureDetector(
+        onPanStart: (_) {
+          fish.isDragging = true;
+          fish.isPaused = true;
+        },
+        onPanUpdate: (details) {
+          fish.x += details.delta.dx;
+          fish.y += details.delta.dy;
+          update(); // 위치 갱신
+        },
+        onPanEnd: (_) {
+          fish.isDragging = false;
+          Timer(const Duration(milliseconds: 1500), () {
+            fish.isPaused = false;
+            update();
+          });
+        },
+        child: Container(
+          width: fishSize,
+          height: fishSize + 20, 
           child: Stack(
             alignment: Alignment.center,
             children: [
               Transform(
                 alignment: Alignment.center,
-                transform:
-                    fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
-                child: Image.asset(fish.imagePath, width: 80),
+                transform: fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
+                child: Image.asset(
+                  fish.imagePath,
+                  width: fishSize,
+                  height: fishSize,
+                  fit: BoxFit.contain,
+                ),
               ),
               if (fish.isPaused)
-                Positioned(
-                  bottom: 50,
-                  child: Center(child: _buildFishNameOverlay(fish.fishName)),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: _buildFishNameOverlay(fish.fishName),
                 ),
             ],
           ),
         ),
-      );
-    }).toList();
-  }
+      ),
+    );
+  }).toList();
+}
+
 
   Widget _buildFishNameOverlay(String fishName) {
     return TweenAnimationBuilder<double>(
