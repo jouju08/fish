@@ -103,7 +103,6 @@ pytz==2025.2
 PyYAML==6.0.2
 rank-bm25==0.2.2
 redis==5.2.1
-redis-om==0.3.5
 redisvl==0.4.1
 regex==2024.11.6
 requests==2.32.3
