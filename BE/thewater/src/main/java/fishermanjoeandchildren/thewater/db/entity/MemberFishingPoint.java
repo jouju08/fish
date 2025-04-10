@@ -1,37 +1,43 @@
 package fishermanjoeandchildren.thewater.db.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "member_fishing_point")
 @Getter
-@AllArgsConstructor
+@Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-@IdClass(MemberFishingPointId.class)
-public class MemberFishingPoint extends Common{
+public class MemberFishingPoint extends Common {
     @Id
-    @Column(name="member_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "point_id")
+    private Long pointId;
+
+    @Column(name = "member_id", nullable = false)
     private Long memberId;
 
-    @Id
-    @Column(name="fishing_point_id")
-    private Long fishingPointId;
+    @Column(name = "point_name", nullable = false)
+    private String pointName;
 
-    @Column(name="has_public")
-    private boolean hasPublic=false;
+    @Column(nullable = false)
+    private Double latitude;
 
-    private String description;
+    @Column(nullable = false)
+    private Double longitude;
 
+    @Column(nullable = false)
+    private String address;
 
-    // ManyToOne으로 멤버와 낚시 포인트 연결 가능
+    @Column
+    private String comment;
+
+    // 연관 관계 - 읽기 전용
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "member_id", insertable = false, updatable = false)
     private Member member;
-
-    @ManyToOne
-    @JoinColumn(name = "fishing_point_id", insertable = false, updatable = false)
-    private FishingPoint fishingPoint;
-
 }

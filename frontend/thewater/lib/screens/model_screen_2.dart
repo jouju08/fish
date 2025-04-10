@@ -1,11 +1,13 @@
+import 'package:flutter/material.dart';
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:image/image.dart' as img;
-
-import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
-
+import 'package:provider/provider.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
+import 'package:thewater/providers/fish_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:thewater/screens/fish_length_screen.dart';
 
 class ModelScreen2 extends StatefulWidget {
   const ModelScreen2({super.key});
@@ -17,6 +19,35 @@ class ModelScreen2 extends StatefulWidget {
 class _ModelScreen2State extends State<ModelScreen2> {
   File? _image;
   String result = "";
+  List<double> modelResult = [];
+  List fishList = [
+    '학공치',
+    '문절망둑',
+    '광어',
+    '복섬',
+    '문어',
+    '주꾸미',
+    '노래미',
+    '무늬오징어',
+    '농어',
+    '갈치',
+    '붕장어',
+    '고등어',
+    '독가시치',
+    '감성돔',
+    '삼치',
+    '성대',
+    '양태',
+    '갑오징어',
+    '전갱이',
+    '망상어',
+    '숭어',
+    '볼락',
+    '우럭',
+    '돌돔',
+    '벵에돔',
+    '참돔',
+  ];
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImageFromGallery() async {
@@ -52,6 +83,8 @@ class _ModelScreen2State extends State<ModelScreen2> {
         throw Exception('이미지를 디코딩할 수 없습니다');
       }
 
+      int width = decodedImage.width;
+      int height = decodedImage.height;
       // 이미지 리사이징 (224x224)
       img.Image resizedImage = img.copyResize(
         decodedImage,
@@ -60,43 +93,17 @@ class _ModelScreen2State extends State<ModelScreen2> {
         interpolation: img.Interpolation.linear,
       );
 
-      // 평균값 계산을 위한 변수
-      double sumR = 0, sumG = 0, sumB = 0;
-      int totalPixels = 224 * 224;
-
-      // 모든 픽셀을 순회하면서 평균값 계산
-      for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-          int pixel = resizedImage.getPixel(x, y);
-          sumR += img.getRed(pixel);
-          sumG += img.getGreen(pixel);
-          sumB += img.getBlue(pixel);
-        }
-      }
-
-      // 각 채널별 평균값
-      double meanR = sumR / totalPixels;
-      double meanG = sumG / totalPixels;
-      double meanB = sumB / totalPixels;
-
-      print("meanR: $meanR, meanG: $meanG, meanB: $meanB");
-
-      // 224x224x3 형태의 배열 생성
+      // [height][width][3] 형태의 배열 생성
       List<List<List<double>>> imageArray = List.generate(
-        224, // 높이
-        (y) => List.generate(
-          224, // 너비
-          (x) {
-            // 픽셀 값 가져오기
-            int pixel = resizedImage.getPixel(x, y);
-
-            return [
-              img.getBlue(pixel).toDouble(),
-              img.getGreen(pixel).toDouble(),
-              img.getRed(pixel).toDouble(),
-            ];
-          },
-        ),
+        224,
+        (y) => List.generate(224, (x) {
+          int pixel = resizedImage.getPixel(x, y);
+          return [
+            img.getBlue(pixel).toDouble(),
+            img.getGreen(pixel).toDouble(),
+            img.getRed(pixel).toDouble(),
+          ];
+        }),
       );
 
       return imageArray;
@@ -108,94 +115,352 @@ class _ModelScreen2State extends State<ModelScreen2> {
 
   modelrun(File file) async {
     final interpreter = await Interpreter.fromAsset(
-      'assets/quantization_model.tflite',
+      'assets/QAT_50model_mixed.tflite',
     );
+    final inputTensor = interpreter.getInputTensor(0);
+    debugPrint("Input shape: ${inputTensor.shape}"); // 예: [1, 224, 224, 3]
+    debugPrint("Input type: ${inputTensor.type}"); // 예: Float32
+
+    // 🔹 출력 정보 출력
+    final outputTensor = interpreter.getOutputTensor(0);
+    debugPrint("Output shape: ${outputTensor.shape}"); // 예: [1, 26]
+    debugPrint("Output type: ${outputTensor.type}"); // 예: Float32
     List<List<List<double>>> imageArray = await convertFileToArray(file);
+    debugPrint(imageArray.toString());
     List<List<double>> output = List.generate(1, (index) => List.filled(26, 0));
     interpreter.run([imageArray], output);
-    List<double> model_result = output[0];
-    print(model_result);
-    int result_index = model_result.indexOf(
-      model_result.reduce((a, b) => a > b ? a : b),
+    modelResult = output[0];
+    print(modelResult);
+    int resultIndex = modelResult.indexOf(
+      modelResult.reduce((a, b) => a > b ? a : b),
     );
-    List fishList = [
-      '감성돔',
-      '벵에돔',
-      '참돔',
-      '복섬',
-      '문어',
-      '돌돔',
-      '주꾸미',
-      '성대',
-      '문절망둑',
-      '갑오징어',
-      '노래미',
-      '독가시치',
-      '전갱이',
-      '망상어',
-      '고등어',
-      '무늬오징어',
-      '볼락',
-      '광어',
-      '우럭',
-      '붕장어',
-      '갈치',
-      '양태',
-      '숭어',
-      '삼치',
-      '학공치',
-      '농어',
-    ];
+
     setState(() {
-      result = fishList[result_index]!;
+      if (modelResult[resultIndex] > 0.5) {
+        result = fishList[resultIndex]!;
+      } else {
+        result = "찾을 수 없음";
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('잡은 물고기 사진을 넣어주세요')),
-      body: SingleChildScrollView(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              // 이미지를 선택했다면 해당 이미지를 화면에 표시
-              _image == null
-                  ? SizedBox(height: 15,)
-                  : Image.file(_image!), // 선택한 이미지를 화면에 표시
-
-              SizedBox(height: 20),
-
-              // 버튼들
-              ElevatedButton(
-                onPressed: _pickImageFromGallery,
-                child: Text('갤러리에서 이미지 선택'),
-              ),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: _pickImageFromCamera,
-                child: Text('카메라로 사진 찍기'),
-              ),
-              _image == null ? SizedBox(height: 15,):
-              Text.rich(
-                TextSpan(
-                  children: [
-                    TextSpan(
-                      text: result, // 기본 텍스트
-                      style: TextStyle(color: Colors.blue, fontSize: 36),
-                    ),
-                    TextSpan(
-                      text: '를 잡았습니다 !!', // 기본 텍스트
-                      style: TextStyle(color: Colors.black, fontSize: 36),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+      appBar: AppBar(
+        title: Text(
+          '물고기 사진을 넣어주세요',
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
       ),
+      body:
+          _image == null
+              ? Column(
+                mainAxisAlignment: MainAxisAlignment.center, // 중앙 정렬
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // 갤러리 선택 버튼
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: ElevatedButton(
+                          onPressed: _pickImageFromGallery,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.photo, size: 40, color: Colors.black),
+                              SizedBox(height: 8),
+                              Text(
+                                '갤러리',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 20), // 버튼 간격 조정
+                      // 카메라 버튼
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: ElevatedButton(
+                          onPressed: _pickImageFromCamera,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 40,
+                                color: Colors.black,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '카메라',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20), // 버튼과 텍스트 간격 조정
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        height: 120,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (context) =>
+                                        const ARDistanceMeasureTapPage(), // 👈 여기에 연결
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.camera_alt,
+                                size: 40,
+                                color: Colors.black,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                '길이측정',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              )
+              : Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(height: 20),
+                  SizedBox(
+                    width: 350,
+                    child: Card(
+                      color: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0), // 내부 여백 조정
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // 물고기 이미지
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                width: 300,
+                                height: 300,
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Image.file(_image!, fit: BoxFit.contain),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // 물고기 이름
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  result,
+                                  style: const TextStyle(
+                                    fontSize: 22, // 더 크게
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    showFishProbabilityDialog(context);
+                                  },
+                                  icon: Icon(
+                                    Icons.info_outline,
+                                    color: Colors.black54,
+                                    size: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // 버튼 정렬 조정
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: TextButton(
+                          onPressed: () {
+                            setState(() {
+                              _image = null; // 이미지 초기화
+                            });
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.symmetric(
+                              vertical: 14,
+                              horizontal: 30,
+                            ),
+                          ),
+                          child: Text(
+                            "🔄 다시 찍기",
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ),
+                      if (result != "찾을 수 없음")
+                        SizedBox(
+                          width: 150, // 버튼 크기 조정
+                          child: TextButton(
+                            onPressed: () {
+                              Provider.of<FishModel>(
+                                context,
+                                listen: false,
+                              ).addFishCard(result, 10, _image!);
+                              Navigator.pop(context);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              padding: EdgeInsets.symmetric(vertical: 14),
+                            ),
+                            child: Text(
+                              "💾 저장",
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
+    );
+  }
+
+  void showFishProbabilityDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Center(
+            child: Text("분류 결과", style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+          content: SizedBox(
+            width: 150,
+            child: Builder(
+              builder: (context) {
+                // 확률 기준으로 내림차순 정렬
+                final List<Map<String, dynamic>> combinedList = List.generate(
+                  fishList.length,
+                  (index) => {
+                    'name': fishList[index],
+                    'prob': modelResult[index],
+                  },
+                );
+
+                combinedList.sort((a, b) => b['prob'].compareTo(a['prob']));
+
+                return SingleChildScrollView(
+                  child: Table(
+                    columnWidths: const {
+                      0: FlexColumnWidth(2),
+                      1: FlexColumnWidth(1),
+                    },
+                    children:
+                        combinedList.map((item) {
+                          return TableRow(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  item['name'],
+                                  textAlign: TextAlign.left,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  item['prob'].toStringAsFixed(4),
+                                  textAlign: TextAlign.right,
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList(),
+                  ),
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }

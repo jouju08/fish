@@ -19,6 +19,7 @@ public class MemberDto {
     private String nickname;
     private Date birthday;
     private Character loginType;
+    private String comment;
 
     public static MemberDto fromEntity(Member member) {
         return MemberDto.builder()
@@ -27,6 +28,7 @@ public class MemberDto {
                 .email(member.getEmail())
                 .nickname(member.getNickname())
                 .birthday(member.getBirthday())
+                .comment(member.getComment())
                 .loginType(member.getLoginType())
                 .build();
     }
@@ -38,6 +40,7 @@ public class MemberDto {
                 .email(this.email)
                 .nickname(this.nickname)
                 .birthday(this.birthday)
+                .comment(this.comment)
                 .loginType(this.loginType)
                 .build();
     }

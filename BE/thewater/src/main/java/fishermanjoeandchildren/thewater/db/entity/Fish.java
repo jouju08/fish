@@ -20,10 +20,10 @@ public class Fish {
     @Column(name="fish_name", unique=true, nullable=false,length = 50)
     private String fishName;
 
-    @Column(name="breeding_season", nullable = false,length = 10)
+    @Column(name="breeding_season", nullable = false,length = 20)
     private String breedingSeason;
 
-    @Column(name="ban_season", nullable = false, length = 10)
+    @Column(name="ban_season", length = 50)
     private String banSeason;
 
     @Column(name="average_size", nullable = false)
@@ -39,5 +39,8 @@ public class Fish {
 
     @Column(nullable = false)
     private String habitat;
+
+    @Column(name="ban_size")
+    private Double banSize;
 
 }
