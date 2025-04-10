@@ -229,7 +229,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
             ),
           ),
         ),
-        
+
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
@@ -241,29 +241,31 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           backgroundColor: Colors.grey[100],
           items: [
             BottomNavigationBarItem(
-              icon:Padding( 
-                padding: const EdgeInsets.only(top: 0, bottom: 0), 
-                  child:Opacity(
-                    opacity:0.6,
-                    child:Image.asset(
-                    bottomNavIndex==0?
-                      'assets/image/어항 클릭.png':'assets/image/어항.png',
+              icon: Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 0
+                        ? 'assets/image/어항 클릭.png'
+                        : 'assets/image/어항.png',
                     width: 27,
                     height: 27,
                     fit: BoxFit.cover,
+                  ),
                 ),
-               ),
               ),
-              label: ""
+              label: "",
             ),
             BottomNavigationBarItem(
-              icon:Padding( 
-                padding: const EdgeInsets.only(right: 50.0,top: 0, bottom: 0), 
-                child:Opacity(
-                  opacity:0.6,
-                  child:Image.asset(
-                    bottomNavIndex==1?
-                      'assets/image/도감클릭.png':'assets/image/도감.png',
+              icon: Padding(
+                padding: const EdgeInsets.only(right: 50.0, top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 1
+                        ? 'assets/image/도감클릭.png'
+                        : 'assets/image/도감.png',
                     width: 27,
                     height: 27,
                     fit: BoxFit.cover,
@@ -273,35 +275,37 @@ class _TheWaterState extends State<TheWater> with RouteAware {
               label: "",
             ), //도감 아이콘
             BottomNavigationBarItem(
-             icon:Padding( 
-                padding: const EdgeInsets.only(left: 50.0, top: 0, bottom: 0), 
-                child:Opacity(
-                  opacity:0.6,
-                  child:Image.asset(
-                  bottomNavIndex==2?
-                    'assets/image/지도 클릭.png':'assets/image/지도.png',
-                  width: 27,
-                  height: 27,
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            label: "",
-            ),
-            BottomNavigationBarItem(
-              icon:Padding( 
-                padding: const EdgeInsets.only(top: 0, bottom: 0), 
-                  child:Opacity(
-                    opacity:0.6,
-                    child:Image.asset(
-                    bottomNavIndex==3?
-                      'assets/image/챗봇 클릭.png':'assets/image/챗봇.png',
-                      
+              icon: Padding(
+                padding: const EdgeInsets.only(left: 50.0, top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 2
+                        ? 'assets/image/지도 클릭.png'
+                        : 'assets/image/지도.png',
                     width: 27,
                     height: 27,
                     fit: BoxFit.cover,
-                    ),
                   ),
+                ),
+              ),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 3
+                        ? 'assets/image/챗봇 클릭.png'
+                        : 'assets/image/챗봇.png',
+
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               label: "",
             ), //챗봇
@@ -549,7 +553,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                 debugPrint("선택된 물고기 목록 : $_selectedFish");
               });
 
-              fishModel.toggleFishVisibility(fishId);
+              await fishModel.toggleFishVisibility(fishId);
 
               final userModel = Provider.of<UserModel>(context, listen: false);
               final aquariumModel = Provider.of<AquariumModel>(
@@ -659,71 +663,71 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                    Row(
-                    children: [
-                      const Text("Today ", style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 5),
-                      Consumer<AquariumModel>(
-                        builder: (context, aquariumModel, child) {
-                          return Text(
-                            '${aquariumModel.visitCount}',
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        },
+                      Row(
+                        children: [
+                          const Text("Today ", style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Consumer<AquariumModel>(
+                            builder: (context, aquariumModel, child) {
+                              return Text(
+                                '${aquariumModel.visitCount}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 0.1),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          /// 좋아요 로직
+                          Consumer<AquariumModel>(
+                            builder: (context, aquariumModel, child) {
+                              return Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await aquariumModel.toggleLikeAquarium();
+                                    },
+                                    child: Icon(
+                                      aquariumModel.likedByMe
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color:
+                                          aquariumModel.likedByMe
+                                              ? Color(0XFFf0A8A8)
+                                              : Colors.grey,
+                                      size: 16.0,
+                                    ),
+                                    // onPressed: () async {
+                                    //   await aquariumModel.toggleLikeAquarium();
+                                    // },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${aquariumModel.likeCount}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
-                    ),
-                    const SizedBox(height: 0.1),
-                    Row(
-                      mainAxisSize: MainAxisSize.min, 
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children:[
-                      /// 좋아요 로직
-                        Consumer<AquariumModel>(
-                          builder: (context, aquariumModel, child) {
-                            return Row(
-                              children: [
-                                 GestureDetector(
-                                  onTap: () async {
-                                    await aquariumModel.toggleLikeAquarium();
-                                  },
-                                  child: Icon(
-                                    aquariumModel.likedByMe
-                                      ? Icons.favorite
-                                      : Icons.favorite_border,
-                                    color:
-                                      aquariumModel.likedByMe
-                                          ? Color(0XFFf0A8A8)
-                                          : Colors.grey,
-                                    size: 16.0,
-                                  ),
-                                  // onPressed: () async {
-                                  //   await aquariumModel.toggleLikeAquarium();
-                                  // },
-                                ),
-                                const SizedBox(width: 4,),
-                                Text(
-                                  '${aquariumModel.likeCount}',
-                                  style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],   
-                )
+                  ),
                 ],
               ),
             ),
-        
+
             const Divider(color: Colors.grey),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
