@@ -116,7 +116,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
     });
-    if (newIndex == 1 && _userCenter == null) {
+    if (newIndex == 2 && _userCenter == null) {
       final location = await _getCurrentLocation();
       setState(() {
         _userCenter = location;
@@ -140,7 +140,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
 
   void showCollectionPage() {
     setState(() {
-      pageIndex = 2;
+      pageIndex = 1;
     });
   }
 

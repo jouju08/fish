@@ -184,7 +184,7 @@ class _CollectionPageState extends State<CollectionPage> {
               Center(
                 child: SizedBox(
                   height: 400,
-                  width: 200,
+                  width: 300,
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
@@ -225,17 +225,24 @@ class _CollectionPageState extends State<CollectionPage> {
                           children: [
                             Text("잡은날 ${fishCard["collectDate"]}"),
                             SizedBox(height: 8),
-                            Text("날씨 ${fishCard["sky"]}"),
+                            if (fishCard["sky"] == 1)
+                              Text("날씨 맑음")
+                            else if (fishCard["sky"] == 2)
+                              Text("날씨 구름조금")
+                            else if (fishCard["sky"] == 3)
+                              Text("날씨 구름")
+                            else if (fishCard["sky"] == 4)
+                              Text("날씨 구름 많음"),
                             SizedBox(height: 8),
-                            Text("기온 ${fishCard["temperature"]}"),
+                            Text("기온 ${fishCard["temperature"]} °C"),
                             SizedBox(height: 8),
                             Text(
                               "길이 ${fishCard["fishSize"].toStringAsFixed(1)} cm",
                             ),
                             SizedBox(height: 8),
-                            Text("수온 ${fishCard["waterTemperature"]}"),
+                            Text("수온 ${fishCard["waterTemperature"]} °C"),
                             SizedBox(height: 8),
-                            Text("물때 ${fishCard["tide"]}"),
+                            Text("물때 ${fishCard["tide"]} m"),
                           ],
                         ),
                       ],
