@@ -54,7 +54,7 @@ def create_vector_store(documents):
     vector_store.add_documents(documents)
     return vector_store
 
-folder = "/home/juha/Desktop/git/S12P21C201/src/AI/chatbot/fishing_data"
+folder = "/app/fishing_data"
 raw_docs = load_csv(folder)
 split_docs = split_documents(raw_docs)
 vectorstore = create_vector_store(split_docs)

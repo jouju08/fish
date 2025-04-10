@@ -6,15 +6,16 @@ import 'package:thewater/providers/guestbook_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/fish_card_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/splash.dart';
 import 'package:thewater/screens/thewater.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
+import 'package:thewater/providers/mypage_provider.dart';
 
+final RouteObserver<ModalRoute<void>> routeObserver =
+    RouteObserver<ModalRoute<void>>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
@@ -35,6 +36,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => RankingProvider()),
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => GuestBookProvider()),
+        ChangeNotifierProvider(create: (_) => MypageProvider()),
       ],
       child: MaterialApp(
         theme: ThemeData(
@@ -45,7 +47,7 @@ class MyApp extends StatelessWidget {
           ),
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue, // 기본 테마 색상을 파란색으로 고정
-            primary: Colors.blue, // 주요 색상
+            primary: Color(0XFF176B87), // 주요 색상
             onPrimary: Colors.white, // 버튼 내부 텍스트 색상
             secondary: Colors.blueAccent, // 보조 색상
           ),
@@ -53,19 +55,18 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           fontFamily: 'GrandifloraOne-regular', // 폰트 설정
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Colors.blue, // FAB 색상
+            backgroundColor:Colors.black38,// FAB 색상
           ),
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/splash': (context) => const SplashScreen(),
-          '/': (context) => const TheWater(pageIndex: 0),
-          '/camera': (context) => const CameraScreen(),
+          '/': (context) => const SplashScreen(),
+          '/main': (context) => const TheWater(pageIndex: 0),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),
-          '/fish_cards': (context) => FishCardScreen(),
         },
-        initialRoute: '/splash',
+        initialRoute: '/',
+        navigatorObservers: [routeObserver],
       ),
     );
   }

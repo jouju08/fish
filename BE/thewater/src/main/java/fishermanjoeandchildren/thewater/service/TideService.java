@@ -340,4 +340,65 @@ public class TideService {
         errorResponse.put("error", errorMessage);
         return errorResponse;
     }
+
+    // 현재 조위 가져오기
+    public Map<String, Object> getLatestTideData(double latitude, double longitude) {
+        try {
+            // 1. 가장 가까운 실측용 관측소 찾기
+            String observatoryCode = observatoryService.findNearestRealTimeObservatory(latitude, longitude);
+            String observatoryName = observatoryService.getRealTimeObservatoryName(observatoryCode);
+
+            // 2. 오늘 날짜 구하기
+            LocalDate today = LocalDate.now();
+            String dateStr = today.format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+
+            // 3. API URL 구성 (여기서는 조위 실측 API 사용)
+            String url = "http://www.khoa.go.kr/api/oceangrid/tideObs/search.do" +
+                    "?ServiceKey=" + apiKey +
+                    "&ObsCode=" + observatoryCode +
+                    "&Date=" + dateStr +
+                    "&ResultType=json";
+
+            // 4. API 호출
+            String response = restTemplate.getForObject(url, String.class);
+
+            // 5. 응답 파싱
+            JsonNode rootNode = objectMapper.readTree(response);
+            JsonNode dataArray = rootNode.path("result").path("data");
+
+            // 6. 가장 최신 데이터 찾기
+            JsonNode latestData = null;
+            String latestTime = "";
+
+            for (JsonNode item : dataArray) {
+                String recordTime = item.path("record_time").asText();
+                if (recordTime.compareTo(latestTime) > 0) {
+                    latestTime = recordTime;
+                    latestData = item;
+                }
+            }
+
+            // 7. 결과 매핑
+            Map<String, Object> result = new HashMap<>();
+            result.put("observatoryCode", observatoryCode);
+            result.put("observatoryName", observatoryName);
+            result.put("latitude", latitude);
+            result.put("longitude", longitude);
+
+            if (latestData != null) {
+                result.put("tideLevel", latestData.path("tide_level").asText());
+                result.put("recordTime", latestTime);
+            } else {
+                result.put("error", "데이터를 찾을 수 없습니다");
+            }
+
+            return result;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            Map<String, Object> errorResult = new HashMap<>();
+            errorResult.put("error", "조위 데이터를 가져오는 중 오류가 발생했습니다: " + e.getMessage());
+            return errorResult;
+        }
+    }
 }
