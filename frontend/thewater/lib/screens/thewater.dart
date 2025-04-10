@@ -676,7 +676,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       : Icons.favorite_border,
                                     color:
                                       aquariumModel.likedByMe
-                                          ? Color(0XFF176B87)
+                                          ? Color(0XFFF0A8A8)
                                           : Colors.grey,
                                     size: 16.0,
                                   ),
