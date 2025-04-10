@@ -37,7 +37,8 @@ class _CollectionPageState extends State<CollectionPage> {
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('assets/image/도감배경.png'), // 도감 배경
+            opacity: 0.45,
+            image: AssetImage('assets/image/도감배경.jpg'), // 도감 배경
             fit: BoxFit.cover,
           ),
         ),
