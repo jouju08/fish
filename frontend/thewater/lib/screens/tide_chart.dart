@@ -49,17 +49,19 @@ class TideChart extends StatelessWidget {
             (index) {
               final value = 600 - index * 100;
               return SizedBox(
+                width: 50,
                 height: 30, // 간격 조정
-                child: Text(
-                  '$value m',
-                  style: TextStyle(fontSize: 12),
-                  textAlign: TextAlign.right,
+                child: Center(
+                  child: Text(
+                    '$value m',
+                    style: TextStyle(fontSize: 12),
+                    textAlign: TextAlign.right,
+                  ),
                 ),
               );
             },
           ),
         ),
-        const SizedBox(width: 4), // 간격
         Expanded(
           child: SingleChildScrollView(
             controller: scrollController, // 공유 스크롤 컨트롤러

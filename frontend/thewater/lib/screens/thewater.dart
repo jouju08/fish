@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/main.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
@@ -40,8 +43,6 @@ class _TheWaterState extends State<TheWater> with RouteAware {
         context,
         listen: false,
       );
-      await userModel.fetchUserInfo();
-
       // user id 확인 후 수족관정보 가져오는거에 userid 대입해서 가져오는거
       if (userModel.id != 0) {
         await aquariumModel.fetchAquariumInfo(userModel.id);
@@ -95,11 +96,30 @@ class _TheWaterState extends State<TheWater> with RouteAware {
     setState(() {});
   }
 
-  void onBottomNavTap(int newIndex) {
+  LatLng? _userCenter;
+
+  void onBottomNavTap(int newIndex) async {
     setState(() {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
     });
+    if (newIndex == 1 && _userCenter == null) {
+      final location = await _getCurrentLocation();
+      setState(() {
+        _userCenter = location;
+      });
+    }
+  }
+
+  Future<LatLng?> _getCurrentLocation() async {
+    var status = await Permission.location.request();
+    if (!status.isGranted) return null;
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return LatLng(position.latitude, position.longitude);
   }
 
   void showCollectionPage() {
@@ -142,33 +162,6 @@ class _TheWaterState extends State<TheWater> with RouteAware {
                   Navigator.pushNamed(context, '/signup');
                 },
               ),
-              ListTile(
-                title: const Text("로그인"),
-                onTap: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
-              ListTile(
-                title: const Text("로그아웃"),
-                onTap: () {
-                  Provider.of<UserModel>(
-                    context,
-                    listen: false,
-                  ).logout(context);
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
-              ListTile(
-                title: const Text("물고기 판별"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen2(),
-                    ),
-                  );
-                },
-              ),
               if (!Provider.of<UserModel>(context).isLoggedIn)
                 ListTile(
                   title: const Text("로그인"),
@@ -184,21 +177,9 @@ class _TheWaterState extends State<TheWater> with RouteAware {
                       context,
                       listen: false,
                     ).logout(context);
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                 ),
-
-              ListTile(
-                title: const Text("누끼 따기"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BorderModel(),
-                    ),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -206,7 +187,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           index: pageIndex,
           children: [
             FirstPage(userComment: userComment, formatPrice: _formatPrice),
-            SecondPage(),
+            SecondPage(center: _userCenter),
             CollectionPage(),
           ],
         ),
