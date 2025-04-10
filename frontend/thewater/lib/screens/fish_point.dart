@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:image/image.dart';
 import 'package:provider/provider.dart';
@@ -31,12 +32,15 @@ class _ThirdPageState extends State<ThirdPage> {
   final chartScrollController = ScrollController();
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
+  late String _mapStyle;
+
   LatLng _center = const LatLng(37.53609444, 126.9675222);
   Set<Marker> markers = {}; // 마커를 저장할 Set
   Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
   Timer? _tapTimer; // 길게 누른 타이머
   int riseIndex = 0;
+  late BitmapDescriptor markerIcon;
   List<String> propertyList = [
     '🗓️날짜',
     '🕜시간',
@@ -55,6 +59,17 @@ class _ThirdPageState extends State<ThirdPage> {
   @override
   void initState() {
     super.initState();
+    rootBundle.loadString('assets/map_style.json').then((string) {
+      _mapStyle = string;
+    });
+    BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(size: Size(48, 48)),
+      'assets/image/marker.png',
+    ).then((icon) {
+      setState(() {
+        markerIcon = icon;
+      });
+    });
     _loadMarkers();
   }
 
@@ -73,9 +88,7 @@ class _ThirdPageState extends State<ThirdPage> {
             final lat = point['latitude'];
             final lon = point['longitude'];
             final marker = Marker(
-              icon: BitmapDescriptor.defaultMarkerWithHue(
-                BitmapDescriptor.hueBlue,
-              ),
+              icon: markerIcon,
               markerId: MarkerId(point['pointId'].toString()),
               position: LatLng(lat, lon),
               infoWindow: InfoWindow(title: point['pointName']),
@@ -97,6 +110,7 @@ class _ThirdPageState extends State<ThirdPage> {
             final lat = double.parse(point['latitude']);
             final lon = double.parse(point['longitude']);
             return Marker(
+              icon: markerIcon,
               markerId: MarkerId(point['id'].toString()),
               position: LatLng(lat, lon),
               infoWindow: InfoWindow(title: point['pointName']),
@@ -135,6 +149,7 @@ class _ThirdPageState extends State<ThirdPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    mapController!.setMapStyle(_mapStyle);
     if (widget.center != null) {
       controller.animateCamera(
         CameraUpdate.newLatLngZoom(widget.center!, 11.0),
