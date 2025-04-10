@@ -96,6 +96,7 @@ class _CollectionPageState extends State<CollectionPage> {
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                         Text(
@@ -103,6 +104,7 @@ class _CollectionPageState extends State<CollectionPage> {
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
