@@ -62,7 +62,10 @@ class SearchProvider extends ChangeNotifier {
 
   // 검색어 기반 유저 검색
   Future<void> searchUsersByNickname(String keyword) async {
-    final url = Uri.parse('$baseUrl/users/search/$keyword');
+    final encodedKeyword = Uri.encodeComponent(keyword);
+
+    final url = Uri.parse('$baseUrl/users/search?nickname=$encodedKeyword');
+
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
