@@ -11,11 +11,15 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final maxBubbleWidth = MediaQuery.of(context).size.width * 0.7;
     return Align(
       alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
         padding: const EdgeInsets.all(12.0),
+        constraints: BoxConstraints(
+          maxWidth: maxBubbleWidth,
+        ),
         decoration: BoxDecoration(
           color: isUser ? Color.fromARGB(255, 184, 195, 193):Color.fromARGB(255, 220, 233, 231),
           borderRadius: BorderRadius.circular(16),

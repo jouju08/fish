@@ -15,7 +15,7 @@ class MypageProvider extends ChangeNotifier {
 
   String _nickname = '';
   String _loginId = '';
-  String _latestFishDate = '';
+  String _latestFishDate = '없음';
   String _latestFishLocation = '';
   int _totalFishCaught = 0;
   String _comment = '';
