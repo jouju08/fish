@@ -316,11 +316,11 @@ class FishSwimmingManager {
                       textAlign: TextAlign.center,
                     ),
                     Text(
-                      "날짜: ${fishData['collectDate']}",
+                      "잡은날짜: ${fishData['collectDate']}",
                       textAlign: TextAlign.center,
                     ),
-                    Text(
-                      "코멘트: ${fishData['comment']}",
+                    Text(fishData['comment'] != null ? "내용: 내용이 없습니다." : 
+                      "내용: ${fishData['comment']}",
                       textAlign: TextAlign.center,
                     ),
                     Text(
