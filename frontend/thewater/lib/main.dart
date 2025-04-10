@@ -47,7 +47,7 @@ class MyApp extends StatelessWidget {
           ),
           colorScheme: ColorScheme.fromSeed(
             seedColor: Colors.blue, // 기본 테마 색상을 파란색으로 고정
-            primary: Colors.blue, // 주요 색상
+            primary: Color(0XFF176B87), // 주요 색상
             onPrimary: Colors.white, // 버튼 내부 텍스트 색상
             secondary: Colors.blueAccent, // 보조 색상
           ),
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           fontFamily: 'GrandifloraOne-regular', // 폰트 설정
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: Colors.blue, // FAB 색상
+            backgroundColor:Colors.black38,// FAB 색상
           ),
         ),
         debugShowCheckedModeBanner: false,
