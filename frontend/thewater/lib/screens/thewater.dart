@@ -19,6 +19,18 @@ import 'package:thewater/screens/ranking.dart';
 import 'package:thewater/screens/mypage.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/screens/chat_screen.dart';
+import 'package:http/http.dart' as http;
+
+Future<void> clearRedisCache() async {
+  final response = await http.post(
+    Uri.parse('http://j12c201.p.ssafy.io:8000/chat/clear'),
+  );
+  if (response.statusCode == 200) {
+    print("Redis 캐시 초기화 완료");
+  } else {
+    print("초기화 실패: ${response.body}");
+  }
+}
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -104,11 +116,14 @@ class _TheWaterState extends State<TheWater> with RouteAware {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
     });
-    if (newIndex == 2 && _userCenter == null) {
+    if (newIndex == 1 && _userCenter == null) {
       final location = await _getCurrentLocation();
       setState(() {
         _userCenter = location;
       });
+    }
+    if (newIndex == 3) {
+      await clearRedisCache(); 
     }
   }
 
@@ -277,6 +292,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
                     child:Image.asset(
                     bottomNavIndex==3?
                       'assets/image/챗봇 클릭.png':'assets/image/챗봇.png',
+                      
                     width: 27,
                     height: 27,
                     fit: BoxFit.cover,
@@ -676,7 +692,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       : Icons.favorite_border,
                                     color:
                                       aquariumModel.likedByMe
-                                          ? Color(0XFFF0A8A8)
+                                          ? Color(0XFFf0A8A8)
                                           : Colors.grey,
                                     size: 16.0,
                                   ),
