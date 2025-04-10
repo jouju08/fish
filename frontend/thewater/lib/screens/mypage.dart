@@ -22,7 +22,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text("$title"),
+          title: Text(title),
           content: TextField(
             controller: controller,
             decoration: InputDecoration(labelText: title),
@@ -65,23 +65,150 @@ class _MyPageScreenState extends State<MyPageScreen> {
     });
   }
 
+  void _showPasswordDialog() {
+    final TextEditingController passwordController = TextEditingController();
+    final userProvider = Provider.of<UserModel>(context, listen: false);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        bool isPasswordCorrect = false;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("회원탈퇴를 위해 비밀번호를 입력해주세요."),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      hintText: "비밀번호를 입력하세요...",
+                    ),
+                  ),
+                  if (isPasswordCorrect)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16.0),
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.pop(context); // 비밀번호 다이얼로그 닫기
+                          _showWithdrawalConfirmationDialog();
+                        },
+                        child: const Text(
+                          "회원탈퇴",
+                          style: TextStyle(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text("취소"),
+                ),
+                TextButton(
+                  onPressed: () async {
+                    final inputPassword = passwordController.text;
+                    final isMatch = await userProvider.checkPassword(
+                      loginId: userProvider.loginId,
+                      password: inputPassword,
+                    );
+                    if (isMatch) {
+                      setState(() {
+                        isPasswordCorrect = true;
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("비밀번호가 올바르지 않습니다.")),
+                      );
+                    }
+                  },
+                  child: const Text("확인"),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 회원탈퇴 확인 다이어로
+  void _showWithdrawalConfirmationDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("회원탈퇴 진행"),
+          content: const Text("모든 아이템과 낚시 기록이 회원데이터와 함께 삭제됩니다.\n정말로 진행하시겠습니까?"),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                final userProvider = Provider.of<UserModel>(
+                  context,
+                  listen: false,
+                );
+
+                bool success = await userProvider.deleteUser(context);
+                if (success) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text("정상적으로 회원이 탈퇴되었습니다. 메인페이지로 이동합니다."),
+                    ),
+                  );
+                  // 2초 후 로그인 화면으로 이동
+                  Future.delayed(const Duration(seconds: 2), () {
+                    if (mounted) {
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                    }
+                  });
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("회원탈퇴에 실패했습니다. 다시 시도해주세요.")),
+                  );
+                }
+              },
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              child: const Text("회원탈퇴"),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("취소"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final mypageProvider = Provider.of<MypageProvider>(context);
     final userProvider = Provider.of<UserModel>(context, listen: false);
     final openMessage = mypageProvider.openAquariumMessage;
-
     final nickname =
         mypageProvider.nickname.isNotEmpty ? mypageProvider.nickname : "조태공";
     final comment =
         mypageProvider.comment.isNotEmpty
             ? mypageProvider.comment
             : "한줄소개가 아직 등록되어있지 않습니다.";
-    // final aquariumPublic = true;
     final latestFishDate =
         mypageProvider.latestFishDate.isNotEmpty
-            ? mypageProvider
-                .latestFishDate // 출항일 매핑 완료
+            ? mypageProvider.latestFishDate
             : "출항기록 없음";
     final activityArea =
         mypageProvider.latestFishLocation == "알 수 없음"
@@ -100,6 +227,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
         child: SafeArea(
           child: Stack(
             children: [
+              // 우측 상단 로그아웃 버튼
               Positioned(
                 top: 10,
                 right: 16,
@@ -111,6 +239,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   },
                 ),
               ),
+              // 스크롤 가능한 마이페이지 내용
               SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
@@ -162,7 +291,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                                         bool available = await mypageProvider
                                             .checkNickName(newText);
                                         if (available) {
-                                          // 닉네임 업데이트 수행
                                           bool success = await mypageProvider
                                               .updateNickname(newText);
                                           if (!success) {
@@ -205,8 +333,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                       ],
                     ),
-
-                    const SizedBox(height: 8),
                     const SizedBox(height: 8),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -247,7 +373,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                         ),
                       ],
                     ),
-
                     const SizedBox(height: 16),
                     Container(
                       padding: const EdgeInsets.all(16),
@@ -365,6 +490,22 @@ class _MyPageScreenState extends State<MyPageScreen> {
                     ),
                     const SizedBox(height: 40),
                   ],
+                ),
+              ),
+              // 좌측 하단에 빨간색 회원탈퇴 텍스트 버튼 추가
+              Positioned(
+                bottom: 16,
+                left: 16,
+                child: GestureDetector(
+                  onTap: _showPasswordDialog,
+                  child: const Text(
+                    "회원탈퇴",
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
                 ),
               ),
             ],
