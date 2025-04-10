@@ -16,13 +16,13 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:math' show Point, min, max; // Rectangle 제거
 import 'dart:ui'; // Rect를 쓰기 위한 import
 
-
 void main() => runApp(const MaterialApp(home: ARDistanceMeasureTapPage()));
 
 class ARDistanceMeasureTapPage extends StatefulWidget {
   const ARDistanceMeasureTapPage({super.key});
   @override
-  State<ARDistanceMeasureTapPage> createState() => _ARDistanceMeasureTapPageState();
+  State<ARDistanceMeasureTapPage> createState() =>
+      _ARDistanceMeasureTapPageState();
 }
 
 class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
@@ -36,9 +36,32 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
   String resultText = "👆 화면을 탭하여 거리 측정";
 
   final List<String> fishList = [
-    '학공치','문절망둑','광어','복섬','문어','주꾸미','노래미','무늬오징어','농어','갈치',
-    '붕장어','고등어','독가시치','감성돔','삼치','성대','양태','갑오징어','전갱이','망상어',
-    '숭어','볼락','우럭','돌돔','벵에돔','참돔'
+    '학공치',
+    '문절망둑',
+    '광어',
+    '복섬',
+    '문어',
+    '주꾸미',
+    '노래미',
+    '무늬오징어',
+    '농어',
+    '갈치',
+    '붕장어',
+    '고등어',
+    '독가시치',
+    '감성돔',
+    '삼치',
+    '성대',
+    '양태',
+    '갑오징어',
+    '전갱이',
+    '망상어',
+    '숭어',
+    '볼락',
+    '우럭',
+    '돌돔',
+    '벵에돔',
+    '참돔',
   ];
 
   @override
@@ -48,11 +71,13 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
   }
 
   Future<void> loadClassifyModel() async {
-    classifyInterpreter = await Interpreter.fromAsset('assets/QAT_50model_mixed.tflite');
+    classifyInterpreter = await Interpreter.fromAsset(
+      'assets/QAT_50model_mixed.tflite',
+    );
   }
 
   @override
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Stack(
@@ -119,13 +144,22 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     }
   }
 
-  void onARViewCreated(ARSessionManager s, ARObjectManager o, ARAnchorManager a, ARLocationManager l) {
+  void onARViewCreated(
+    ARSessionManager s,
+    ARObjectManager o,
+    ARAnchorManager a,
+    ARLocationManager l,
+  ) {
     arSessionManager = s;
     arObjectManager = o;
     arAnchorManager = a;
     arLocationManager = l;
 
-    arSessionManager.onInitialize(showFeaturePoints: false, showPlanes: true, handleTaps: true);
+    arSessionManager.onInitialize(
+      showFeaturePoints: false,
+      showPlanes: true,
+      handleTaps: true,
+    );
     arObjectManager.onInitialize();
 
     arSessionManager.onPlaneOrPointTap = (List<ARHitTestResult> hits) {
@@ -165,7 +199,9 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       final resized = img.copyResize(rotatedImage, width: 640, height: 640);
 
       // Segmentation 모델 준비
-      final segInterpreter = await Interpreter.fromAsset('assets/segment_v3_sim_float32.tflite');
+      final segInterpreter = await Interpreter.fromAsset(
+        'assets/segment_v3_sim_float32.tflite',
+      );
 
       final input = Float32List(1 * 640 * 640 * 3);
       int i = 0;
@@ -178,15 +214,25 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
         }
       }
 
-      final outputCls = List.generate(1 * 8400 * 2, (_) => 0.0).reshape([1, 8400, 2]);
-      final outputMask = List.generate(1 * 8400 * 32, (_) => 0.0).reshape([1, 8400, 32]);
-      final outputProto = List.generate(1 * 160 * 160 * 32, (_) => 0.0).reshape([1, 160, 160, 32]);
+      final outputCls = List.generate(
+        1 * 8400 * 2,
+        (_) => 0.0,
+      ).reshape([1, 8400, 2]);
+      final outputMask = List.generate(
+        1 * 8400 * 32,
+        (_) => 0.0,
+      ).reshape([1, 8400, 32]);
+      final outputProto = List.generate(
+        1 * 160 * 160 * 32,
+        (_) => 0.0,
+      ).reshape([1, 160, 160, 32]);
 
-      segInterpreter.runForMultipleInputs([input.reshape([1, 640, 640, 3])], {
-        0: outputCls,
-        1: outputMask,
-        2: outputProto,
-      });
+      segInterpreter.runForMultipleInputs(
+        [
+          input.reshape([1, 640, 640, 3]),
+        ],
+        {0: outputCls, 1: outputMask, 2: outputProto},
+      );
 
       final cls = outputCls[0];
       final maskVecs = outputMask[0];
@@ -199,28 +245,25 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       const imageCenter = Point(320, 320);
 
       // 가중치 적용한 confidence 리스트 만들기
-      final weighted = confidences.asMap().entries
-          .where((e) => e.value > 0.3)
-          .map((entry) {
-            final idx = entry.key;
-            final conf = entry.value;
+      final weighted =
+          confidences.asMap().entries.where((e) => e.value > 0.3).map((entry) {
+              final idx = entry.key;
+              final conf = entry.value;
 
-            // YOLO의 박스 index → x, y 중심 추정
-            final row = idx ~/ 80;
-            final col = idx % 80;
-            final centerX = (col + 0.5) * (640.0 / 80);
-            final centerY = (row + 0.5) * (640.0 / 80);
-            final dx = (centerX - imageCenter.x);
-            final dy = (centerY - imageCenter.y);
-            final dist = sqrt(dx * dx + dy * dy);
+              // YOLO의 박스 index → x, y 중심 추정
+              final row = idx ~/ 80;
+              final col = idx % 80;
+              final centerX = (col + 0.5) * (640.0 / 80);
+              final centerY = (row + 0.5) * (640.0 / 80);
+              final dx = (centerX - imageCenter.x);
+              final dy = (centerY - imageCenter.y);
+              final dist = sqrt(dx * dx + dy * dy);
 
-            // 거리에 따른 가중치 (가까울수록 점수 증가)
-            final weight = 1.0 / (1.0 + dist / 100);
-            return MapEntry(idx, conf * weight);
-          })
-          .toList()
-        ..sort((a, b) => b.value.compareTo(a.value));
-
+              // 거리에 따른 가중치 (가까울수록 점수 증가)
+              final weight = 1.0 / (1.0 + dist / 100);
+              return MapEntry(idx, conf * weight);
+            }).toList()
+            ..sort((a, b) => b.value.compareTo(a.value));
 
       if (weighted.isEmpty) {
         showResult("❌ 물고기 감지 안됨");
@@ -233,14 +276,17 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       // 마스크 생성
       final protoReshaped = List.generate(160 * 160, (i) {
         final y = i ~/ 160, x = i % 160;
-        final dot = List.generate(32, (j) => proto[y][x][j] * vector[j]).reduce((a, b) => a + b);
+        final dot = List.generate(
+          32,
+          (j) => proto[y][x][j] * vector[j],
+        ).reduce((a, b) => a + b);
         final sigmoid = 1 / (1 + exp(-dot / 3.0));
         return sigmoid > 0.4 ? 255 : 0;
       });
 
       final maskImage = img.Image(160, 160);
       for (int i = 0; i < 160 * 160; i++) {
-        final x = i % 160,y = i ~/ 160,v = protoReshaped[i];
+        final x = i % 160, y = i ~/ 160, v = protoReshaped[i];
         maskImage.setPixel(x, y, img.getColor(v, v, v));
       }
 
@@ -267,9 +313,13 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
 
       // ✅ 여기서부터 종 분류 모델 실행
       // 🎯 [1] 마스크 기반 RGB 이미지 생성
-      final resizedOriginal = img.copyResize(rotatedImage, width: 640, height: 640);
+      final resizedOriginal = img.copyResize(
+        rotatedImage,
+        width: 640,
+        height: 640,
+      );
       final binaryMaskRaw = fillContourMask(largestContour, 640, 640);
-      final binaryMask = _morphClose(binaryMaskRaw, radius: 3);  // 내부 구멍 메움
+      final binaryMask = _morphClose(binaryMaskRaw, radius: 3); // 내부 구멍 메움
       final dilatedMask = _dilateMask(binaryMask, radius: 1);
       final maskedImage = img.Image(640, 640);
       for (int y = 0; y < 640; y++) {
@@ -282,11 +332,27 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       }
 
       final box = _getBoundingBoxFromContour(largestContour);
-      final croppedRGB = img.copyCrop(resizedOriginal, box.left.toInt(), box.top.toInt(), box.width.toInt(), box.height.toInt());
-      final croppedMask = img.copyCrop(binaryMask, box.left.toInt(), box.top.toInt(), box.width.toInt(), box.height.toInt());
+      final croppedRGB = img.copyCrop(
+        resizedOriginal,
+        box.left.toInt(),
+        box.top.toInt(),
+        box.width.toInt(),
+        box.height.toInt(),
+      );
+      final croppedMask = img.copyCrop(
+        binaryMask,
+        box.left.toInt(),
+        box.top.toInt(),
+        box.width.toInt(),
+        box.height.toInt(),
+      );
 
       // 🎯 [2] 분류 입력 이미지: 마스킹 없이 원본 RGB를 BBox로 자름
-      final resizedForClassify = img.copyResize(croppedRGB, width: 224, height: 224);
+      final resizedForClassify = img.copyResize(
+        croppedRGB,
+        width: 224,
+        height: 224,
+      );
 
       // final maskedCropped = img.Image(box.width.toInt(), box.height.toInt());
       // for (int y = 0; y < box.height; y++) {
@@ -299,50 +365,73 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
 
       // final resizedForClassify = img.copyResize(maskedCropped, width: 224, height: 224);
 
-
-
       // 🎯 [3] 디버깅 저장
       final directory = await getExternalStorageDirectory();
       if (directory != null) {
         final basePath = directory.path;
 
         // (1) 마스크 이미지 저장
-        await File('$basePath/mask_binary.png').writeAsBytes(img.encodePng(upscaled));
+        await File(
+          '$basePath/mask_binary.png',
+        ).writeAsBytes(img.encodePng(upscaled));
         debugPrint("🟢 마스크 저장 완료: $basePath/mask_binary.png");
 
         // (2) 마스크가 적용된 원본 RGB 이미지 저장 (640x640)
-        await File('$basePath/masked_input_640.png').writeAsBytes(img.encodePng(maskedImage));
+        await File(
+          '$basePath/masked_input_640.png',
+        ).writeAsBytes(img.encodePng(maskedImage));
         debugPrint("🟢 마스크 적용 RGB 저장 완료: $basePath/masked_input_640.png");
 
         // (3) 분류 입력 이미지 저장 (224x224)
-        await File('$basePath/classified_input.png').writeAsBytes(img.encodePng(resizedForClassify));
+        await File(
+          '$basePath/classified_input.png',
+        ).writeAsBytes(img.encodePng(resizedForClassify));
         debugPrint("🟢 분류 입력 이미지 저장 완료: $basePath/classified_input.png");
 
         // bounding box 시각화용 복사본 생성
-        final debugBoxImage = img.copyResize(rotatedImage, width: 640, height: 640);
+        final debugBoxImage = img.copyResize(
+          rotatedImage,
+          width: 640,
+          height: 640,
+        );
 
         // Rectangle -> (left, top, width, height) → box 테두리 그리기
         for (int x = box.left.toInt(); x < box.left + box.width; x++) {
           debugBoxImage.setPixel(x, box.top.toInt(), img.getColor(255, 0, 0));
-          debugBoxImage.setPixel(x, (box.top + box.height).toInt() - 1, img.getColor(255, 0, 0));
+          debugBoxImage.setPixel(
+            x,
+            (box.top + box.height).toInt() - 1,
+            img.getColor(255, 0, 0),
+          );
         }
         for (int y = box.top.toInt(); y < box.top + box.height; y++) {
           debugBoxImage.setPixel(box.left.toInt(), y, img.getColor(255, 0, 0));
-          debugBoxImage.setPixel((box.left + box.width).toInt() - 1, y, img.getColor(255, 0, 0));
+          debugBoxImage.setPixel(
+            (box.left + box.width).toInt() - 1,
+            y,
+            img.getColor(255, 0, 0),
+          );
         }
 
         // 저장
-        await File('$basePath/debug_bbox_drawn.png').writeAsBytes(img.encodePng(debugBoxImage));
-        debugPrint("🟢 디버깅용 bounding box 이미지 저장 완료: $basePath/debug_bbox_drawn.png");
+        await File(
+          '$basePath/debug_bbox_drawn.png',
+        ).writeAsBytes(img.encodePng(debugBoxImage));
+        debugPrint(
+          "🟢 디버깅용 bounding box 이미지 저장 완료: $basePath/debug_bbox_drawn.png",
+        );
       }
-      final imageArray = List.generate(224, (y) => List.generate(224, (x) {
-        final pixel = resizedForClassify.getPixel(x, y);
-        return [
-          img.getBlue(pixel).toDouble(),
-          img.getGreen(pixel).toDouble(),
-          img.getRed(pixel).toDouble(),
-        ];
-      }));
+      final imageArray = List.generate(
+        224,
+        (y) => List.generate(224, (x) {
+          final pixel = resizedForClassify.getPixel(x, y);
+          return [
+            img.getBlue(pixel).toDouble(),
+            img.getGreen(pixel).toDouble(),
+            img.getRed(pixel).toDouble(),
+          ];
+        }),
+      );
       final output = List.generate(1, (_) => List.filled(26, 0.0));
 
       classifyInterpreter.run([imageArray], output);
@@ -353,7 +442,12 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       final name = confidence > 0.5 ? fishList[bestIdx] : "모름";
 
       // 최종 결과 출력
-      showResult("📏 길이: ${lengthCm.toStringAsFixed(1)} cm\n🎣 종: $name (${(confidence * 100).toStringAsFixed(1)}%)");
+      showResult(
+        "📏 길이: ${lengthCm.toStringAsFixed(1)} cm\n🎣 종: $name (${(confidence * 100).toStringAsFixed(1)}%)",
+      );
+      Future.delayed(Duration(seconds: 5), () {
+        Navigator.pushReplacementNamed(context, '/main');
+      });
     } catch (e, stack) {
       debugPrint("❌ 에러 발생: $e");
       debugPrint("📍 $stack");
@@ -370,7 +464,8 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     for (int y = 0; y < mask.height; y++) {
       for (int x = 0; x < mask.width; x++) {
         final p = Point(x, y);
-        if (visited.contains(p) || img.getRed(mask.getPixel(x, y)) < 200) continue;
+        if (visited.contains(p) || img.getRed(mask.getPixel(x, y)) < 200)
+          continue;
 
         List<Point<int>> q = [p], contour = [];
         visited.add(p);
@@ -382,8 +477,12 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
             for (var dy in [-1, 0, 1]) {
               final nx = cur.x + dx, ny = cur.y + dy;
               final np = Point(nx, ny);
-              if (nx >= 0 && ny >= 0 && nx < mask.width && ny < mask.height &&
-                  !visited.contains(np) && img.getRed(mask.getPixel(nx, ny)) > 128) {
+              if (nx >= 0 &&
+                  ny >= 0 &&
+                  nx < mask.width &&
+                  ny < mask.height &&
+                  !visited.contains(np) &&
+                  img.getRed(mask.getPixel(nx, ny)) > 128) {
                 visited.add(np);
                 q.add(np);
               }
@@ -392,8 +491,10 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
         }
 
         if (contour.length > 50) {
-          final avgX = contour.map((p) => p.x).reduce((a, b) => a + b) / contour.length;
-          final avgY = contour.map((p) => p.y).reduce((a, b) => a + b) / contour.length;
+          final avgX =
+              contour.map((p) => p.x).reduce((a, b) => a + b) / contour.length;
+          final avgY =
+              contour.map((p) => p.y).reduce((a, b) => a + b) / contour.length;
           final dist = sqrt(pow(avgX - center.x, 2) + pow(avgY - center.y, 2));
           final score = contour.length / (1.0 + dist);
           if (score > bestScore) {
@@ -406,6 +507,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
 
     return best;
   }
+
   img.Image fillContourMask(List<Point<int>> contour, int width, int height) {
     final mask = img.Image(width, height);
     img.fill(mask, img.getColor(0, 0, 0));
@@ -414,15 +516,16 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       mask.setPixel(point.x, point.y, img.getColor(255, 255, 255));
     }
 
-    final centerX = contour.map((p) => p.x).reduce((a, b) => a + b) ~/ contour.length;
-    final centerY = contour.map((p) => p.y).reduce((a, b) => a + b) ~/ contour.length;
+    final centerX =
+        contour.map((p) => p.x).reduce((a, b) => a + b) ~/ contour.length;
+    final centerY =
+        contour.map((p) => p.y).reduce((a, b) => a + b) ~/ contour.length;
     _simpleFloodFill(mask, centerX, centerY, img.getColor(255, 255, 255));
 
     return mask;
   }
 
-
-    img.Image _dilateMask(img.Image mask, {int radius = 1}) {
+  img.Image _dilateMask(img.Image mask, {int radius = 1}) {
     final result = img.Image.from(mask);
     for (int y = 0; y < mask.height; y++) {
       for (int x = 0; x < mask.width; x++) {
@@ -441,7 +544,8 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     }
     return result;
   }
-    // 마스크 침식 (Erosion)
+
+  // 마스크 침식 (Erosion)
   img.Image _erodeMask(img.Image mask, {int radius = 1}) {
     final result = img.Image.from(mask);
     for (int y = 0; y < mask.height; y++) {
@@ -451,7 +555,8 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
           for (int dx = -radius; dx <= radius; dx++) {
             final nx = x + dx;
             final ny = y + dy;
-            if (nx < 0 || ny < 0 || nx >= mask.width || ny >= mask.height) continue;
+            if (nx < 0 || ny < 0 || nx >= mask.width || ny >= mask.height)
+              continue;
             if (img.getRed(mask.getPixel(nx, ny)) < 128) {
               erode = true;
               break;
@@ -459,7 +564,11 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
           }
           if (erode) break;
         }
-        result.setPixel(x, y, erode ? img.getColor(0, 0, 0) : img.getColor(255, 255, 255));
+        result.setPixel(
+          x,
+          y,
+          erode ? img.getColor(0, 0, 0) : img.getColor(255, 255, 255),
+        );
       }
     }
     return result;
@@ -470,6 +579,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     final dilated = _dilateMask(mask, radius: radius);
     return _erodeMask(dilated, radius: radius);
   }
+
   Rect _getBoundingBoxFromContour(List<Point<int>> contour) {
     final xs = contour.map((p) => p.x);
     final ys = contour.map((p) => p.y);
@@ -477,7 +587,11 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     final right = xs.reduce(max);
     final top = ys.reduce(min);
     final bottom = ys.reduce(max);
-    return Rect.fromLTWH(left.toDouble(), top.toDouble(), (right - left + 1).toDouble(), (bottom - top + 1).toDouble());
+    return Rect.fromLTWH(
+      left.toDouble(),
+      top.toDouble(),
+      (right - left + 1).toDouble(),
+      (bottom - top + 1).toDouble(),
+    );
   }
-
 }

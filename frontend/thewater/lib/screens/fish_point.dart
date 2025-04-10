@@ -28,11 +28,21 @@ class _ThirdPageState extends State<ThirdPage> {
   final TextEditingController _commentController = TextEditingController(
     text: "낚시 포인트 댓글",
   );
+  Set<Marker> _markers = {};
+  void _updateMarkers(Set<Marker> markers) {
+    setState(() {
+      _markers = markers;
+    });
+  }
+
   final tableScrollController = ScrollController();
   final chartScrollController = ScrollController();
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
   late String _mapStyle;
+  ClusterManager clusterManager = ClusterManager(
+    clusterManagerId: ClusterManagerId("1"),
+  );
 
   LatLng _center = const LatLng(37.53609444, 126.9675222);
   Set<Marker> markers = {}; // 마커를 저장할 Set
@@ -41,6 +51,7 @@ class _ThirdPageState extends State<ThirdPage> {
   Timer? _tapTimer; // 길게 누른 타이머
   int riseIndex = 0;
   late BitmapDescriptor markerIcon;
+  late BitmapDescriptor myMarkerIcon;
   List<String> propertyList = [
     '🗓️날짜',
     '🕜시간',
@@ -70,6 +81,14 @@ class _ThirdPageState extends State<ThirdPage> {
         markerIcon = icon;
       });
     });
+    BitmapDescriptor.fromAssetImage(
+      ImageConfiguration(size: Size(48, 48)),
+      'assets/image/my_marker.png',
+    ).then((icon) {
+      setState(() {
+        myMarkerIcon = icon;
+      });
+    });
     _loadMarkers();
   }
 
@@ -88,7 +107,8 @@ class _ThirdPageState extends State<ThirdPage> {
             final lat = point['latitude'];
             final lon = point['longitude'];
             final marker = Marker(
-              icon: markerIcon,
+              clusterManagerId: ClusterManagerId("1"),
+              icon: myMarkerIcon,
               markerId: MarkerId(point['pointId'].toString()),
               position: LatLng(lat, lon),
               infoWindow: InfoWindow(title: point['pointName']),
@@ -110,6 +130,7 @@ class _ThirdPageState extends State<ThirdPage> {
             final lat = double.parse(point['latitude']);
             final lon = double.parse(point['longitude']);
             return Marker(
+              clusterManagerId: ClusterManagerId("1"),
               icon: markerIcon,
               markerId: MarkerId(point['id'].toString()),
               position: LatLng(lat, lon),
@@ -312,9 +333,7 @@ class _ThirdPageState extends State<ThirdPage> {
                   String markerName = _markerNameController.text.trim();
                   // 새 마커 생성
                   Marker newMarker = Marker(
-                    icon: BitmapDescriptor.defaultMarkerWithHue(
-                      BitmapDescriptor.hueBlue,
-                    ),
+                    icon: myMarkerIcon,
                     markerId: MarkerId(markerIdStr),
                     position: _lastTappedLocation,
                     infoWindow: InfoWindow(title: markerName),
@@ -390,6 +409,7 @@ class _ThirdPageState extends State<ThirdPage> {
         child: Stack(
           children: [
             GoogleMap(
+              clusterManagers: <ClusterManager>{clusterManager},
               key: ValueKey(widget.center.toString()),
               mapToolbarEnabled: false,
               myLocationEnabled: true, // 사용자의 현재 위치 표시
