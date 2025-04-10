@@ -50,8 +50,17 @@ class _FriendAquariumState extends State<FriendAquarium>
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔"  || fishName == "광어" || fishName == "농어" || fishName == "볼락" || fishName == "문절망둑" || fishName == "성대" || fishName == "복섬" || fishName == "숭어" || fishName == "우럭") {
-          path = "assets/image/$fishName.png";
+        if (fishName == "문어" ||
+            fishName == "감성돔" ||
+            fishName == "광어" ||
+            fishName == "농어" ||
+            fishName == "볼락" ||
+            fishName == "문절망둑" ||
+            fishName == "성대" ||
+            fishName == "복섬" ||
+            fishName == "숭어" ||
+            fishName == "우럭") {
+          path = "assets/image/$fishName.gif";
         } else {
           path = "assets/image/$fishName.png";
         }
@@ -303,17 +312,27 @@ class _FriendAquariumState extends State<FriendAquarium>
             if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
             if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
             Positioned(
-              bottom: 0,
+              bottom: 10,
               left: 0,
               right: 0,
               child: GestureDetector(
                 onTap: () => _showGuestBookModal(context),
-                child: Container(
-                  color: Colors.white,
-                  padding: EdgeInsets.all(16),
-                  child: Text(
-                    '${widget.nickname}님에게 방명록을 남겨보세요...',
-                    style: TextStyle(color: Colors.grey),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(20),
+                        right: Radius.circular(20),
+                      ),
+                      border: Border.all(color: Colors.black),
+                    ),
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      '${widget.nickname}님에게 방명록을 남겨보세요...',
+                      style: const TextStyle(color: Colors.grey),
+                    ),
                   ),
                 ),
               ),
