@@ -4,35 +4,14 @@ import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 
-class SecondPage extends StatefulWidget {
-  const SecondPage({super.key});
+class FishSave extends StatefulWidget {
+  const FishSave({super.key});
 
   @override
-  State<SecondPage> createState() => _SecondPageState();
+  State<FishSave> createState() => _FishSaveState();
 }
 
-class _SecondPageState extends State<SecondPage> {
-  @override
-  Widget build(BuildContext context) {
-    return const CollectionPage();
-  }
-}
-
-class CollectionPage extends StatefulWidget {
-  const CollectionPage({super.key});
-
-  @override
-  State<CollectionPage> createState() => _CollectionPageState();
-}
-
-class _CollectionPageState extends State<CollectionPage> {
-  @override
-  void initState() {
-    debugPrint("collectionPage initState 실행됨");
-    super.initState();
-    Provider.of<FishModel>(context, listen: false).getFishCardList();
-  }
-
+class _FishSaveState extends State<FishSave> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -161,84 +140,86 @@ class _CollectionPageState extends State<CollectionPage> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20), // 둥근 모서리 적용
           ),
-          child: Stack(
-            children: [
-              Center(
-                child: Container(
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/image/paper.png'),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  height: 800,
-                  width: 400,
-                ),
-              ),
-
-              Center(
-                child: SizedBox(
-                  height: 400,
-                  width: 200,
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        Text(
-                          fishCard["fishName"]!,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Container(
-                          child: FutureBuilder<Uint8List>(
-                            future: Provider.of<FishModel>(
-                              context,
-                            ).fetchImageBytes(fishCard['cardImg']),
-                            builder: (context, snapshot) {
-                              if (snapshot.connectionState ==
-                                  ConnectionState.waiting) {
-                                return CircularProgressIndicator();
-                              } else if (snapshot.hasError) {
-                                return Text('에러 발생: ${snapshot.error}');
-                              } else {
-                                return ClipRRect(
-                                  borderRadius: BorderRadius.circular(16),
-                                  child: Image.memory(
-                                    snapshot.data!,
-                                    fit: BoxFit.contain,
-                                  ),
-                                ); // ← 바로 화면에 표시
-                              }
-                            },
-                          ),
-                        ),
-                        SizedBox(height: 32),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text("잡은날 ${fishCard["collectDate"]}"),
-                            SizedBox(height: 8),
-                            Text("날씨 ${fishCard["sky"]}"),
-                            SizedBox(height: 8),
-                            Text("기온 ${fishCard["temperature"]}"),
-                            SizedBox(height: 8),
-                            Text("길이 ${fishCard["fishSize"]} cm"),
-                            SizedBox(height: 8),
-                            Text("수온 ${fishCard["waterTemperature"]}"),
-                            SizedBox(height: 8),
-                            Text("물때 ${fishCard["tide"]}"),
-                            SizedBox(height: 8),
-                            Text("메모 ${fishCard["comment"]}"),
-                          ],
-                        ),
-                      ],
-                    ),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              children: [
+                Text(
+                  fishCard["fishName"]!,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 16),
+                Container(
+                  child: FutureBuilder<Uint8List>(
+                    future: Provider.of<FishModel>(
+                      context,
+                    ).fetchImageBytes(fishCard['cardImg']),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return CircularProgressIndicator();
+                      } else if (snapshot.hasError) {
+                        return Text('에러 발생: ${snapshot.error}');
+                      } else {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.memory(
+                            snapshot.data!,
+                            fit: BoxFit.contain,
+                          ),
+                        ); // ← 바로 화면에 표시
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(height: 32),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("잡은날 ${fishCard["collectDate"]}"),
+                          SizedBox(height: 8),
+                          Text("날씨 ${fishCard["sky"]}"),
+                          SizedBox(height: 8),
+                          Text("기온 ${fishCard["temperature"]}"),
+                          SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("길이 ${fishCard["fishSize"]} cm"),
+                          SizedBox(height: 8),
+                          Text("수온 ${fishCard["waterTemperature"]}"),
+                          SizedBox(height: 8),
+                          Text("물때 ${fishCard["tide"]}"),
+                          // SizedBox(height: 8),
+                          // Text("위도 ${fishCard["latitude"]}"),
+                          // SizedBox(height: 8),
+                          // Text("경도 ${fishCard["longitude"]}"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 16),
+                    Expanded(child: Text("메모 ${fishCard["comment"]}")),
+                    SizedBox(width: 16),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
