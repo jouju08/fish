@@ -6,7 +6,7 @@ from langchain_core.runnables.history import RunnableWithMessageHistory
 from langchain_core.chat_history import InMemoryChatMessageHistory
 from langchain_core.runnables import RunnableLambda
 from prompt.prompt import prompt
-from model.gemini_model import model
+from model.open_ai import model
 from chain.memory import get_memory
 from vectorstore.redis_store import retriever
 

@@ -1,12 +1,14 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 from chain.rag_chain import chain_with_history
+import redis
 
 class ChatRequest(BaseModel):
     question:str
     session_id:str="default"
 
 
+r=redis.Redis(host='j12c201.p.ssafy.io', port=6379, db=0)
 app = FastAPI()
 
 @app.post("/chat")
@@ -19,3 +21,10 @@ async def chat(req:ChatRequest):
         config={"configurable": {"session_id": req.session_id}}
     )
     return {"response": response}
+
+@app.post("/chat/clear-session")
+def clear_cache(session_id:str):
+    r.delete(f"message_store:{session_id}")
+    for key in r.scan_iter("redis:*"):
+        r.delete(key)
+    return {"status": "cache cleared all"}

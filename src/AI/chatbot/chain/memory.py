@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL", "redis://j12c201.p.ssafy.io:6379")
 
 def get_memory(session_id: str) -> BaseChatMessageHistory:
     return RedisChatMessageHistory(
