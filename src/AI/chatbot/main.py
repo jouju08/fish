@@ -23,7 +23,8 @@ async def chat(req:ChatRequest):
     return {"response": response}
 
 @app.post("/chat/clear-session")
-def clear_cache(session_id:str):
+def clear_cache(req: SessionRequest):
+    session_id = req.session_id
     r.delete(f"message_store:{session_id}")
     for key in r.scan_iter("redis:*"):
         r.delete(key)
