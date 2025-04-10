@@ -371,7 +371,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                   ),
                   Row(
                     children: const [
-                      Text("today", style: TextStyle(fontSize: 12)),
+                      Text("today ", style: TextStyle(fontSize: 12)),
                       SizedBox(width: 5),
                       Text(
                         "n",
