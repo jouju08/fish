@@ -641,7 +641,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                     children: [
                     Row(
                     children: [
-                      const Text("Today:", style: TextStyle(fontSize: 12)),
+                      const Text("Today ", style: TextStyle(fontSize: 12)),
                       const SizedBox(width: 5),
                       Consumer<AquariumModel>(
                         builder: (context, aquariumModel, child) {
