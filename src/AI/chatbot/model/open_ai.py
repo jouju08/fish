@@ -5,7 +5,7 @@ from langchain_openai import ChatOpenAI
 from langchain.globals import set_llm_cache
 from langchain_redis import RedisCache
 load_dotenv()
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+REDIS_URL = os.getenv("REDIS_URL", "redis://j12c201.p.ssafy.io:6379")
 
 redis_cache =RedisCache(redis_url=REDIS_URL)
 set_llm_cache(
