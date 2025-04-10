@@ -69,7 +69,8 @@ class SearchProvider extends ChangeNotifier {
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body)['data'];
+        final decodedBody = utf8.decode(response.bodyBytes);
+        final List<dynamic> data = jsonDecode(decodedBody)['data'];
         _searchResults =
             data.map((json) => SearchedUser.fromJson(json)).toList();
         notifyListeners();

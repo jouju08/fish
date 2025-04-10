@@ -20,13 +20,10 @@ import 'package:thewater/screens/mypage.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/screens/chat_screen.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
 
-Future<void> clearRedisCache(String userId) async {
+Future<void> clearRedisCache() async {
   final response = await http.post(
-    Uri.parse('http://j12c201.p.ssafy.io:8000/chat/clear-session'),
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({'session_id': userId}),
+    Uri.parse('http://j12c201.p.ssafy.io:8000/chat/clear'),
   );
   if (response.statusCode == 200) {
     print("Redis 캐시 초기화 완료");
@@ -34,7 +31,6 @@ Future<void> clearRedisCache(String userId) async {
     print("초기화 실패: ${response.body}");
   }
 }
-
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -127,7 +123,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
       });
     }
     if (newIndex == 3) {
-      await clearRedisCache(Provider.of<UserModel>(context).loginId); 
+      await clearRedisCache();
     }
   }
 

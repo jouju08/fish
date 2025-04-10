@@ -1,5 +1,12 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:ui';
+import 'package:thewater/providers/fish_provider.dart';
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
@@ -32,6 +39,8 @@ class SwimmingFish {
   double stateDuration;
   bool isPaused;
   bool isDragging;
+
+  Timer? longPressTimer;
 
   SwimmingFish({
     required this.imagePath,
@@ -94,21 +103,18 @@ class FishSwimmingManager {
       update();
       final double screenWidth = MediaQuery.of(context).size.width;
       final double screenHeight = MediaQuery.of(context).size.height;
-      const double fishSize = 80.0; // 물고기 이미지 크기
-      const double topBoundary = 120.0; // 상단 UI 영역 아래 (수족관 가치 영역)
-      const double bottomBarHeight = 60.0; // 바텀 네비게이션 높이
+      const double fishSize = 80.0;
+      const double topBoundary = 120.0;
+      const double bottomBarHeight = 60.0;
       final double bottomBoundary =
-          screenHeight - fishSize - bottomBarHeight; // 하단 경계
+          screenHeight - fishSize - bottomBarHeight;
 
       for (var fish in swimmingFishes) {
-        if (fish.isPaused || fish.isDragging) continue; // 일시정지 중이면 업데이트 건너뛰기
-        // 매 업데이트마다 0.03초씩 경과 시간 업데이트
+        if (fish.isPaused || fish.isDragging) continue;
         fish.stateTime += 0.03;
 
         if (fish.state == FishState.moving) {
-          // 0 ≤ t ≤ 1: 출발부터 정지까지의 진행 비율
           double t = fish.stateTime / fish.stateDuration;
-          // sin(π * t)를 사용하여 t=0,1일 때 0, t=0.5일 때 최대 효과 (부드러운 가속/감속)
           double factor = sin(pi * t);
           double effectiveSpeed = fish.speed * factor;
 
@@ -135,22 +141,17 @@ class FishSwimmingManager {
           }
 
           if (fish.stateTime >= fish.stateDuration) {
-            // 이동 상태 종료 후 idle 상태로 전환
             fish.state = FishState.idle;
             fish.stateTime = 0.0;
-            // 정지 시간: 0~4초 (기존대로)
             fish.stateDuration = random.nextDouble() * 2.0;
           }
         } else {
-          // idle 상태: 정지
           if (fish.stateTime >= fish.stateDuration) {
-            // 정지 후 8방향 중 랜덤 선택하여 이동 시작
             int index = random.nextInt(directions.length);
             fish.dx = directions[index]['dx']!;
             fish.dy = directions[index]['dy']!;
             fish.state = FishState.moving;
             fish.stateTime = 0.0;
-            // 이동 시간: 2초 ~ 3초
             fish.stateDuration = 2.0 + random.nextDouble() * 2.0;
           }
         }
@@ -159,7 +160,7 @@ class FishSwimmingManager {
   }
 
   void addFallingFish(String imagePath, String fishName) {
-    debugPrint("addFallingFish() 실행됨 : $fishName");
+    // debugPrint("addFallingFish() 실행됨 : $fishName");
     final newFish = FallingFish(imagePath: imagePath);
     fallingFishes.add(newFish);
     update();
@@ -183,7 +184,7 @@ class FishSwimmingManager {
       if (fish.top <= targetY - 2) {
         fish.top += currentSpeed;
       } else {
-        debugPrint("낙화완료 : $fishName 수영시작");
+        debugPrint("낙하완료 : $fishName 수영시작");
         fish.landed = true;
         timer.cancel();
 
@@ -252,11 +253,102 @@ class FishSwimmingManager {
     update();
   }
 
+  // 꾹 눌렀을때 정보나오게
+  void showFishDetailDialog(SwimmingFish fish) {
+    final fishProvider = Provider.of<FishModel>(context, listen: false);
+    final fishData = fishProvider.fishCardList.firstWhere(
+      (element) => element['fishName'] == fish.fishName,
+      orElse: () => null,
+    );
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20.0),
+          ),
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  if (fishData != null && fishData['cardImg'] != null)
+                    FutureBuilder<Uint8List>(
+                      future: fishProvider.fetchImageBytes(fishData['cardImg']),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done &&
+                            snapshot.hasData) {
+                          return Image.memory(
+                            snapshot.data!,
+                            height: 100,
+                            fit: BoxFit.contain,
+                          );
+                        } else {
+                          return Container(
+                            height: 100,
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                      },
+                    )
+                  else
+                    Container(
+                      height: 100,
+                      child: const Center(child: Text('No Image')),
+                    ),
+                  const SizedBox(height: 10),
+                  Text(
+                    fishData != null ? fishData['fishName'] : fish.fishName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 10),
+                  if (fishData != null) ...[
+                    Text(
+                      "크기: ${fishData['fishSize']}",
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "날짜: ${fishData['collectDate']}",
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "코멘트: ${fishData['comment']}",
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "물 온도: ${fishData['waterTemperature']}",
+                      textAlign: TextAlign.center,
+                    ),
+                    Text(
+                      "공기 온도: ${fishData['temperature']}",
+                      textAlign: TextAlign.center,
+                    ),
+                  ] else
+                    const Text(
+                      "상세 정보를 찾을 수 없습니다.",
+                      textAlign: TextAlign.center,
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   List<Widget> buildRemovalAnimations() {
-    // 물고기 이미지 크기 및 낚시줄의 가정된 크기
     const double fishSize = 80.0;
-    const double lineHeight = 600.0; // 낚시줄 이미지의 세로 길이 (예시)
-    const double lineWidth = 30.0; // 낚시줄 이미지의 가로 길이 (예시)
+    const double lineHeight = 600.0;
+    const double lineWidth = 30.0;
 
     return removalAnimations.map((data) {
       double t = data.controller.value; // 0 ~ 1 사이의 값
@@ -270,17 +362,17 @@ class FishSwimmingManager {
         fishY = data.startY; // 물고기는 고정
       } else {
         // 낚시줄과 함께 위로 이동 (0.8 ~ 1초)
-        double stageT = (t - 0.8) / 0.2; // 0 ~ 1 범위로 
+        double stageT = (t - 0.8) / 0.2; // 0 ~ 1 범위로
         fishY = data.startY + (-data.startY - fishSize) * stageT;
         // 낚시줄의 bottom도 같이 이동
         fishingLineBottomY =
             data.startY + (-data.startY + 50 - fishSize) * stageT;
       }
-      // 낚시줄의 x 위치 물고기 중앙 기준
+      // 낚시줄의 x 위치: 물고기 중앙 기준
       double lineX = data.startX + fishSize / 2 - lineWidth / 2;
       return Stack(
         children: [
-          // 낚시줄 이미지: Positioned의 top은 fishingLineBottomY - lineHeight로 계산
+          // 낚시줄 이미지
           Positioned(
             left: lineX,
             top: fishingLineBottomY - lineHeight,
@@ -291,7 +383,7 @@ class FishSwimmingManager {
               fit: BoxFit.fill,
             ),
           ),
-          // 물고기 이미지: 현재 y 위치에 그림
+          // 물고기 이미지
           Positioned(
             left: data.startX,
             top: fishY,
@@ -303,57 +395,72 @@ class FishSwimmingManager {
   }
 
   List<Widget> buildSwimmingFishes() {
-  const double fishSize = 80;
-  return swimmingFishes.map((fish) {
-    return Positioned(
-      top: fish.y,
-      left: fish.x,
-      child: GestureDetector(
-        onPanStart: (_) {
-          fish.isDragging = true;
-          fish.isPaused = true;
-        },
-        onPanUpdate: (details) {
-          fish.x += details.delta.dx;
-          fish.y += details.delta.dy;
-          update(); // 위치 갱신
-        },
-        onPanEnd: (_) {
-          fish.isDragging = false;
-          Timer(const Duration(milliseconds: 1500), () {
-            fish.isPaused = false;
-            update();
-          });
-        },
-        child: Container(
-          width: fishSize,
-          height: fishSize + 20, 
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform(
-                alignment: Alignment.center,
-                transform: fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
-                child: Image.asset(
-                  fish.imagePath,
-                  width: fishSize,
-                  height: fishSize,
-                  fit: BoxFit.contain,
+    const double fishSize = 80;
+    return swimmingFishes.map((fish) {
+      return Positioned(
+        top: fish.y,
+        left: fish.x,
+        child: GestureDetector(
+          onTapDown: (details) {
+            fish.longPressTimer = Timer(const Duration(seconds: 1), () {
+              showFishDetailDialog(fish);
+            });
+          },
+          onTapUp: (_) {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+          },
+          onTapCancel: () {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+          },
+          onPanStart: (_) {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+            fish.isDragging = true;
+            fish.isPaused = true;
+          },
+          onPanUpdate: (details) {
+            fish.x += details.delta.dx;
+            fish.y += details.delta.dy;
+            update(); // 위치 갱신
+          },
+          onPanEnd: (_) {
+            fish.isDragging = false;
+            Timer(const Duration(milliseconds: 1500), () {
+              fish.isPaused = false;
+              update();
+            });
+          },
+          child: Container(
+            width: fishSize,
+            height: fishSize + 20,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform(
+                  alignment: Alignment.center,
+                  transform:
+                      fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
+                  child: Image.asset(
+                    fish.imagePath,
+                    width: fishSize,
+                    height: fishSize,
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              if (fish.isPaused)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildFishNameOverlay(fish.fishName),
-                ),
-            ],
+                if (fish.isPaused)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _buildFishNameOverlay(fish.fishName),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }).toList();
-}
-
+      );
+    }).toList();
+  }
 
   Widget _buildFishNameOverlay(String fishName) {
     return TweenAnimationBuilder<double>(
