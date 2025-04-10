@@ -3,7 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+class SecondPage extends StatefulWidget {
+  const SecondPage({super.key});
 
+  @override
+  State<SecondPage> createState() => _SecondPageState();
+}
+class _SecondPageState extends State<SecondPage> {
+  @override
+  Widget build(BuildContext context) {
+    return const CollectionPage();
+  }
+}
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
 

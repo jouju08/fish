@@ -18,6 +18,7 @@ import 'package:thewater/screens/guestbook.dart';
 import 'package:thewater/screens/ranking.dart';
 import 'package:thewater/screens/mypage.dart';
 import 'package:thewater/providers/search_provider.dart';
+import 'package:thewater/screens/chat_screen.dart';
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -153,7 +154,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           child: ListView(
             children: [
               const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
+                decoration: BoxDecoration(color: Color(0XFF176B87)),
                 child: Text("그물", style: TextStyle(fontSize: 30)),
               ),
               ListTile(
@@ -187,27 +188,32 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           index: pageIndex,
           children: [
             FirstPage(userComment: userComment, formatPrice: _formatPrice),
-            SecondPage(center: _userCenter),
+            SecondPage(), //도김
+            ThirdPage(center: _userCenter),
+            FourthPage(), //챗봇
             CollectionPage(),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ModelScreen2()),
-            );
-          },
-          child: const Icon(
-            Icons.camera_alt,
-            color: Color.fromRGBO(255, 255, 255, 1),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ModelScreen2()),
+              );
+            },
+            child: const Icon(
+              Icons.camera_alt,
+              color: Color.fromRGBO(255, 255, 255, 1),
+            ),
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
-          selectedItemColor: Colors.blue,
+          selectedItemColor: Color(0XFFA5C8B8),
           unselectedItemColor: Colors.grey,
           showSelectedLabels: false,
           showUnselectedLabels: false,
@@ -215,7 +221,24 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           backgroundColor: Colors.grey[100],
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(right: 50.0),
+                child: Icon(Icons.menu_book_sharp),
+              ),
+              label: "",
+            ), //도감 아이콘
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(left: 50.0),
+                child: Icon(Icons.location_pin),
+              ),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.messenger_outline),
+              label: "",
+            ), //챗봇
           ],
         ),
       ),
@@ -596,7 +619,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       : Icons.favorite_border,
                                   color:
                                       aquariumModel.likedByMe
-                                          ? Colors.blue
+                                          ? Color(0XFF176B87)
                                           : Colors.grey,
                                 ),
                                 onPressed: () async {
