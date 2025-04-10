@@ -42,7 +42,7 @@ class FishModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleFishVisibility(int fishId) async {
+  Future<void> toggleFishVisibility(int fishId) async {
     final token = await _storage.read(key: 'token');
     if (token == null) {
       debugPrint("❌ 토큰이 없습니다.");
@@ -59,7 +59,7 @@ class FishModel extends ChangeNotifier {
 
     if (response.statusCode == 200) {
       debugPrint("✅ hasVisible 토글 성공 (id: $fishId)");
-      getFishCardList(); // 서버 데이터 최신화
+      await getFishCardList(); // 서버 데이터 최신화
     } else {
       debugPrint(
         "❌ hasVisible 토글 실패 fishId : $fishId (${response.statusCode}), 응답내용: ${response.body}",
