@@ -108,4 +108,70 @@ class UserModel extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  /// 회원탈퇴
+Future<bool> deleteUser(BuildContext context) async {
+  // 1) 저장소에 있는 토큰 불러오기
+  final token = await _storage.read(key: 'token');
+  if (token == null) {
+    debugPrint("deleteUser() Token is null");
+    return false; 
+  }
+
+  try {
+    final url = Uri.parse('$baseUrl/users/delete');
+    final headers = {
+      'Authorization': 'Bearer $token',
+    };
+
+    // 2) 회원탈퇴 요청(DELETE)
+    final response = await http.delete(url, headers: headers);
+
+    // 3) 서버 응답 확인
+    if (response.statusCode == 200) {
+      final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
+      debugPrint("회원탈퇴 성공: $decodedBody");
+
+      // 회원탈퇴 성공 시 자동 로그아웃 처리
+      logout(context); 
+      return true;
+    } else {
+      debugPrint("회원탈퇴 실패: ${response.statusCode}, ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    debugPrint("deleteUser() 에러: $e");
+    return false;
+  }
+}
+
+Future<bool> checkPassword({
+    required String loginId,
+    required String password,
+  }) async {
+    try {
+      final url = Uri.parse('$baseUrl/users/login');
+      final headers = {'Content-Type': 'application/json'};
+      final body = jsonEncode({
+        "loginId": loginId,
+        "password": password,
+      });
+
+      final response = await http.post(url, headers: headers, body: body);
+      final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
+
+      if (response.statusCode == 200) {
+        // 서버 응답이 status: "SU" 라면 비밀번호 일치로 간주
+        if (decodedBody["status"] == "SU") {
+          return true;
+        }
+      }
+      // 200이 아닌 경우나 status != "SU" 면 false
+      return false;
+    } catch (e) {
+      debugPrint("checkPassword() 에러: $e");
+      return false;
+    }
+  }
+
 }
