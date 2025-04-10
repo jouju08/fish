@@ -33,7 +33,7 @@ class _CollectionPageState extends State<CollectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("도감"), centerTitle: true),
+      appBar: AppBar(title: const Text("도감", style: TextStyle(fontWeight: FontWeight.bold),), centerTitle: true, ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
