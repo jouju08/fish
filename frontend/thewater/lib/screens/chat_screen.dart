@@ -33,9 +33,22 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
+  final ScrollController _scrollController = ScrollController();
   final TextEditingController _controller = TextEditingController();
   List<Map<String, dynamic>> messages = [];
   bool isLoading = false;
+
+  void _scrollToBottom() {
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  });
+}
 
   void sendMessage() async {
     final input = _controller.text.trim();
@@ -48,6 +61,7 @@ class _ChatScreenState extends State<ChatScreen> {
       isLoading = true;
       _controller.clear();
     });
+    _scrollToBottom();
 
     final url = Uri.parse('http://j12c201.p.ssafy.io:8000/chat'); 
     try {
@@ -66,11 +80,13 @@ class _ChatScreenState extends State<ChatScreen> {
         messages.add({"text": data["response"], "isUser": false});
         isLoading = false;
       });
+      _scrollToBottom();
     } catch (e) {
       setState(() {
         messages.add({"text": "서버 오류: ${e.toString()}", "isUser": false});
         isLoading = false;
       });
+      _scrollToBottom();
     }
   }
 
@@ -89,6 +105,7 @@ class _ChatScreenState extends State<ChatScreen> {
         children: [
           Expanded(
             child: ListView.builder(
+              controller: _scrollController,
               itemCount: messages.length + (isLoading ? 1 : 0),
               itemBuilder: (context, index) {
                 if (index == messages.length) {
