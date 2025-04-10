@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-
+import 'package:http_parser/http_parser.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -7,6 +7,9 @@ import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:image/image.dart' as img;
+import 'package:provider/provider.dart';
+import 'package:thewater/providers/env_provider.dart';
 
 const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
@@ -67,7 +70,89 @@ class FishModel extends ChangeNotifier {
     }
   }
 
-  void addFishCard(String fishName, int realSize, File imageFile) async {
+  void addARFishCard(
+    BuildContext context,
+    String fishName,
+    double realSize,
+    img.Image image,
+  ) async {
+    Dio dio = Dio();
+    final token = await _storage.read(key: 'token');
+    if (token == null) {
+      debugPrint("addARFishCard() Token is null");
+      return;
+    }
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    final envMap = await Provider.of<EnvModel>(
+      context,
+      listen: false,
+    ).getNowEnv(position.latitude, position.longitude);
+
+    final url = Uri.parse('$baseUrl/collection/myfish/add').toString();
+    final fishCard = {
+      "fishName": fishName,
+      "fishSize": realSize,
+      "sky": 1,
+      "temperature": envMap['T1H'],
+      "waterTemperature": envMap['waterTemp'],
+      "latitude": position.latitude,
+      "longitude": position.longitude,
+      "tide": envMap['tideLevel'],
+      "comment": "",
+      "hasVisible": true,
+    };
+
+    // 이미지 → JPEG 바이트 변환
+    List<int> jpegData = img.encodeJpg(image);
+    Uint8List byteData = Uint8List.fromList(jpegData);
+
+    // 고유한 파일 이름 생성
+    String uniqueFileName = 'fish_${DateTime.now().microsecondsSinceEpoch}.jpg';
+
+    FormData formData = FormData.fromMap({
+      "fishCard": jsonEncode(fishCard),
+      "image": MultipartFile.fromBytes(
+        byteData,
+        filename: uniqueFileName,
+        contentType: MediaType("image", "jpeg"),
+      ),
+    });
+
+    try {
+      Response response = await dio.post(
+        url,
+        data: formData,
+        options: Options(
+          headers: {
+            "Content-Type": "multipart/form-data",
+            "Authorization": "Bearer $token",
+          },
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        debugPrint("addARFishCard() 성공: ${response.data}");
+        await getFishCardList();
+        notifyListeners();
+      } else {
+        debugPrint(
+          "addARFishCard() 실패 (${response.statusCode}): ${response.data}",
+        );
+      }
+    } catch (e) {
+      debugPrint("addARFishCard() 예외 발생: $e");
+    }
+  }
+
+  void addFishCard(
+    BuildContext context,
+    String fishName,
+    double realSize,
+    File imageFile,
+  ) async {
     Dio dio = Dio();
     final token = await _storage.read(key: 'token');
     if (token == null) {
@@ -75,18 +160,25 @@ class FishModel extends ChangeNotifier {
       return;
     }
     Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
+      desiredAccuracy: LocationAccuracy.high,
     );
+    final envMap = await Provider.of<EnvModel>(
+      context,
+      listen: false,
+    ).getNowEnv(position.latitude, position.longitude);
     final url = Uri.parse('$baseUrl/collection/myfish/add').toString();
     final fishCard = {
       "fishName": fishName,
       "fishSize": realSize,
-      "sky": 0,
-      "temperature": 0,
-      "waterTemperature": 0,
+      "sky": 1,
+      "temperature": envMap['T1H'],
+      // "temperature": 1,
+      "waterTemperature": envMap['waterTemp'],
+      // "waterTemperature": 1,
       "latitude": position.latitude,
       "longitude": position.longitude,
-      "tide": 0,
+      "tide": envMap['tideLevel'],
+      // "tide": 1,
       "comment": "",
       "hasVisible": true,
     };

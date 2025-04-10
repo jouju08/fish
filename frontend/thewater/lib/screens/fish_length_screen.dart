@@ -156,6 +156,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     arLocationManager = l;
 
     arSessionManager.onInitialize(
+      showAnimatedGuide: false,
       showFeaturePoints: false,
       showPlanes: true,
       handleTaps: true,
@@ -445,8 +446,11 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       showResult(
         "📏 길이: ${lengthCm.toStringAsFixed(1)} cm\n🎣 종: $name (${(confidence * 100).toStringAsFixed(1)}%)",
       );
-      Future.delayed(Duration(seconds: 5), () {
-        Navigator.pushReplacementNamed(context, '/main');
+      await Future.delayed(Duration(seconds: 3));
+      Navigator.pop(context, {
+        "result": name,
+        "fishSize": lengthCm,
+        "image": image,
       });
     } catch (e, stack) {
       debugPrint("❌ 에러 발생: $e");
