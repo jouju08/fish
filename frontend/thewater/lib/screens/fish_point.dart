@@ -13,7 +13,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
 
 class SecondPage extends StatefulWidget {
-  const SecondPage({super.key});
+  final LatLng? center;
+  const SecondPage({super.key, required this.center});
 
   @override
   State<SecondPage> createState() => _SecondPageState();
@@ -30,22 +31,22 @@ class _SecondPageState extends State<SecondPage> {
   final chartScrollController = ScrollController();
   late GoogleMapController mapController;
   late LatLng _lastTappedLocation; // 마지막 클릭한 위치 저장용
-  LatLng _center = const LatLng(34.70, 127.66);
+  LatLng _center = const LatLng(37.53609444, 126.9675222);
   Set<Marker> markers = {}; // 마커를 저장할 Set
   Set<Marker> markersKorea = {}; // 마커를 저장할 List
   Marker? _selectedMarker; // 선택된 마커 저장
   Timer? _tapTimer; // 길게 누른 타이머
   int riseIndex = 0;
   List<String> propertyList = [
-    '날짜',
-    '시간',
-    '날씨',
-    '기온',
-    '강수',
-    '풍속',
-    '풍향',
-    '파고',
-    '수온',
+    '🗓️날짜',
+    '🕜시간',
+    '🌦️날씨',
+    '🌡️기온',
+    '☔강수',
+    '💨풍속',
+    '🧭풍향',
+    '🌊파고',
+    '🌡️수온',
   ];
 
   bool onlyMyPoint = false; // 내 마커만 보기
@@ -54,55 +55,7 @@ class _SecondPageState extends State<SecondPage> {
   @override
   void initState() {
     super.initState();
-    requestLocationPermission();
     _loadMarkers();
-    // tableScrollController.addListener(() {
-    //   debugPrint("listener 1 실행");
-    //   if (chartScrollController.hasClients &&
-    //       chartScrollController.offset != tableScrollController.offset) {
-    //     chartScrollController.jumpTo(tableScrollController.offset);
-    //   }
-    // });
-
-    // chartScrollController.addListener(() {
-    //   debugPrint("listener 2 실행");
-    //   if (tableScrollController.hasClients &&
-    //       tableScrollController.offset != chartScrollController.offset) {
-    //     tableScrollController.jumpTo(chartScrollController.offset);
-    //   }
-    // });
-  }
-
-  void _updateRiseIndex() {
-    final newIndex = (tableScrollController.offset / 480).round();
-    if (newIndex != riseIndex) {
-      setState(() => riseIndex = newIndex);
-      debugPrint("newIndex : $riseIndex");
-    }
-  }
-
-  Future<void> requestLocationPermission() async {
-    // 위치 권한 요청
-    PermissionStatus status = await Permission.location.request();
-    Position position = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.low,
-    );
-    setState(() {
-      _center = LatLng(position.latitude, position.longitude);
-    });
-    mapController.animateCamera(CameraUpdate.newLatLngZoom(_center, 11.0));
-    // 권한 상태 확인
-    if (status.isGranted) {
-      // 권한이 허용된 경우
-      print('위치 권한이 허용되었습니다.');
-    } else if (status.isDenied) {
-      // 권한이 거부된 경우
-      print('위치 권한이 거부되었습니다.');
-      // 사용자에게 권한의 필요성을 설명하는 다이얼로그를 표시할 수 있습니다.
-    } else if (status.isPermanentlyDenied) {
-      // 권한이 영구적으로 거부된 경우 설정으로 이동하도록 안내
-      print('위치 권한이 영구적으로 거부되었습니다. 설정에서 권한을 활성화해주세요.');
-    }
   }
 
   void _loadMarkers() async {
@@ -182,11 +135,21 @@ class _SecondPageState extends State<SecondPage> {
 
   void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
+    if (widget.center != null) {
+      controller.animateCamera(
+        CameraUpdate.newLatLngZoom(widget.center!, 11.0),
+      );
+    }
   }
 
   void _onLongPress(LatLng tappedPoint) {
     // 타이머를 설정하여 0.2 초동안 길게 눌렀을 때 모달을 뜨우기
-    _tapTimer = Timer(const Duration(milliseconds: 200), () {
+    _tapTimer = Timer(const Duration(milliseconds: 200), () async {
+      final nowEnv = await Provider.of<EnvModel>(
+        context,
+        listen: false,
+      ).getNowEnv(tappedPoint.latitude, tappedPoint.longitude);
+      _markerNameController.text = nowEnv["주소"];
       _showMarkerConfirmationDialog();
     });
   }
@@ -220,6 +183,7 @@ class _SecondPageState extends State<SecondPage> {
             context,
             listen: false,
           ).getWeatherList(lat, lon),
+          Provider.of<EnvModel>(context, listen: false).getLunarTideList(),
         ]);
 
         return FutureBuilder<List<dynamic>>(
@@ -237,6 +201,7 @@ class _SecondPageState extends State<SecondPage> {
             final tideList = snapshot.data![1];
             final riseSetList = snapshot.data![2];
             final weatherList = snapshot.data![3];
+            final lunarTideList = snapshot.data![4];
 
             final chartScrollController = ScrollController();
             final ValueNotifier<int> riseIndexNotifier = ValueNotifier<int>(0);
@@ -275,6 +240,7 @@ class _SecondPageState extends State<SecondPage> {
                   waterTempList: waterTempList,
                   tideList: tideList,
                   riseSetList: riseSetList,
+                  lunarTideList: lunarTideList,
                   onDelete: _deleteSelectedMarker,
                   chartScrollController: chartScrollController,
                   riseIndex: riseIndex,
@@ -409,6 +375,7 @@ class _SecondPageState extends State<SecondPage> {
         child: Stack(
           children: [
             GoogleMap(
+              key: ValueKey(widget.center.toString()),
               mapToolbarEnabled: false,
               myLocationEnabled: true, // 사용자의 현재 위치 표시
               myLocationButtonEnabled: true, // 우측 하단 현위치 버튼
@@ -459,6 +426,7 @@ class BottomSheetContent extends StatelessWidget {
   final Map<String, dynamic> tideList;
   final List<dynamic> riseSetList;
   final List<dynamic> weatherList;
+  final List<dynamic> lunarTideList;
   final List<String> propertyList;
   final ScrollController tableScrollController;
   final ScrollController chartScrollController;
@@ -472,6 +440,7 @@ class BottomSheetContent extends StatelessWidget {
     required this.tideList,
     required this.riseSetList,
     required this.weatherList,
+    required this.lunarTideList,
     required this.propertyList,
     required this.tableScrollController,
     required this.chartScrollController,
@@ -482,12 +451,7 @@ class BottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Map<String, String> skyMap = {
-      "1": "맑음",
-      "2": "구름조금",
-      "3": "구름많음",
-      "4": "흐림",
-    };
+    Map<String, String> skyMap = {"1": "☀️", "2": "🌤️", "3": "⛅", "4": "☁️"};
     return Container(
       padding: const EdgeInsets.all(16),
       width: double.infinity,
@@ -509,7 +473,7 @@ class BottomSheetContent extends StatelessWidget {
                         return Container(
                           height: 40,
                           alignment: Alignment.centerLeft,
-                          width: 40,
+                          width: 50,
                           child: Text(property),
                         );
                       }).toList(),
@@ -528,9 +492,18 @@ class BottomSheetContent extends StatelessWidget {
                                   .substring(4),
                             ),
                             _dataCell(weatherList[colIdx]["fcstTime"]),
-                            _dataCell(skyMap[weatherList[colIdx]["SKY"]] ?? ""),
+                            _dataCell(
+                              skyMap[weatherList[colIdx]["SKY"]] ?? "",
+                              fontSize: 24,
+                            ),
                             _dataCell("${weatherList[colIdx]["TMP"]}°C"),
-                            _dataCell(weatherList[colIdx]["PCP"], fontSize: 12),
+                            if (weatherList[colIdx]["PCP"] != "강수없음")
+                              _dataCell(
+                                weatherList[colIdx]["PCP"],
+                                fontSize: 12,
+                              )
+                            else
+                              _dataCell("-", fontSize: 12),
                             _dataCell("${weatherList[colIdx]["WSD"]}m/s"),
                             Container(
                               width: 60,
@@ -562,8 +535,29 @@ class BottomSheetContent extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 Text(riseSetList[riseIndex]["date"]),
-                Text("일출 ${riseSetList[riseIndex]["sunrise"]}"),
-                Text("일몰 ${riseSetList[riseIndex]["sunset"]}"),
+                Row(
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("일출 ${riseSetList[riseIndex]["sunrise"]}"),
+                        Text("일몰 ${riseSetList[riseIndex]["sunset"]}"),
+                      ],
+                    ),
+                    SizedBox(width: 10),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "서해물때 ${lunarTideList.firstWhere((e) => e["양력날짜"] == riseSetList[riseIndex]["date"])["서해물때"]}",
+                        ),
+                        Text(
+                          "남해물때 ${lunarTideList.firstWhere((e) => e["양력날짜"] == riseSetList[riseIndex]["date"])["남해물때"]}",
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
             const SizedBox(height: 10),

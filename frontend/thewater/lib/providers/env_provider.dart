@@ -25,10 +25,33 @@ class EnvModel extends ChangeNotifier {
         return body['data'];
       } else {
         debugPrint("getNowEnv() 실패 (${response.statusCode})");
-        return [];
+        return {};
       }
     } catch (e) {
       debugPrint("Error fetching nowEnv data: $e");
+      return {};
+    }
+  }
+
+  Future<List<dynamic>> getLunarTideList() async {
+    try {
+      final token = await _storage.read(key: 'token');
+      if (token == null) {
+        debugPrint("getLunarTideList() Token is null");
+        return [];
+      }
+      final url = Uri.parse('$baseUrl/api/env-info/lunar-tide');
+      final headers = {'Authorization': 'Bearer $token'};
+      final response = await http.get(url, headers: headers);
+      if (response.statusCode == 200) {
+        debugPrint("getLunarTideList() 성공 (${response.statusCode})");
+        final body = jsonDecode(utf8.decode(response.bodyBytes));
+        return body['data'];
+      } else {
+        throw Exception('Failed to load lunar tide data');
+      }
+    } catch (e) {
+      debugPrint("Error fetching lunar tide data: $e");
       return [];
     }
   }

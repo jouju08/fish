@@ -98,8 +98,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   _passwordController.text,
                                 );
                                 if (success) {
-                                  Navigator.pop(context);
-                                  Navigator.pushReplacementNamed(context, '/');
+                                  Navigator.pushReplacementNamed(
+                                    context,
+                                    '/main',
+                                  );
                                 } else {
                                   setState(() {
                                     errorMessage = '로그인 실패. 다시 시도하세요.';

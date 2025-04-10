@@ -60,12 +60,12 @@ class MyApp extends StatelessWidget {
         ),
         debugShowCheckedModeBanner: false,
         routes: {
-          '/splash': (context) => const SplashScreen(),
-          '/': (context) => const TheWater(pageIndex: 0),
+          '/': (context) => const SplashScreen(),
+          '/main': (context) => const TheWater(pageIndex: 0),
           '/login': (context) => const LoginScreen(),
           '/signup': (context) => SignupScreen(),
         },
-        initialRoute: '/splash',
+        initialRoute: '/',
         navigatorObservers: [routeObserver],
       ),
     );
