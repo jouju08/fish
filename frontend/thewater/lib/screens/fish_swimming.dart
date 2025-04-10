@@ -3,6 +3,11 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'dart:ui';
 
+import 'dart:async';
+import 'dart:math';
+import 'package:flutter/material.dart';
+import 'dart:ui';
+
 class RemovalAnimationData {
   final String imagePath;
   final double startX;
@@ -32,6 +37,9 @@ class SwimmingFish {
   double stateDuration;
   bool isPaused;
   bool isDragging;
+
+  // ← 새 필드: 롱프레스 타이머 (1초간 터치 감지)
+  Timer? longPressTimer;
 
   SwimmingFish({
     required this.imagePath,
@@ -183,7 +191,7 @@ class FishSwimmingManager {
       if (fish.top <= targetY - 2) {
         fish.top += currentSpeed;
       } else {
-        debugPrint("낙화완료 : $fishName 수영시작");
+        debugPrint("낙하완료 : $fishName 수영시작");
         fish.landed = true;
         timer.cancel();
 
@@ -252,6 +260,41 @@ class FishSwimmingManager {
     update();
   }
 
+  // ← 새 기능: 수영 중인 물고기를 1초간 터치했을 때 정보를 보여주는 다이얼로그
+  void showFishDetailDialog(SwimmingFish fish) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+          child: Container(
+            padding: const EdgeInsets.all(20.0),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // 물고기 이미지 표시
+                  Image.asset(
+                    fish.imagePath,
+                    height: 100,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 10),
+                  // 물고기 이름 표시
+                  Text(
+                    fish.fishName,
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  // ※ 필요에 따라 추가적인 정보(예: 설명, 잡은 날짜 등)를 표시할 수 있음
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   List<Widget> buildRemovalAnimations() {
     // 물고기 이미지 크기 및 낚시줄의 가정된 크기
     const double fishSize = 80.0;
@@ -276,11 +319,11 @@ class FishSwimmingManager {
         fishingLineBottomY =
             data.startY + (-data.startY + 50 - fishSize) * stageT;
       }
-      // 낚시줄의 x 위치 물고기 중앙 기준
+      // 낚시줄의 x 위치: 물고기 중앙 기준
       double lineX = data.startX + fishSize / 2 - lineWidth / 2;
       return Stack(
         children: [
-          // 낚시줄 이미지: Positioned의 top은 fishingLineBottomY - lineHeight로 계산
+          // 낚시줄 이미지
           Positioned(
             left: lineX,
             top: fishingLineBottomY - lineHeight,
@@ -291,7 +334,7 @@ class FishSwimmingManager {
               fit: BoxFit.fill,
             ),
           ),
-          // 물고기 이미지: 현재 y 위치에 그림
+          // 물고기 이미지
           Positioned(
             left: data.startX,
             top: fishY,
@@ -303,57 +346,76 @@ class FishSwimmingManager {
   }
 
   List<Widget> buildSwimmingFishes() {
-  const double fishSize = 80;
-  return swimmingFishes.map((fish) {
-    return Positioned(
-      top: fish.y,
-      left: fish.x,
-      child: GestureDetector(
-        onPanStart: (_) {
-          fish.isDragging = true;
-          fish.isPaused = true;
-        },
-        onPanUpdate: (details) {
-          fish.x += details.delta.dx;
-          fish.y += details.delta.dy;
-          update(); // 위치 갱신
-        },
-        onPanEnd: (_) {
-          fish.isDragging = false;
-          Timer(const Duration(milliseconds: 1500), () {
-            fish.isPaused = false;
-            update();
-          });
-        },
-        child: Container(
-          width: fishSize,
-          height: fishSize + 20, 
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Transform(
-                alignment: Alignment.center,
-                transform: fish.dx < 0 ? Matrix4.rotationY(pi) : Matrix4.identity(),
-                child: Image.asset(
-                  fish.imagePath,
-                  width: fishSize,
-                  height: fishSize,
-                  fit: BoxFit.contain,
+    const double fishSize = 80;
+    return swimmingFishes.map((fish) {
+      return Positioned(
+        top: fish.y,
+        left: fish.x,
+        child: GestureDetector(
+          // ← 새 기능: 1초간 터치(롱프레스) 감지
+          onTapDown: (details) {
+            // 드래그 시작 전에 롱프레스 타이머 시작
+            fish.longPressTimer = Timer(const Duration(seconds: 1), () {
+              showFishDetailDialog(fish);
+            });
+          },
+          onTapUp: (_) {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+          },
+          onTapCancel: () {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+          },
+          // 기존의 드래그 관련 이벤트에도 롱프레스 타이머 취소 추가
+          onPanStart: (_) {
+            fish.longPressTimer?.cancel();
+            fish.longPressTimer = null;
+            fish.isDragging = true;
+            fish.isPaused = true;
+          },
+          onPanUpdate: (details) {
+            fish.x += details.delta.dx;
+            fish.y += details.delta.dy;
+            update(); // 위치 갱신
+          },
+          onPanEnd: (_) {
+            fish.isDragging = false;
+            Timer(const Duration(milliseconds: 1500), () {
+              fish.isPaused = false;
+              update();
+            });
+          },
+          child: Container(
+            width: fishSize,
+            height: fishSize + 20,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Transform(
+                  alignment: Alignment.center,
+                  transform: fish.dx < 0
+                      ? Matrix4.rotationY(pi)
+                      : Matrix4.identity(),
+                  child: Image.asset(
+                    fish.imagePath,
+                    width: fishSize,
+                    height: fishSize,
+                    fit: BoxFit.contain,
+                  ),
                 ),
-              ),
-              if (fish.isPaused)
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: _buildFishNameOverlay(fish.fishName),
-                ),
-            ],
+                if (fish.isPaused)
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: _buildFishNameOverlay(fish.fishName),
+                  ),
+              ],
+            ),
           ),
         ),
-      ),
-    );
-  }).toList();
-}
-
+      );
+    }).toList();
+  }
 
   Widget _buildFishNameOverlay(String fishName) {
     return TweenAnimationBuilder<double>(
