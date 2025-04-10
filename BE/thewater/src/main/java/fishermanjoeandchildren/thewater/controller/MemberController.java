@@ -3,6 +3,7 @@ package fishermanjoeandchildren.thewater.controller;
 import fishermanjoeandchildren.thewater.data.ResponseStatus;
 import fishermanjoeandchildren.thewater.data.ResponseMessage;
 import fishermanjoeandchildren.thewater.data.dto.*;
+import fishermanjoeandchildren.thewater.db.repository.FishCardRepository;
 import fishermanjoeandchildren.thewater.db.repository.MemberRepository;
 import fishermanjoeandchildren.thewater.security.JwtUtil;
 import fishermanjoeandchildren.thewater.service.EmailService;
@@ -10,12 +11,14 @@ import fishermanjoeandchildren.thewater.service.MemberService;
 import fishermanjoeandchildren.thewater.db.entity.Member;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.mail.MessagingException;
+import jakarta.servlet.ServletRequest;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -33,6 +36,9 @@ public class MemberController {
     private MemberRepository memberRepository;
 
     @Autowired
+    private FishCardRepository fishCardRepository;
+
+    @Autowired
     public MemberController(MemberService memberService,
                             EmailService emailService) {
         this.emailService = emailService;
@@ -48,18 +54,12 @@ public class MemberController {
                     status(ResponseStatus.VALIDATION_FAILED).
                     message(ResponseMessage.VALIDATION_FAILED).
                     data("이미 사용중인 아이디입니다.").build();
-// 방법 2
-//            return ResponseEntity.status(409).body(
-//                    Map.of("available", false, "message", "이미 사용중인 아이디입니다.")
         }
 
         return ApiResponse.builder().
                 status(ResponseStatus.SUCCESS).
                 message(ResponseMessage.SUCCESS).
                 data("사용 가능한 아이디입니다.").build();
-// 방법 2
-//        return ResponseEntity.ok(
-//                Map.of("available", true, "message", "사용 가능한 아이디입니다.")
     }
 
     // 이메일 인증 코드 요청
@@ -183,5 +183,88 @@ public class MemberController {
                     .data("사용자 인증에 실패했습니다: " + e.getMessage())
                     .build();
         }
+    }
+
+    @SecurityRequirement(name="BearerAuth")
+    @DeleteMapping("/delete")
+    public ApiResponse<?> deleteMember(HttpServletRequest request) {
+        // JWT 토큰에서 회원 ID 추출
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        // 회원 탈퇴 처리
+        ApiResponse<?> response = memberService.deleteMember(memberId);
+        return response;
+    }
+
+    // MemberController.java에 추가
+    @GetMapping("/search")
+    public ApiResponse<?> searchMembers(@RequestParam String nickname) {
+        List<MemberDto> members = memberService.searchMembersByNickname(nickname);
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(members)
+                .build();
+    }
+
+    @GetMapping("search/all-nickname")
+    public ApiResponse<?> getAllNicknames() {
+        List<String> nicknames = memberService.getAllActiveNicknames();
+
+        return ApiResponse.builder()
+                .status(ResponseStatus.SUCCESS)
+                .message(ResponseMessage.SUCCESS)
+                .data(nicknames)
+                .build();
+    }
+
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("/update-comment")
+    public ApiResponse<?> updateMemberComment(
+            @RequestParam String comment,
+            HttpServletRequest request) {
+        // 토큰에서 사용자 ID 추출
+        String token = jwtUtil.resolveToken(request);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        // 코멘트 업데이트 및 결과 반환
+        return memberService.updateMemberComment(memberId, comment);
+    }
+
+    @SecurityRequirement(name="BearerAuth")
+    @GetMapping("/mypage")
+    public ApiResponse<?> getMyPage(HttpServletRequest request) {
+        try {
+            // Bearer 토큰에서 JWT 부분만 추출
+            String token = jwtUtil.resolveToken(request);
+            Long memberId = jwtUtil.extractUserId(token);
+
+            // 마이페이지 정보 조회
+            MypageResponseDto mypageInfo = memberService.getUserMypage(memberId);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.SUCCESS)
+                    .message(ResponseMessage.SUCCESS)
+                    .data(mypageInfo)
+                    .build();
+        } catch (Exception e) {
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data("사용자 인증에 실패했습니다: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    // 사용자 닉네임 변경하기
+    @SecurityRequirement(name="BearerAuth")
+    @PatchMapping("/update-nickname")
+    public ApiResponse<?> updateMemberNickname(@RequestBody String nickname, HttpServletRequest servletRequest){
+        String token = jwtUtil.resolveToken(servletRequest);
+        Long memberId = jwtUtil.extractUserId(token);
+
+        return memberService.updateNickname(memberId, nickname);
     }
 }

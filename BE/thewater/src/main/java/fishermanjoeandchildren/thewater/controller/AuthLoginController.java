@@ -54,12 +54,21 @@ public class AuthLoginController {
                     .message(ResponseMessage.SUCCESS)
                     .data(loginResponse)
                     .build();
+        } catch (UsernameNotFoundException e) {
+            // UsernameNotFoundException은 사용자를 찾을 수 없거나 탈퇴한 경우
+            LoginResponse errorResponse = new LoginResponse(false, "탈퇴한 회원입니다." + e.getMessage(), null);
+
+            return ApiResponse.builder()
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
+                    .data(errorResponse)
+                    .build();
         } catch (Exception e) {
             LoginResponse errorResponse = new LoginResponse(false, "아이디 또는 비밀번호가 올바르지 않습니다.", null);
 
             return ApiResponse.builder()
-                    .status(ResponseStatus.AUTHROIZATION_FAILED)  // 인증 실패에 적합한 상태 코드
-                    .message(ResponseMessage.AUTHROIZATION_FAILED)  // 인증 실패에 적합한 메시지
+                    .status(ResponseStatus.AUTHROIZATION_FAILED)
+                    .message(ResponseMessage.AUTHROIZATION_FAILED)
                     .data(errorResponse)
                     .build();
         }

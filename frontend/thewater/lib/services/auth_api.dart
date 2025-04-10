@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
-const String baseUrl = 'http://j12c201.p.ssafy.io:8081/api';
+const String baseUrl = 'http://j12c201.p.ssafy.io/api';
 
 class AuthApi {
   Future<bool> checkIdAvailability(String loginId) async {
@@ -73,8 +73,8 @@ class AuthApi {
       "password": password,
       "email": email,
       "nickname": nickname,
-      "birthDay": birthDay,
-      "loginType": "email",
+      "birthday": birthDay,
+      "loginType": "E",
       "has_deleted": false,
     });
 
@@ -133,25 +133,6 @@ class AuthApi {
     } catch (e) {
       debugPrint("이메일 인증 중 예외 발생: $e");
       return false;
-    }
-  }
-
-  Future<List<dynamic>> getFishList(String userId) async {
-    final url = Uri.parse('$baseUrl/fish');
-    final headers = <String, String>{};
-    final body = jsonEncode({
-      'kakaoAccessToken': 'kakaoAccessToken',
-      'fcmNotificationToken': 'fcmToken',
-    });
-    final response = await http.post(url, headers: headers, body: body);
-    final json = jsonDecode(response.body);
-    if (response.statusCode == 200) {
-      debugPrint("물고기 목록 조회 성공");
-
-      return json['data'];
-    } else {
-      debugPrint("물고기 목록 조회 실패! json: $json");
-      throw Exception('lib/services/auth_api.dart');
     }
   }
 }
