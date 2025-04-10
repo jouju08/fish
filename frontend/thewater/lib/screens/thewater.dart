@@ -210,6 +210,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
             ),
           ),
         ),
+        
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
@@ -219,24 +220,69 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           showUnselectedLabels: false,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.grey[100],
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
+          items: [
             BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(right: 50.0),
-                child: Icon(Icons.menu_book_sharp),
+              icon:Padding( 
+                padding: const EdgeInsets.only(top: 0, bottom: 0), 
+                  child:Opacity(
+                    opacity:0.6,
+                    child:Image.asset(
+                    bottomNavIndex==0?
+                      'assets/image/어항 클릭.png':'assets/image/어항.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                ),
+               ),
+              ),
+              label: ""
+            ),
+            BottomNavigationBarItem(
+              icon:Padding( 
+                padding: const EdgeInsets.only(right: 50.0,top: 0, bottom: 0), 
+                child:Opacity(
+                  opacity:0.6,
+                  child:Image.asset(
+                    bottomNavIndex==1?
+                      'assets/image/도감클릭.png':'assets/image/도감.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
               label: "",
             ), //도감 아이콘
             BottomNavigationBarItem(
-              icon: Padding(
-                padding: EdgeInsets.only(left: 50.0),
-                child: Icon(Icons.location_pin),
+             icon:Padding( 
+                padding: const EdgeInsets.only(left: 50.0, top: 0, bottom: 0), 
+                child:Opacity(
+                  opacity:0.6,
+                  child:Image.asset(
+                  bottomNavIndex==2?
+                    'assets/image/지도 클릭.png':'assets/image/지도.png',
+                  width: 27,
+                  height: 27,
+                  fit: BoxFit.cover,
+                ),
               ),
-              label: "",
+            ),
+            label: "",
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.messenger_outline),
+              icon:Padding( 
+                padding: const EdgeInsets.only(top: 0, bottom: 0), 
+                  child:Opacity(
+                    opacity:0.6,
+                    child:Image.asset(
+                    bottomNavIndex==3?
+                      'assets/image/챗봇 클릭.png':'assets/image/챗봇.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                    ),
+                  ),
+              ),
               label: "",
             ), //챗봇
           ],
