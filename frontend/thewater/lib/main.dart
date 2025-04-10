@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           fontFamily: 'GrandifloraOne-regular', // 폰트 설정
           floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor:Color(0XFF64CCC5),// FAB 색상
+            backgroundColor:Colors.black38,// FAB 색상
           ),
         ),
         debugShowCheckedModeBanner: false,
