@@ -590,58 +590,74 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                       ),
                     ],
                   ),
-                  Row(
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      const Text("박문수", style: TextStyle(fontSize: 12)),
+                    Row(
+                    children: [
+                      const Text("Today:", style: TextStyle(fontSize: 12)),
                       const SizedBox(width: 5),
                       Consumer<AquariumModel>(
                         builder: (context, aquariumModel, child) {
                           return Text(
                             '${aquariumModel.visitCount}',
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           );
                         },
                       ),
-                      const SizedBox(width: 10),
-
+                    ],
+                    ),
+                    const SizedBox(height: 0.1),
+                    Row(
+                      mainAxisSize: MainAxisSize.min, 
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children:[
                       /// 좋아요 로직
-                      Consumer<AquariumModel>(
-                        builder: (context, aquariumModel, child) {
-                          return Row(
-                            children: [
-                              IconButton(
-                                icon: Icon(
-                                  aquariumModel.likedByMe
+                        Consumer<AquariumModel>(
+                          builder: (context, aquariumModel, child) {
+                            return Row(
+                              children: [
+                                 GestureDetector(
+                                  onTap: () async {
+                                    await aquariumModel.toggleLikeAquarium();
+                                  },
+                                  child: Icon(
+                                    aquariumModel.likedByMe
                                       ? Icons.favorite
                                       : Icons.favorite_border,
-                                  color:
+                                    color:
                                       aquariumModel.likedByMe
                                           ? Color(0XFF176B87)
                                           : Colors.grey,
+                                    size: 16.0,
+                                  ),
+                                  // onPressed: () async {
+                                  //   await aquariumModel.toggleLikeAquarium();
+                                  // },
                                 ),
-                                onPressed: () async {
-                                  await aquariumModel.toggleLikeAquarium();
-                                },
-                              ),
-                              Text(
-                                '${aquariumModel.likeCount}',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                const SizedBox(width: 4,),
+                                Text(
+                                  '${aquariumModel.likeCount}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                              ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ],   
+                )
                 ],
               ),
             ),
+        
             const Divider(color: Colors.grey),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
