@@ -66,7 +66,6 @@ class _RankingModalState extends State<RankingModal>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // 핸들바
           Center(
             child: Container(
               width: 40,
@@ -79,7 +78,6 @@ class _RankingModalState extends State<RankingModal>
             ),
           ),
 
-          // 랭킹 제목 (모드에 따라 다르게)
           Padding(
             padding: const EdgeInsets.only(left: 4.0, bottom: 8),
             child: Text(
@@ -94,11 +92,38 @@ class _RankingModalState extends State<RankingModal>
               Expanded(
                 child: TextField(
                   controller: _controller,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: '닉네임을 입력해주세요..',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     isDense: true,
+                    suffixIcon:
+                        _controller.text.isNotEmpty
+                            ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _controller.clear();
+                                setState(() {
+                                  isSearching = false;
+                                });
+                              },
+                            )
+                            : null,
                   ),
+                  onChanged: (value) async {
+                    if (value.trim().isEmpty) {
+                      setState(() {
+                        isSearching = false;
+                      });
+                    } else {
+                      await Provider.of<SearchProvider>(
+                        context,
+                        listen: false,
+                      ).searchUsersByNickname(value.trim());
+                      setState(() {
+                        isSearching = true;
+                      });
+                    }
+                  },
                 ),
               ),
               IconButton(
@@ -106,7 +131,10 @@ class _RankingModalState extends State<RankingModal>
                 onPressed: () async {
                   String keyword = _controller.text.trim();
                   if (keyword.isNotEmpty) {
-                    await searchProvider.searchUsersByNickname(keyword);
+                    await Provider.of<SearchProvider>(
+                      context,
+                      listen: false,
+                    ).searchUsersByNickname(keyword);
                     setState(() {
                       isSearching = true;
                     });
