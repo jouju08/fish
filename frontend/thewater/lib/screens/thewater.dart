@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:thewater/main.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
 import 'package:thewater/providers/guestbook_provider.dart';
@@ -14,6 +18,7 @@ import 'package:thewater/screens/guestbook.dart';
 import 'package:thewater/screens/ranking.dart';
 import 'package:thewater/screens/mypage.dart';
 import 'package:thewater/providers/search_provider.dart';
+import 'package:thewater/screens/chat_screen.dart';
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -23,7 +28,7 @@ class TheWater extends StatefulWidget {
   State<TheWater> createState() => _TheWaterState();
 }
 
-class _TheWaterState extends State<TheWater> {
+class _TheWaterState extends State<TheWater> with RouteAware {
   int bottomNavIndex = 0;
   int pageIndex = 0;
   String? userComment;
@@ -39,8 +44,6 @@ class _TheWaterState extends State<TheWater> {
         context,
         listen: false,
       );
-      await userModel.fetchUserInfo();
-
       // user id 확인 후 수족관정보 가져오는거에 userid 대입해서 가져오는거
       if (userModel.id != 0) {
         await aquariumModel.fetchAquariumInfo(userModel.id);
@@ -58,11 +61,66 @@ class _TheWaterState extends State<TheWater> {
     });
   }
 
-  void onBottomNavTap(int newIndex) {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _refreshUserData();
+    _refreshMyAquariumInfo();
+  }
+
+  void _refreshMyAquariumInfo() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+    if (userModel.id != 0) {
+      await aquariumModel.fetchAquariumInfo(userModel.id);
+      setState(() {}); // 화면 갱신
+    }
+  }
+
+  void _refreshUserData() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    await userModel.fetchUserInfo();
+    // 필요한 Provider들도 갱신해야 한다면 여기에 추가해서 호출
+
+    // setState()를 호출할 경우 UI 갱신 여부 확인
+    setState(() {});
+  }
+
+  LatLng? _userCenter;
+
+  void onBottomNavTap(int newIndex) async {
     setState(() {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
     });
+    if (newIndex == 1 && _userCenter == null) {
+      final location = await _getCurrentLocation();
+      setState(() {
+        _userCenter = location;
+      });
+    }
+  }
+
+  Future<LatLng?> _getCurrentLocation() async {
+    var status = await Permission.location.request();
+    if (!status.isGranted) return null;
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return LatLng(position.latitude, position.longitude);
   }
 
   void showCollectionPage() {
@@ -96,13 +154,13 @@ class _TheWaterState extends State<TheWater> {
           child: ListView(
             children: [
               const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
+                decoration: BoxDecoration(color: Color(0XFF176B87)),
                 child: Text("그물", style: TextStyle(fontSize: 30)),
               ),
               ListTile(
                 title: const Text("회원가입"),
                 onTap: () {
-                  Navigator.pushReplacementNamed(context, '/signup');
+                  Navigator.pushNamed(context, '/signup');
                 },
               ),
               if (!Provider.of<UserModel>(context).isLoggedIn)
@@ -120,21 +178,9 @@ class _TheWaterState extends State<TheWater> {
                       context,
                       listen: false,
                     ).logout(context);
-                    Navigator.pushReplacementNamed(context, '/');
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
                 ),
-
-              ListTile(
-                title: const Text("누끼 따기"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const BorderModel(),
-                    ),
-                  );
-                },
-              ),
             ],
           ),
         ),
@@ -142,27 +188,32 @@ class _TheWaterState extends State<TheWater> {
           index: pageIndex,
           children: [
             FirstPage(userComment: userComment, formatPrice: _formatPrice),
-            SecondPage(),
+            SecondPage(), //도김
+            ThirdPage(center: _userCenter),
+            FourthPage(), //챗봇
             CollectionPage(),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ModelScreen2()),
-            );
-          },
-          child: const Icon(
-            Icons.camera_alt,
-            color: Color.fromRGBO(255, 255, 255, 1),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ModelScreen2()),
+              );
+            },
+            child: const Icon(
+              Icons.camera_alt,
+              color: Color.fromRGBO(255, 255, 255, 1),
+            ),
           ),
         ),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
-          selectedItemColor: Colors.blue,
+          selectedItemColor: Color(0XFFA5C8B8),
           unselectedItemColor: Colors.grey,
           showSelectedLabels: false,
           showUnselectedLabels: false,
@@ -170,7 +221,24 @@ class _TheWaterState extends State<TheWater> {
           backgroundColor: Colors.grey[100],
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(right: 50.0),
+                child: Icon(Icons.menu_book_sharp),
+              ),
+              label: "",
+            ), //도감 아이콘
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: EdgeInsets.only(left: 50.0),
+                child: Icon(Icons.location_pin),
+              ),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.messenger_outline),
+              label: "",
+            ), //챗봇
           ],
         ),
       ),
@@ -259,7 +327,16 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
       for (var fish in visibleFishList) {
         var fishName = fish["fishName"];
         String path;
-        if (fishName == "문어" || fishName == "감성돔" || fishName == "문절망둑") {
+        if (fishName == "문어" ||
+            fishName == "감성돔" ||
+            fishName == "문절망둑" ||
+            fishName == "광어" ||
+            fishName == "농어" ||
+            fishName == "볼락" ||
+            fishName == "성대" ||
+            fishName == "복섬" ||
+            fishName == "숭어" ||
+            fishName == "우럭") {
           path = "assets/image/$fishName.gif";
         } else {
           path = "assets/image/$fishName.png";
@@ -382,17 +459,38 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
               bool currentHasVisible,
             ) async {
               setState(() {
+                String fishName = path.split('/').last.split('.').first;
+                if (fishName == "문어" ||
+                    fishName == "감성돔" ||
+                    fishName == "문절망둑" ||
+                    fishName == "광어" ||
+                    fishName == "농어" ||
+                    fishName == "볼락" ||
+                    fishName == "성대" ||
+                    fishName == "복섬" ||
+                    fishName == "숭어" ||
+                    fishName == "우럭") {
+                  // 물고기 추후 추가 예정 gif 로 변환한 것들
+                  path = "assets/image/${fishName}.gif";
+                }
                 if (currentHasVisible) {
                   fishManager.removeFishWithFishingLine(path);
                   _selectedFish.remove(path);
                 } else {
-                  String fishName = path.split('/').last.split('.').first;
                   fishManager.addFallingFish(path, fishName);
                   _selectedFish.add(path);
                 }
                 debugPrint("선택된 물고기 목록 : $_selectedFish");
-                fishModel.toggleFishVisibility(fishId);
               });
+
+              fishModel.toggleFishVisibility(fishId);
+
+              final userModel = Provider.of<UserModel>(context, listen: false);
+              final aquariumModel = Provider.of<AquariumModel>(
+                context,
+                listen: false,
+              );
+              await aquariumModel.fetchAquariumInfo(userModel.id);
             },
           ),
     );
@@ -521,7 +619,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       : Icons.favorite_border,
                                   color:
                                       aquariumModel.likedByMe
-                                          ? Colors.blue
+                                          ? Color(0XFF176B87)
                                           : Colors.grey,
                                 ),
                                 onPressed: () async {

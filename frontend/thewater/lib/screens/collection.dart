@@ -1,10 +1,20 @@
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+class SecondPage extends StatefulWidget {
+  const SecondPage({super.key});
 
+  @override
+  State<SecondPage> createState() => _SecondPageState();
+}
+class _SecondPageState extends State<SecondPage> {
+  @override
+  Widget build(BuildContext context) {
+    return const CollectionPage();
+  }
+}
 class CollectionPage extends StatefulWidget {
   const CollectionPage({super.key});
 
@@ -68,6 +78,7 @@ class _CollectionPageState extends State<CollectionPage> {
                         listen: false,
                       ).fishCardList[index];
                   return GestureDetector(
+                    onLongPress: () => _showFishDeleteDialog(context, fishCard),
                     onTap: () => _showFishDetailDialog(context, fishCard),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -87,7 +98,7 @@ class _CollectionPageState extends State<CollectionPage> {
                           ),
                         ),
                         Text(
-                          "길이: ${fishCard["fishSize"].toString()}cm",
+                          "${fishCard["fishSize"].toString()}cm",
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -105,6 +116,34 @@ class _CollectionPageState extends State<CollectionPage> {
     );
   }
 
+  void _showFishDeleteDialog(
+    BuildContext context,
+    Map<String, dynamic> fishCard,
+  ) {
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            content: const Text("물고기를 삭제하시겠습니까?"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context), // 취소
+                child: const Text("취소"),
+              ),
+              TextButton(
+                onPressed: () {
+                  Provider.of<FishModel>(
+                    context,
+                    listen: false,
+                  ).deleteFishCard(context, fishCard['id']);
+                },
+                child: const Text("확인"),
+              ),
+            ],
+          ),
+    );
+  }
+
   void _showFishDetailDialog(
     BuildContext context,
     Map<String, dynamic> fishCard,
@@ -118,7 +157,7 @@ class _CollectionPageState extends State<CollectionPage> {
             borderRadius: BorderRadius.circular(20), // 둥근 모서리 적용
           ),
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(32),
             child: Column(
               children: [
                 Text(
@@ -130,8 +169,6 @@ class _CollectionPageState extends State<CollectionPage> {
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  width: 300,
-                  height: 300,
                   child: FutureBuilder<Uint8List>(
                     future: Provider.of<FishModel>(
                       context,
@@ -142,28 +179,60 @@ class _CollectionPageState extends State<CollectionPage> {
                       } else if (snapshot.hasError) {
                         return Text('에러 발생: ${snapshot.error}');
                       } else {
-                        return Image.memory(snapshot.data!); // ← 바로 화면에 표시
+                        return ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: Image.memory(
+                            snapshot.data!,
+                            fit: BoxFit.contain,
+                          ),
+                        ); // ← 바로 화면에 표시
                       }
                     },
                   ),
                 ),
-                Text("길이: ${fishCard["fishSize"]} cm"),
-                Text("날씨 : ${fishCard["sky"]}"),
-                Text("기온 : ${fishCard["temperature"]}"),
-                Text("수온 : ${fishCard["waterTemperature"]}"),
-                Text("물때 : ${fishCard["tide"]}"),
-                Text("메모 : ${fishCard["comment"]}"),
-                Text("위도 : ${fishCard["latitude"]}"),
-                Text("경도 : ${fishCard["longitude"]}"),
-                Text("잡은날 : ${fishCard["collectDate"]}"),
-                TextButton(
-                  onPressed: () {
-                    Provider.of<FishModel>(
-                      context,
-                      listen: false,
-                    ).deleteFishCard(context, fishCard['id']);
-                  },
-                  child: Text("삭제"),
+                SizedBox(height: 32),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("잡은날 ${fishCard["collectDate"]}"),
+                          SizedBox(height: 8),
+                          Text("날씨 ${fishCard["sky"]}"),
+                          SizedBox(height: 8),
+                          Text("기온 ${fishCard["temperature"]}"),
+                          SizedBox(height: 8),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("길이 ${fishCard["fishSize"]} cm"),
+                          SizedBox(height: 8),
+                          Text("수온 ${fishCard["waterTemperature"]}"),
+                          SizedBox(height: 8),
+                          Text("물때 ${fishCard["tide"]}"),
+                          // SizedBox(height: 8),
+                          // Text("위도 ${fishCard["latitude"]}"),
+                          // SizedBox(height: 8),
+                          // Text("경도 ${fishCard["longitude"]}"),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(width: 16),
+                    Expanded(child: Text("메모 ${fishCard["comment"]}")),
+                    SizedBox(width: 16),
+                  ],
                 ),
               ],
             ),

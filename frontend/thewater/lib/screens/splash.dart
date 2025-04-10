@@ -12,8 +12,6 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -21,23 +19,20 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _checkLoginStatus() async {
-    // 로딩 표시를 위한 짧은 딜레이
     await Future.delayed(const Duration(milliseconds: 800));
-    setState(() {
-      _isLoading = false;
-    });
+    await Provider.of<UserModel>(context, listen: false).fetchUserInfo();
+    final isLoggedIn =
+        Provider.of<UserModel>(context, listen: false).isLoggedIn;
+
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, '/main');
+    } else {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    }
-    // 로그인 상태에 따라 화면 전환
-    if (Provider.of<UserModel>(context).isLoggedIn) {
-      return const TheWater(pageIndex: 0);
-    } else {
-      return const LoginScreen();
-    }
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
