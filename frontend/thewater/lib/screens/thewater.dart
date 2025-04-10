@@ -133,7 +133,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           child: ListView(
             children: [
               const DrawerHeader(
-                decoration: BoxDecoration(color: Color(0XFF64CCC5)),
+                decoration: BoxDecoration(color: Color(0XFF176B87)),
                 child: Text("그물", style: TextStyle(fontSize: 30)),
               ),
               ListTile(
@@ -231,7 +231,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
-          selectedItemColor: Color(0XFF64CCC5),
+          selectedItemColor: Color(0XFFA5C8B8),
           unselectedItemColor: Colors.grey,
           showSelectedLabels: false,
           showUnselectedLabels: false,
