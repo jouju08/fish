@@ -241,15 +241,15 @@ class _TheWaterState extends State<TheWater> with RouteAware {
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
             BottomNavigationBarItem(icon: Padding( 
               padding: EdgeInsets.only(right: 50.0),
-              child:Icon(Icons.accessible_forward)
+              child:Icon(Icons.menu_book_sharp)
               ), label: ""
             ),//도감 아이콘
             BottomNavigationBarItem(icon: Padding( 
               padding: EdgeInsets.only(left: 50.0),
-              child: Icon(Icons.map), 
+              child: Icon(Icons.location_pin), 
               ),
             label: ""),
-            BottomNavigationBarItem(icon: Icon(Icons.abc_sharp), label: ""),//챗봇
+            BottomNavigationBarItem(icon: Icon(Icons.messenger_outline), label: ""),//챗봇
           ],
         ),
       ),
