@@ -11,15 +11,14 @@ import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/screens/tide_chart.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:geolocator/geolocator.dart';
-
-class SecondPage extends StatefulWidget {
-  const SecondPage({super.key});
+class ThirdPage extends StatefulWidget {
+  const ThirdPage({super.key});
 
   @override
-  State<SecondPage> createState() => _SecondPageState();
+  State<ThirdPage> createState() => _ThirdPageState();
 }
 
-class _SecondPageState extends State<SecondPage> {
+class _ThirdPageState extends State<ThirdPage> {
   final TextEditingController _markerNameController = TextEditingController(
     text: "낚시 포인트",
   );

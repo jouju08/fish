@@ -239,8 +239,16 @@ class _TheWaterState extends State<TheWater> with RouteAware {
           backgroundColor: Colors.grey[100],
           items: const [
             BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-            BottomNavigationBarItem(icon: Icon(Icons.accessible_forward), label: ""),//도감 아이콘콘
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
+            BottomNavigationBarItem(icon: Padding( 
+              padding: EdgeInsets.only(right: 50.0),
+              child:Icon(Icons.accessible_forward)
+              ), label: ""
+            ),//도감 아이콘
+            BottomNavigationBarItem(icon: Padding( 
+              padding: EdgeInsets.only(left: 50.0),
+              child: Icon(Icons.map), 
+              ),
+            label: ""),
             BottomNavigationBarItem(icon: Icon(Icons.abc_sharp), label: ""),//챗봇
           ],
         ),
@@ -622,7 +630,7 @@ class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
                                       : Icons.favorite_border,
                                   color:
                                       aquariumModel.likedByMe
-                                          ? Colors.blue
+                                          ? Color(0XFF176B87)
                                           : Colors.grey,
                                 ),
                                 onPressed: () async {
