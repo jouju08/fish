@@ -36,7 +36,10 @@ class _CollectionPageState extends State<CollectionPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("도감", style: TextStyle(fontWeight: FontWeight.bold),), centerTitle: true, ),
+      appBar: AppBar(
+        title: const Text("도감", style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+      ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -103,7 +106,7 @@ class _CollectionPageState extends State<CollectionPage> {
                           ),
                         ),
                         Text(
-                          "${fishCard["fishSize"].toString()}cm",
+                          "${fishCard["fishSize"].toStringAsFixed(1)}cm",
                           style: const TextStyle(
                             fontSize: 14,
                             color: Colors.black87,
@@ -226,13 +229,13 @@ class _CollectionPageState extends State<CollectionPage> {
                             SizedBox(height: 8),
                             Text("기온 ${fishCard["temperature"]}"),
                             SizedBox(height: 8),
-                            Text("길이 ${fishCard["fishSize"]} cm"),
+                            Text(
+                              "길이 ${fishCard["fishSize"].toStringAsFixed(1)} cm",
+                            ),
                             SizedBox(height: 8),
                             Text("수온 ${fishCard["waterTemperature"]}"),
                             SizedBox(height: 8),
                             Text("물때 ${fishCard["tide"]}"),
-                            SizedBox(height: 8),
-                            Text("메모 ${fishCard["comment"]}"),
                           ],
                         ),
                       ],
