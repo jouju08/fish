@@ -14,7 +14,7 @@ set_llm_cache(
 
 
 
-logging.langsmith("that-water_GENAI")
+logging.langsmith("that-water")
 model=ChatOpenAI(
     model="gpt-4o",
     temperature=0.7,
