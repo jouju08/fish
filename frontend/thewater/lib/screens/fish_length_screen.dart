@@ -422,17 +422,16 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
           "🟢 디버깅용 bounding box 이미지 저장 완료: $basePath/debug_bbox_drawn.png",
         );
       }
-      final imageArray = List.generate(
-        224,
-        (y) => List.generate(224, (x) {
-          final pixel = resizedForClassify.getPixel(x, y);
-          return [
-            img.getBlue(pixel).toDouble(),
-            img.getGreen(pixel).toDouble(),
-            img.getRed(pixel).toDouble(),
-          ];
-        }),
-      );
+      final imageArray = List.generate(224, (y) => List.generate(224, (x) {
+        final pixel = resizedForClassify.getPixel(x, y);
+        return [
+          img.getRed(pixel).toDouble(),
+          img.getGreen(pixel).toDouble(),
+          img.getBlue(pixel).toDouble(),
+          
+          
+        ];
+      }));
       final output = List.generate(1, (_) => List.filled(26, 0.0));
 
       classifyInterpreter.run([imageArray], output);
