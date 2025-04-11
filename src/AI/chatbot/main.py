@@ -6,7 +6,9 @@ import redis
 class ChatRequest(BaseModel):
     question:str
     session_id:str="default"
-
+    
+class SessionRequest(BaseModel):
+    session_id: str
 
 r=redis.Redis(host='j12c201.p.ssafy.io', port=6379, db=0)
 app = FastAPI()
