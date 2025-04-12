@@ -174,4 +174,33 @@ Future<bool> checkPassword({
     }
   }
 
+  Future<bool> kakaoLogin(dynamic kakaoUser) async {
+  
+  // 카카오 토큰을 백엔드 서버에 전달하여 인증 후, 반환된 토큰과 사용자 정보를 저장
+  try {
+    final url = Uri.parse('$baseUrl/users/login/kakao');
+    final headers = {'Content-Type': 'application/json'};
+    final body = jsonEncode({
+      "kakaoId": kakaoUser.id,
+      "email": kakaoUser.kakaoAccount?.email,
+    });
+    
+    final response = await http.post(url, headers: headers, body: body);
+    final decodedBody = jsonDecode(utf8.decode(response.bodyBytes));
+    
+    if (response.statusCode == 200 && decodedBody['data']['success'] == true) {
+      await _storage.write(key: 'token', value: decodedBody['data']['token']);
+      await fetchUserInfo();
+      notifyListeners();
+      return true;
+    } else {
+      return false;
+    }
+  } catch (e) {
+    debugPrint("kakaoLogin() 오류: $e");
+    return false;
+  }
+}
+
+
 }
