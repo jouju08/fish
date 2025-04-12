@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  kakao_flutter_sdk: ^1.3.2
   flutter_secure_storage: ^8.0.0
   camera: ^0.11.1
   google_maps_flutter: ^2.12.0
@@ -33,9 +34,6 @@ dependencies:
   flutter_markdown: ^0.6.14
   firebase_core: ^2.25.4 
   http_parser: ^4.0.2
-
-dev_dependencies:
-  kakao_flutter_sdk_user: ^1.3.2
 
   flutter_test:
     sdk: flutter
