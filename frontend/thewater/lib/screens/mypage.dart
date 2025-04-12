@@ -141,7 +141,7 @@ class _MyPageScreenState extends State<MyPageScreen> {
     );
   }
 
-  // 회원탈퇴 확인 다이어로
+  // 회원탈퇴 확인 다이얼로그
   void _showWithdrawalConfirmationDialog() {
     showDialog(
       context: context,
@@ -227,18 +227,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
         child: SafeArea(
           child: Stack(
             children: [
-              // 우측 상단 로그아웃 버튼
-              Positioned(
-                top: 10,
-                right: 16,
-                child: IconButton(
-                  icon: const Icon(Icons.logout, color: Colors.black),
-                  onPressed: () {
-                    userProvider.logout(context);
-                    Navigator.pushNamed(context, '/login');
-                  },
-                ),
-              ),
               // 스크롤 가능한 마이페이지 내용
               SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(
@@ -492,7 +480,6 @@ class _MyPageScreenState extends State<MyPageScreen> {
                   ],
                 ),
               ),
-              // 좌측 하단에 빨간색 회원탈퇴 텍스트 버튼 추가
               Positioned(
                 bottom: 16,
                 left: 16,
@@ -506,6 +493,36 @@ class _MyPageScreenState extends State<MyPageScreen> {
                       fontSize: 16,
                     ),
                   ),
+                ),
+              ),
+              Positioned(
+                top: 10,
+                right: 16,
+                child: IconButton(
+                  icon: const Icon(Icons.logout, color: Colors.black),
+                  onPressed: () {
+                    debugPrint('logout 아이콘 터치');
+                    ScaffoldMessenger.of(
+                      context,
+                    ).showSnackBar(const SnackBar(content: Text("로그아웃 완료")));
+                    userProvider.logout(context);
+                    showDialog(
+                      context: context,
+                      barrierDismissible: false,
+                      builder:
+                          (context) => AlertDialog(
+                            content: const Text("로그아웃 되었습니다.\n로그인화면으로 이동합니다."),
+                          ),
+                    );
+                    Future.delayed(const Duration(seconds: 2), () {
+                      Navigator.of(context).pop();
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/login',
+                        (route) => false,
+                      );
+                    });
+                  },
                 ),
               ),
             ],

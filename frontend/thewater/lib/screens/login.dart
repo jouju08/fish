@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/providers/user_provider.dart';
 import 'package:thewater/screens/signup.dart';
@@ -16,6 +17,42 @@ class _LoginScreenState extends State<LoginScreen> {
   String? errorMessage;
   final bool _isLoading = false;
   void _login() async {}
+
+  Future<void> _loginWithKakao() async {
+    try {
+      OAuthToken token;
+      // 카카오톡 앱이 설치되어 있으면 앱을 통한 로그인 시도, 없으면 웹 로그인
+      if (await isKakaoTalkInstalled()) {
+        token = await UserApi.instance.loginWithKakaoTalk();
+      } else {
+        token = await UserApi.instance.loginWithKakaoAccount();
+      }
+      print('Kakao 로그인 성공, 토큰: ${token.accessToken}');
+
+      // 로그인 성공 후 사용자 정보 가져오기
+      final user = await UserApi.instance.me();
+      print('사용자 정보: ${user.kakaoAccount?.profile?.nickname}');
+
+      // 여기서 Provider를 이용하거나, Navigator로 다음 화면 전환 등을 진행하면 됩니다.
+      // 예를 들어, Provider를 사용한 후 로그인 성공 시 '/main' 화면으로 이동하는 로직 추가
+      bool success = await Provider.of<UserModel>(
+        context,
+        listen: false,
+      ).kakaoLogin(user); // kakaoLogin 메서드를 구현해도 됩니다.
+      if (success) {
+        Navigator.pushReplacementNamed(context, '/main');
+      } else {
+        setState(() {
+          errorMessage = '카카오 로그인 실패. 다시 시도하세요.';
+        });
+      }
+    } catch (e) {
+      print('Kakao 로그인 오류: $e');
+      setState(() {
+        errorMessage = '카카오 로그인 중 오류 발생';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // 카카오톡 로그인 아이콘
                   GestureDetector(
                     onTap: () {
-                      // TODO: 카카오톡 로그인 로직 추가
+                      _loginWithKakao();
                     },
                     child: Image.asset(
                       'assets/icon/카카오공유아이콘.png',
