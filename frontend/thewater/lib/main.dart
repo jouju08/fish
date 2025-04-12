@@ -13,11 +13,13 @@ import 'package:thewater/screens/thewater.dart';
 import 'package:thewater/providers/aquarium_provider.dart';
 import 'package:thewater/providers/ranking_provider.dart';
 import 'package:thewater/providers/mypage_provider.dart';
+import 'package:kakao_flutter_sdk/kakao_flutter_sdk.dart';
 
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  KakaoSdk.init(nativeAppKey: '9a76af4fb25e9829901c02a8d7a715eb');
   runApp(const MyApp());
 }
 
@@ -37,6 +39,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SearchProvider()),
         ChangeNotifierProvider(create: (_) => GuestBookProvider()),
         ChangeNotifierProvider(create: (_) => MypageProvider()),
+        ChangeNotifierProvider<UserModel>(create: (_) => UserModel()),
       ],
       child: MaterialApp(
         theme: ThemeData(
