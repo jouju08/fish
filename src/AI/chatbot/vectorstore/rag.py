@@ -30,8 +30,8 @@ def load_csv(path):
         if name.endswith(".csv"):
             df=pd.read_csv(os.path.join(path,name))
             for _, row in df.iterrows():
-                text=f"제목:{row.get('제목', '')}\n내용:{row.get('내용','')}"
-                docs.append(Document(page_content=text, metadata={"source": name}))
+                text=f"title:{row.get('제목', '')}\content:{row.get('내용','')}"
+                docs.append(Document(page_content=text, metadata={"title": str(row.get('제목', ''))}))
     cleaned_docs = []
     for doc in docs:
         cleaned_content = clean_text(doc.page_content)
@@ -43,9 +43,34 @@ def load_csv(path):
     return cleaned_docs
 
 
-def split_documents(docs):
-    splitter = CharacterTextSplitter(separator="\n", chunk_size=1000, chunk_overlap=100)
-    return splitter.split_documents(docs)
+def split_documents(docs, chunk_size=1400, chunk_overlap=150):
+    sentences = []
+    
+    # 텍스트에서 문장 나누기:
+    for doc in docs:
+        sentences.extend(re.split(r'(?<=\.|\?|\!)\s+', doc.page_content))
+    
+    chunks = []
+    current_chunk = ""
+
+    for sentence in sentences:
+        # 현재 문장을 추가해도 청크 크기를 초과하지 않으면 추가
+        if len(current_chunk) + len(sentence) <= chunk_size:
+            current_chunk += " " + sentence
+        else:
+            # 청크 크기를 초과하면 현재까지의 문장들을 한 청크로 저장
+            chunks.append(current_chunk.strip())
+            current_chunk = sentence  
+            
+            # 오버랩된 청크 추가
+            if len(current_chunk) > chunk_overlap:
+                chunks.append(current_chunk[:chunk_overlap].strip())
+                current_chunk = current_chunk[chunk_overlap:]  # 오버랩된 부분만큼 잘라서 저장
+
+    if current_chunk:
+        chunks.append(current_chunk.strip())
+ 
+    return [Document(page_content=f"{doc.metadata}:{chunk}", metadata=doc.metadata) for chunk in chunks]
 
 
 def create_vector_store(documents):

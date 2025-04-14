@@ -24,5 +24,4 @@ human_template = """
 prompt = ChatPromptTemplate.from_messages([
     SystemMessagePromptTemplate.from_template(system_template),
     HumanMessagePromptTemplate.from_template(human_template),
-    MessagesPlaceholder(variable_name="history"),
 ])
