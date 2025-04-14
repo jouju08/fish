@@ -156,7 +156,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     arLocationManager = l;
 
     arSessionManager.onInitialize(
-      showAnimatedGuide: false,
+      showAnimatedGuide: true,
       showFeaturePoints: false,
       showPlanes: true,
       handleTaps: true,
@@ -182,8 +182,9 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
   Future<void> captureAndPredict() async {
     try {
       await arSessionManager.onInitialize(
+        showAnimatedGuide: false,
         showFeaturePoints: false,
-        showPlanes: true,
+        showPlanes: false,
         handleTaps: true,
       );
 
@@ -422,16 +423,17 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
           "🟢 디버깅용 bounding box 이미지 저장 완료: $basePath/debug_bbox_drawn.png",
         );
       }
-      final imageArray = List.generate(224, (y) => List.generate(224, (x) {
-        final pixel = resizedForClassify.getPixel(x, y);
-        return [
-          img.getRed(pixel).toDouble(),
-          img.getGreen(pixel).toDouble(),
-          img.getBlue(pixel).toDouble(),
-          
-          
-        ];
-      }));
+      final imageArray = List.generate(
+        224,
+        (y) => List.generate(224, (x) {
+          final pixel = resizedForClassify.getPixel(x, y);
+          return [
+            img.getRed(pixel).toDouble(),
+            img.getGreen(pixel).toDouble(),
+            img.getBlue(pixel).toDouble(),
+          ];
+        }),
+      );
       final output = List.generate(1, (_) => List.filled(26, 0.0));
 
       classifyInterpreter.run([imageArray], output);
@@ -445,11 +447,12 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       showResult(
         "📏 길이: ${lengthCm.toStringAsFixed(1)} cm\n🎣 종: $name (${(confidence * 100).toStringAsFixed(1)}%)",
       );
-      await Future.delayed(Duration(seconds: 3));
+
       Navigator.pop(context, {
         "result": name,
         "fishSize": lengthCm,
         "image": image,
+        "resultList": probs,
       });
     } catch (e, stack) {
       debugPrint("❌ 에러 발생: $e");

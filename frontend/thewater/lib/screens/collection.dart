@@ -243,6 +243,8 @@ class _CollectionPageState extends State<CollectionPage> {
                             Text("수온 ${fishCard["waterTemperature"]} °C"),
                             SizedBox(height: 8),
                             Text("물때 ${fishCard["tide"]} m"),
+                            SizedBox(height: 8),
+                            Text("메모 ${fishCard["comment"]}"),
                           ],
                         ),
                       ],

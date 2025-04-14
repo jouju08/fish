@@ -73,6 +73,7 @@ class FishModel extends ChangeNotifier {
   void addARFishCard(
     BuildContext context,
     String fishName,
+    String comment,
     double realSize,
     img.Image image,
   ) async {
@@ -101,7 +102,7 @@ class FishModel extends ChangeNotifier {
       "latitude": position.latitude,
       "longitude": position.longitude,
       "tide": envMap['tideLevel'],
-      "comment": "",
+      "comment": comment,
       "hasVisible": true,
     };
 
