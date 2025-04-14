@@ -68,10 +68,10 @@ public class FishCard extends Common{
     @Column(name = "has_visible")
     private Boolean hasVisible=false;
 
-    @Column(nullable = false)
+    @Column
     private Double latitude;
 
-    @Column(nullable = false)
+    @Column
     private Double longitude;
 
 
