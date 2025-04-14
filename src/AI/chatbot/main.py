@@ -7,8 +7,6 @@ class ChatRequest(BaseModel):
     question:str
     session_id:str="default"
     
-class SessionRequest(BaseModel):
-    session_id: str
 
 r=redis.Redis(host='j12c201.p.ssafy.io', port=6379, db=0)
 app = FastAPI()
@@ -25,9 +23,7 @@ async def chat(req:ChatRequest):
     return {"response": response}
 
 @app.post("/chat/clear-session")
-def clear_cache(req: SessionRequest):
-    session_id = req.session_id
-    r.delete(f"message_store:{session_id}")
+def clear_cache():
     for key in r.scan_iter("redis:*"):
         r.delete(key)
     return {"status": "cache cleared all"}
