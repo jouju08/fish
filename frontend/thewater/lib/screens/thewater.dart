@@ -20,6 +20,7 @@ import 'package:thewater/screens/mypage.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/screens/chat_screen.dart';
 import 'package:http/http.dart' as http;
+import 'package:thewater/screens/loading_screen.dart';
 
 Future<void> clearRedisCache() async {
   final response = await http.post(
@@ -41,6 +42,7 @@ class TheWater extends StatefulWidget {
 }
 
 class _TheWaterState extends State<TheWater> with RouteAware {
+  bool _showLoadingOverlay = true;
   int bottomNavIndex = 0;
   int pageIndex = 0;
   String? userComment;
@@ -48,6 +50,13 @@ class _TheWaterState extends State<TheWater> with RouteAware {
   @override
   void initState() {
     super.initState();
+
+    Future.delayed(const Duration(seconds: 2), () {
+      setState(() {
+        _showLoadingOverlay = false;
+      });
+    });
+
     pageIndex = widget.pageIndex;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final userModel = Provider.of<UserModel>(context, listen: false);
@@ -199,14 +208,31 @@ class _TheWaterState extends State<TheWater> with RouteAware {
             ],
           ),
         ),
-        body: IndexedStack(
-          index: pageIndex,
+        // body: IndexedStack(
+        //   index: pageIndex,
+        //   children: [
+        //     FirstPage(userComment: userComment, formatPrice: _formatPrice),
+        //     SecondPage(), //도김
+        //     ThirdPage(center: _userCenter),
+        //     FourthPage(), //챗봇
+        //     CollectionPage(),
+        //   ],
+        // ),
+        body: Stack(
           children: [
-            FirstPage(userComment: userComment, formatPrice: _formatPrice),
-            SecondPage(), //도김
-            ThirdPage(center: _userCenter),
-            FourthPage(), //챗봇
-            CollectionPage(),
+            // 메인 컨텐츠
+            IndexedStack(
+              index: pageIndex,
+              children: [
+                FirstPage(userComment: userComment, formatPrice: _formatPrice),
+                SecondPage(),
+                ThirdPage(center: _userCenter),
+                FourthPage(),
+                CollectionPage(),
+              ],
+            ),
+            if (_showLoadingOverlay)
+              Positioned.fill(child: LoadingScreen()),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

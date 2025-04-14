@@ -6,6 +6,7 @@ import 'package:thewater/providers/guestbook_provider.dart';
 import 'package:thewater/providers/point_provider.dart';
 import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/providers/user_provider.dart';
+import 'package:thewater/screens/loading_screen.dart';
 import 'package:thewater/screens/login.dart';
 import 'package:thewater/screens/signup.dart';
 import 'package:thewater/screens/splash.dart';

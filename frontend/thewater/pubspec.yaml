@@ -47,6 +47,7 @@ flutter:
     - assets/
     - assets/image/
     - assets/icon/
+    - assets/icon/로딩.gif
 
   fonts:
     - family: GrandifloraOne-Regular

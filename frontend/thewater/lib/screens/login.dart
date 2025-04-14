@@ -40,7 +40,8 @@ class _LoginScreenState extends State<LoginScreen> {
         listen: false,
       ).kakaoLogin(user); // kakaoLogin 메서드를 구현해도 됩니다.
       if (success) {
-        Navigator.pushReplacementNamed(context, '/main');
+        // 로그인 성공 후
+        Navigator.pushReplacementNamed(context, '/loading');
       } else {
         setState(() {
           errorMessage = '카카오 로그인 실패. 다시 시도하세요.';
