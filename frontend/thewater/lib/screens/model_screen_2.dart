@@ -217,44 +217,6 @@ class _ModelScreen2State extends State<ModelScreen2> {
                           ),
                         ),
                         const SizedBox(width: 20), // 버튼 간격 조정
-                        // 카메라 버튼
-                        SizedBox(
-                          width: 120,
-                          height: 120,
-                          child: ElevatedButton(
-                            onPressed: _pickImageFromCamera,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.camera_alt,
-                                  size: 40,
-                                  color: Colors.black,
-                                ),
-                                SizedBox(height: 8),
-                                Text(
-                                  '카메라',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20), // 버튼과 텍스트 간격 조정
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
                         SizedBox(
                           width: 120,
                           height: 120,
@@ -287,6 +249,11 @@ class _ModelScreen2State extends State<ModelScreen2> {
                           ),
                         ),
                       ],
+                    ),
+                    SizedBox(height: 20), // 버튼과 텍스트 간격 조정
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [],
                     ),
                   ],
                 )
