@@ -13,7 +13,7 @@ class _LoadingScreenState extends State<LoadingScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(seconds: 4), () {
+      Future.delayed(const Duration(seconds: 2), () {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const TheWater(pageIndex: 0)),
