@@ -1,6 +1,6 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from chain.rag_chain import chain_with_history
+from chain.rag_chain import rag_chain
 import redis
 
 class ChatRequest(BaseModel):
@@ -16,7 +16,7 @@ async def chat(req:ChatRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="질문이 비어 있습니다.")
 
-    response = chain_with_history.invoke(
+    response = rag_chain.invoke(
         {"question": req.question},
         config={"configurable": {"session_id": req.session_id}}
     )
