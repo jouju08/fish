@@ -103,7 +103,7 @@ class FishModel extends ChangeNotifier {
       "longitude": position.longitude,
       "tide": envMap['tideLevel'],
       "comment": comment,
-      "hasVisible": true,
+      "hasVisible": false,
     };
 
     // 이미지 → JPEG 바이트 변환

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class FishSelectModal extends StatefulWidget {
-  final void Function(String imagePath, int fishId, bool currentHasVisible) onToggleFish;
+  final void Function(String imagePath, int fishId, bool currentHasVisible)
+  onToggleFish;
   final Set<String> selectedFish;
   final List<String> fishImages;
   final List<Map<String, dynamic>> fishDataList;
@@ -44,38 +45,53 @@ class _FishSelectModalState extends State<FishSelectModal> {
             alignment: WrapAlignment.center,
             spacing: 20,
             runSpacing: 10,
-            children: widget.fishImages.map((path) {
-              final fishName = path.split('/').last.split('.').first;
+            children:
+                widget.fishImages.map((path) {
+                  final fishName = path.split('/').last.split('.').first;
 
-              final matchingFish = widget.fishDataList.firstWhere(
-                (data) => data['fishName'] == fishName,
-                orElse: () => {"id": null, "hasVisible": false},
-              );
+                  final matchingFish = widget.fishDataList.firstWhere(
+                    (data) => data['fishName'] == fishName,
+                    orElse: () => {"id": null, "hasVisible": false},
+                  );
 
-              final fishId = matchingFish['id'];
-              // hasVisible을 안전하게 처리 (null이면 false로 간주)
-              final hasVisible = (matchingFish['hasVisible'] ?? false) as bool;
+                  final fishId = matchingFish['id'];
+                  // hasVisible을 안전하게 처리 (null이면 false로 간주)
+                  final hasVisible =
+                      (matchingFish['hasVisible'] ?? false) as bool;
 
-              return GestureDetector(
-                onTap: () {
-                  widget.onToggleFish(path, fishId, hasVisible);
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: 90,
-                  height: 90,
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: hasVisible ? Colors.blue : Colors.grey[300]!,
-                      width: 2,
+                  return GestureDetector(
+                    onTap: () {
+                      widget.onToggleFish(path, fishId, hasVisible);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                          color: hasVisible ? Colors.blue : Colors.grey[300]!,
+                          width: 2,
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(child: Image.asset(path)),
+                          const SizedBox(height: 4),
+                          Text(
+                            fishName,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Image.asset(path),
-                ),
-              );
-            }).toList(),
+                  );
+                }).toList(),
           ),
         ],
       ),
