@@ -6,7 +6,7 @@ from langchain_core.runnables import RunnableLambda
 from prompt.prompt import prompt
 from model.open_ai import model
 from vectorstore.redis_store import retriever
-from vectorstore.costom_retriever import custom_retrieve
+
 
 def retrieve_context(input):
     question = input["question"]
