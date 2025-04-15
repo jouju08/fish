@@ -167,6 +167,7 @@ void _checkShowClearButton() async {
                         await clearRedisCache();
                         setState((){
                           messages.clear();
+                          showClearButton=false;
                         });
                       }, 
                       icon: const Icon(Icons.refresh, size:14),
