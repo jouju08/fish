@@ -152,6 +152,7 @@ class _TheWaterState extends State<TheWater> with RouteAware {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,//카메라 버튼 고정
         drawer: Drawer(
           child: ListView(
             children: [
