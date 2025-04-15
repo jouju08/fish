@@ -11,6 +11,21 @@ import 'package:provider/provider.dart';
 import 'widgets/message_bubble.dart';
 import 'widgets/loading_bubble.dart';
 
+bool showClearButton = false;
+
+
+Future<void> clearRedisCache() async {
+  final response = await http.post(
+    Uri.parse('http://j12c201.p.ssafy.io:8000/chat/clear-session'),
+  );
+  if (response.statusCode == 200) {
+    debugPrint("Redis 캐시 초기화 완료");
+  } else {
+    debugPrint("초기화 실패: ${response.body}");
+  }
+}
+
+
 class FourthPage extends StatefulWidget {
   const FourthPage({super.key});
 
@@ -54,15 +69,18 @@ class _ChatScreenState extends State<ChatScreen> {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
     final user=Provider.of<UserModel>(context, listen: false);
-    
+   showClearButton=false;
 
     setState(() {
       messages.add({"text": input, "isUser": true});
-      isLoading = true;
       _controller.clear();
     });
     _scrollToBottom();
-
+    await Future.delayed(const Duration(milliseconds: 850));
+    setState(() {
+      isLoading = true;
+      _scrollToBottom();
+    });
     final url = Uri.parse('http://j12c201.p.ssafy.io:8000/chat'); 
     try {
       final res = await http.post(
@@ -81,14 +99,40 @@ class _ChatScreenState extends State<ChatScreen> {
         isLoading = false;
       });
       _scrollToBottom();
+      _checkShowClearButton();
     } catch (e) {
       setState(() {
         messages.add({"text": "서버 오류: ${e.toString()}", "isUser": false});
         isLoading = false;
       });
       _scrollToBottom();
+      _checkShowClearButton();
     }
   }
+
+
+
+@override
+void initState() {
+  super.initState();
+  WidgetsBinding.instance.addPostFrameCallback((_) => _checkShowClearButton());
+}
+
+void _checkShowClearButton() async {
+  if (messages.isNotEmpty && !isLoading) {
+    await Future.delayed(const Duration(milliseconds: 400));
+    if (mounted && messages.isNotEmpty && !isLoading) {
+      setState(() {
+        showClearButton = true;
+        _scrollToBottom();
+      });
+    }
+  } else {
+    setState(() {
+      showClearButton = false;
+    });
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -101,21 +145,48 @@ class _ChatScreenState extends State<ChatScreen> {
             fit: BoxFit.cover,
           ),
         ),
-        child:Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              itemCount: messages.length + (isLoading ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == messages.length) {
-                  return const LoadingBubble();
-                }
-                final msg = messages[index];
-                return MessageBubble(text: msg["text"], isUser: msg["isUser"]);
-              },
+        child:
+        Column(
+          children: [ 
+            Expanded(
+              child: ListView(
+                controller: _scrollController,
+                children:[
+                  ...messages.map((msg) =>
+                  MessageBubble(text: msg["text"], isUser: msg["isUser"])
+                  ),
+                  if(isLoading) const LoadingBubble(),
+                  if(showClearButton)
+                  Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  child:Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed:()async{
+                        await clearRedisCache();
+                        setState((){
+                          messages.clear();
+                        });
+                      }, 
+                      icon: const Icon(Icons.refresh, size:14),
+                      label: const Text("초기화",style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const 	Color(0x99FFFFFF),
+                        foregroundColor: const Color(0XFFDC143C),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)
+                        ),
+                      ),
+                    )
+                  ],
+                ) 
+                ),
+                
+                ]
+              ),
             ),
-          ),
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 6, 8, 20),
             child: Row(

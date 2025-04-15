@@ -21,16 +21,6 @@ import 'package:thewater/providers/search_provider.dart';
 import 'package:thewater/screens/chat_screen.dart';
 import 'package:http/http.dart' as http;
 
-Future<void> clearRedisCache() async {
-  final response = await http.post(
-    Uri.parse('http://j12c201.p.ssafy.io:8000/chat/clear'),
-  );
-  if (response.statusCode == 200) {
-    print("Redis 캐시 초기화 완료");
-  } else {
-    print("초기화 실패: ${response.body}");
-  }
-}
 
 class TheWater extends StatefulWidget {
   final int pageIndex;
@@ -121,9 +111,6 @@ class _TheWaterState extends State<TheWater> with RouteAware {
       setState(() {
         _userCenter = location;
       });
-    }
-    if (newIndex == 3) {
-      await clearRedisCache();
     }
   }
 
