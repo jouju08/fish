@@ -1,3 +1,4 @@
+// loading_screen.dart
 import 'package:flutter/material.dart';
 import 'package:thewater/screens/thewater.dart';
 
@@ -12,14 +13,17 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const TheWater(pageIndex: 0)),
-        );
-      });
-    });
+    _navigateToMain();
+  }
+
+  void _navigateToMain() async {
+    await Future.delayed( Duration(seconds: 100));
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const TheWater(pageIndex: 0)),
+      );
+    }
   }
 
   @override
@@ -27,7 +31,10 @@ class _LoadingScreenState extends State<LoadingScreen> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset('assets/icon/로딩.gif', gaplessPlayback: true),
+        child: Image.asset(
+          'assets/icon/로딩.gif',
+          gaplessPlayback: true, // gif가 멈추지 않고 연속 재생
+        ),
       ),
     );
   }

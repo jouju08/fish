@@ -121,7 +121,7 @@ class _GuestBookModalState extends State<GuestBookModal> {
                   setState(() => isLatestOrder = false);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: !isLatestOrder ? Colors.blue : Colors.grey,
+                  backgroundColor: !isLatestOrder ? const Color.fromARGB(255, 0, 184, 113) : Colors.grey,
                   minimumSize: const Size(70, 32),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 8,

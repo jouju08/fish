@@ -231,8 +231,18 @@ class _TheWaterState extends State<TheWater> with RouteAware {
                 CollectionPage(),
               ],
             ),
-            if (_showLoadingOverlay)
-              Positioned.fill(child: LoadingScreen()),
+            if (_showLoadingOverlay) 
+      Positioned.fill(
+        child: Container(
+          color: Colors.white,
+          child: Center(
+            child: Image.asset(
+              'assets/icon/로딩.gif',
+              gaplessPlayback: true,
+            ),
+          ),
+        ),
+      ),
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
