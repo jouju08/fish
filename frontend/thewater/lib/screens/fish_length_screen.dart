@@ -32,6 +32,18 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
   late ARLocationManager arLocationManager;
 
   late Interpreter classifyInterpreter;
+  late Interpreter segInterpreter;
+
+  @override
+  void initState() {
+    super.initState();
+    loadModels();
+  }
+
+  Future<void> loadModels() async {
+    classifyInterpreter = await Interpreter.fromAsset('assets/QAT_50model_mixed.tflite');
+    segInterpreter = await Interpreter.fromAsset('assets/segment_v3_sim_float32.tflite');
+  }
   double? lastDistanceMeters;
   String resultText = "👆 화면을 탭하여 거리 측정";
 
@@ -50,11 +62,11 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     '고등어',
     '독가시치',
     '감성돔',
-    '삼치',
+    '고등어어',
     '성대',
     '양태',
     '갑오징어',
-    '전갱이',
+    '고등어',
     '망상어',
     '숭어',
     '볼락',
@@ -64,19 +76,6 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     '참돔',
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    loadClassifyModel();
-  }
-
-  Future<void> loadClassifyModel() async {
-    classifyInterpreter = await Interpreter.fromAsset(
-      'assets/QAT_50model_mixed.tflite',
-    );
-  }
-
-  @override
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -196,14 +195,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       if (image == null) throw Exception("이미지 디코딩 실패");
 
       final rotatedImage = img.copyRotate(image, 270);
-      final originalWidth = rotatedImage.width;
-      final originalHeight = rotatedImage.height;
       final resized = img.copyResize(rotatedImage, width: 640, height: 640);
-
-      // Segmentation 모델 준비
-      final segInterpreter = await Interpreter.fromAsset(
-        'assets/segment_v3_sim_float32.tflite',
-      );
 
       final input = Float32List(1 * 640 * 640 * 3);
       int i = 0;
@@ -303,7 +295,6 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       final right = largestContour.reduce((a, b) => a.x > b.x ? a : b);
       final intersection = Point(right.x, left.y);
       final lengthPx = (intersection.x - left.x).abs().toDouble();
-      final scaleX = originalWidth / 640.0;
       final correctedPx = lengthPx;
 
       final distance = lastDistanceMeters ?? 0.5;
@@ -322,7 +313,6 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       );
       final binaryMaskRaw = fillContourMask(largestContour, 640, 640);
       final binaryMask = _morphClose(binaryMaskRaw, radius: 3); // 내부 구멍 메움
-      final dilatedMask = _dilateMask(binaryMask, radius: 1);
       final maskedImage = img.Image(640, 640);
       for (int y = 0; y < 640; y++) {
         for (int x = 0; x < 640; x++) {
@@ -341,14 +331,6 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
         box.width.toInt(),
         box.height.toInt(),
       );
-      final croppedMask = img.copyCrop(
-        binaryMask,
-        box.left.toInt(),
-        box.top.toInt(),
-        box.width.toInt(),
-        box.height.toInt(),
-      );
-
       // 🎯 [2] 분류 입력 이미지: 마스킹 없이 원본 RGB를 BBox로 자름
       final resizedForClassify = img.copyResize(
         croppedRGB,
@@ -368,61 +350,6 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       // final resizedForClassify = img.copyResize(maskedCropped, width: 224, height: 224);
 
       // 🎯 [3] 디버깅 저장
-      final directory = await getExternalStorageDirectory();
-      if (directory != null) {
-        final basePath = directory.path;
-
-        // (1) 마스크 이미지 저장
-        await File(
-          '$basePath/mask_binary.png',
-        ).writeAsBytes(img.encodePng(upscaled));
-        debugPrint("🟢 마스크 저장 완료: $basePath/mask_binary.png");
-
-        // (2) 마스크가 적용된 원본 RGB 이미지 저장 (640x640)
-        await File(
-          '$basePath/masked_input_640.png',
-        ).writeAsBytes(img.encodePng(maskedImage));
-        debugPrint("🟢 마스크 적용 RGB 저장 완료: $basePath/masked_input_640.png");
-
-        // (3) 분류 입력 이미지 저장 (224x224)
-        await File(
-          '$basePath/classified_input.png',
-        ).writeAsBytes(img.encodePng(resizedForClassify));
-        debugPrint("🟢 분류 입력 이미지 저장 완료: $basePath/classified_input.png");
-
-        // bounding box 시각화용 복사본 생성
-        final debugBoxImage = img.copyResize(
-          rotatedImage,
-          width: 640,
-          height: 640,
-        );
-
-        // Rectangle -> (left, top, width, height) → box 테두리 그리기
-        for (int x = box.left.toInt(); x < box.left + box.width; x++) {
-          debugBoxImage.setPixel(x, box.top.toInt(), img.getColor(255, 0, 0));
-          debugBoxImage.setPixel(
-            x,
-            (box.top + box.height).toInt() - 1,
-            img.getColor(255, 0, 0),
-          );
-        }
-        for (int y = box.top.toInt(); y < box.top + box.height; y++) {
-          debugBoxImage.setPixel(box.left.toInt(), y, img.getColor(255, 0, 0));
-          debugBoxImage.setPixel(
-            (box.left + box.width).toInt() - 1,
-            y,
-            img.getColor(255, 0, 0),
-          );
-        }
-
-        // 저장
-        await File(
-          '$basePath/debug_bbox_drawn.png',
-        ).writeAsBytes(img.encodePng(debugBoxImage));
-        debugPrint(
-          "🟢 디버깅용 bounding box 이미지 저장 완료: $basePath/debug_bbox_drawn.png",
-        );
-      }
       final imageArray = List.generate(
         224,
         (y) => List.generate(224, (x) {
