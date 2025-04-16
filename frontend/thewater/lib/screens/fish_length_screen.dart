@@ -447,7 +447,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
       showResult(
         "📏 길이: ${lengthCm.toStringAsFixed(1)} cm\n🎣 종: $name (${(confidence * 100).toStringAsFixed(1)}%)",
       );
-
+      await Future.delayed(Duration(seconds: 3));
       Navigator.pop(context, {
         "result": name,
         "fishSize": lengthCm,
