@@ -1,8 +1,11 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:thewater/models/fish_provider.dart';
 import 'package:thewater/providers/fish_provider.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter/services.dart';
 
 class SecondPage extends StatefulWidget {
   const SecondPage({super.key});
@@ -25,11 +28,27 @@ class CollectionPage extends StatefulWidget {
   State<CollectionPage> createState() => _CollectionPageState();
 }
 
+
+late BitmapDescriptor markerIcon;
+
 class _CollectionPageState extends State<CollectionPage> {
   @override
   void initState() {
     debugPrint("collectionPage initState 실행됨");
     super.initState();
+    rootBundle.loadString('assets/map_style.json').then((string) {
+    _mapStyle = string;
+    });
+
+    BitmapDescriptor.fromAssetImage(
+      const ImageConfiguration(size: Size(48, 48)),
+      'assets/image/marker.png',
+    ).then((icon) {
+      setState(() {
+        markerIcon = icon;
+      });
+    });
+
     Provider.of<FishModel>(context, listen: false).getFishCardList();
   }
 
@@ -125,6 +144,15 @@ class _CollectionPageState extends State<CollectionPage> {
     );
   }
 
+  late GoogleMapController mapController;
+  late String _mapStyle;
+
+
+  void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+    mapController!.setMapStyle(_mapStyle);
+  }
+
   void _showFishDeleteDialog(
     BuildContext context,
     Map<String, dynamic> fishCard,
@@ -152,6 +180,32 @@ class _CollectionPageState extends State<CollectionPage> {
           ),
     );
   }
+
+  Widget buildLabelValue(String label, String value) {
+    final baseStyle = Theme.of(context).textTheme.bodyMedium ?? const TextStyle();
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 3), // ⬅️ 위아래 margin 3
+      child: RichText(
+        text: TextSpan(
+          style: baseStyle,
+          children: [
+            TextSpan(
+              text: "$label:   ",
+              style: baseStyle.merge(const TextStyle(fontSize: 15)),
+            ),
+            TextSpan(
+              text: value,
+              style: baseStyle.merge(
+                const TextStyle(fontSize: 15, color: Colors.blueGrey),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
 
   void _showFishDetailDialog(
     BuildContext context,
@@ -223,28 +277,80 @@ class _CollectionPageState extends State<CollectionPage> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text("잡은날 ${fishCard["collectDate"]}"),
+                            buildLabelValue("잡은날", "${fishCard["collectDate"]}"),
                             SizedBox(height: 8),
                             if (fishCard["sky"] == 1)
-                              Text("날씨 맑음")
+                              buildLabelValue("날씨", "맑음 ☀️")
                             else if (fishCard["sky"] == 2)
-                              Text("날씨 구름조금")
+                              buildLabelValue("날씨","구름조금 🌤️")
                             else if (fishCard["sky"] == 3)
-                              Text("날씨 구름")
+                              buildLabelValue("날씨","구름 🌥️")
                             else if (fishCard["sky"] == 4)
-                              Text("날씨 구름 많음"),
+                              buildLabelValue("날씨","구름 많음 ☁️"),
                             SizedBox(height: 8),
-                            Text("기온 ${fishCard["temperature"]} °C"),
+                            buildLabelValue("기온", "${fishCard["temperature"]} °C"),
                             SizedBox(height: 8),
-                            Text(
-                              "길이 ${fishCard["fishSize"].toStringAsFixed(1)} cm",
-                            ),
+                            buildLabelValue("길이", "${fishCard["fishSize"].toStringAsFixed(1)} cm"),
                             SizedBox(height: 8),
-                            Text("수온 ${fishCard["waterTemperature"]} °C"),
+                            buildLabelValue("수온", "${fishCard["waterTemperature"]} °C"),
                             SizedBox(height: 8),
-                            Text("물때 ${fishCard["tide"]} m"),
+                            buildLabelValue("물때", "${fishCard["tide"]} m"),
                             SizedBox(height: 8),
-                            Text("메모 ${fishCard["comment"]}"),
+                            buildLabelValue("메모", "${fishCard["comment"]}"),
+                            SizedBox(height: 8),
+                            buildLabelValue("잡은 위치", " "),
+
+                            fishCard['latitude'] == null || fishCard['longitude'] == null
+                            ? Container(
+                                height: 100,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.8),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Text(
+                                  '위치 정보 없음',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black54,
+                                  ),
+                                ),
+                              )
+                            : SizedBox(
+                                height: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: GoogleMap(
+                                    initialCameraPosition: CameraPosition(
+                                      target: LatLng(
+                                        fishCard['latitude'],
+                                        fishCard['longitude'],
+                                      ),
+                                      zoom: 14,
+                                    ),
+                                    zoomControlsEnabled: false,
+                                    liteModeEnabled: true,
+                                    mapType: MapType.normal,
+                                    onMapCreated: _onMapCreated,
+                                    myLocationEnabled: false,
+                                    myLocationButtonEnabled: false,
+                                    markers: {
+                                      Marker(
+                                        markerId: MarkerId('fish_location'),
+                                        position: LatLng(
+                                          fishCard['latitude'],
+                                          fishCard['longitude'],
+                                        ),
+                                        icon: markerIcon,
+                                      ),
+                                    },
+                                  ),
+                                ),
+                              ),
+
+
+
                           ],
                         ),
                       ],
