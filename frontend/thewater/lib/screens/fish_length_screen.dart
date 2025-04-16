@@ -50,7 +50,7 @@ class _ARDistanceMeasureTapPageState extends State<ARDistanceMeasureTapPage> {
     '고등어',
     '독가시치',
     '감성돔',
-    '삼치',
+    '고등어',
     '성대',
     '양태',
     '갑오징어',
