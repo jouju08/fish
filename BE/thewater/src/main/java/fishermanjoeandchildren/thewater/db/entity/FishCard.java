@@ -3,6 +3,8 @@ package fishermanjoeandchildren.thewater.db.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name="fish_card")
 @Getter
@@ -14,7 +16,8 @@ import lombok.*;
 public class FishCard extends Common{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    @Column(name = "fish_card_id")
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name="member_id")
@@ -25,32 +28,35 @@ public class FishCard extends Common{
     private Aquarium aquarium;
 
     @ManyToOne
-    @JoinColumn(name = "fishing_point_id", nullable = false)
-    private FishingPoint fishPoint;
-
-    @ManyToOne
     @JoinColumn(name="fish_id", nullable = false)
     private Fish fish;
 
-    @Column(name = "has_visible")
-    private Boolean hasVisible=false;
+    @Column(name = "fish_name", length = 50)
+    private String fishName;
 
-    @Column(name="real_size")
-    private Double realSize;
+    @Column(name = "fish_size", nullable = false)
+    private Double fishSize;
+
+    @Column(name = "collect_date", nullable = false)
+    private LocalDate collectDate;
+
+    //날씨
+    @Column(nullable = false)
+    private Integer sky;
 
     //기온
     @Column
     private Double temperature;
 
     //수온
-    @Column(name="water_temperature")
+    @Column(name = "water_temp", nullable = false)
     private Double waterTemperature;
 
     //조류
     @Column
     private Integer tide;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "user_comment", nullable = false)
     private String comment;
 
     @Column(name="has_deleted")
@@ -59,6 +65,18 @@ public class FishCard extends Common{
     @Column(name="card_img", nullable = false)
     private String cardImg;
 
+    @Column(name = "has_visible")
+    private Boolean hasVisible=false;
+
+    @Column
+    private Double latitude;
+
+    @Column
+    private Double longitude;
 
 
+    public boolean changeFishVisible(){
+        hasVisible = !hasVisible;
+        return hasVisible;
+    }
 }

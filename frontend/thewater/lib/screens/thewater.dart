@@ -1,55 +1,141 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
-import 'package:thewater/screens/camera_screen.dart';
-import 'package:thewater/screens/login.dart';
-import 'package:thewater/screens/model_screen.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
+import 'package:thewater/main.dart';
+import 'package:thewater/providers/aquarium_provider.dart';
+import 'package:thewater/providers/fish_provider.dart';
+import 'package:thewater/providers/guestbook_provider.dart';
+import 'package:thewater/providers/user_provider.dart';
+import 'package:thewater/screens/border_model.dart';
 import 'package:thewater/screens/model_screen_2.dart';
 import 'package:thewater/screens/fish_point.dart';
 import 'package:thewater/screens/collection.dart';
+import 'package:thewater/screens/fish_modal.dart';
+import 'fish_swimming.dart';
+import 'package:thewater/screens/guestbook.dart';
+import 'package:thewater/screens/ranking.dart';
+import 'package:thewater/screens/mypage.dart';
+import 'package:thewater/providers/search_provider.dart';
+import 'package:thewater/screens/chat_screen.dart';
+import 'package:http/http.dart' as http;
+
 
 class TheWater extends StatefulWidget {
-  const TheWater({super.key});
+  final int pageIndex;
+  const TheWater({super.key, required this.pageIndex});
 
   @override
   State<TheWater> createState() => _TheWaterState();
 }
 
-class SwimmingFish {
-  final String imagePath;
-  double x;
-  double y;
-  bool moveRight;
-  double speed;
-  double angle;
-
-  SwimmingFish({
-    required this.imagePath,
-    required this.x,
-    required this.y,
-    this.moveRight = true,
-    this.speed = 1.5,
-    this.angle = 0,
-  });
-}
-
-class _TheWaterState extends State<TheWater> {
+class _TheWaterState extends State<TheWater> with RouteAware {
   int bottomNavIndex = 0;
   int pageIndex = 0;
+  String? userComment;
 
-  void onBottomNavTap(int newIndex) {
+  @override
+  void initState() {
+    super.initState();
+    pageIndex = widget.pageIndex;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final userModel = Provider.of<UserModel>(context, listen: false);
+      final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+      final searchProvider = Provider.of<SearchProvider>(
+        context,
+        listen: false,
+      );
+      // user id 확인 후 수족관정보 가져오는거에 userid 대입해서 가져오는거
+      if (userModel.id != 0) {
+        await aquariumModel.fetchAquariumInfo(userModel.id);
+        debugPrint("수족관 정보 불러오기 성공, userId : ${userModel.id}");
+      } else {
+        debugPrint("사용자 id가 아직 0입니다.");
+      }
+
+      await searchProvider.searchUsersByNickname(userModel.nickname);
+      if (searchProvider.searchResults.isNotEmpty) {
+        setState(() {
+          userComment = searchProvider.searchResults.first.comment;
+        });
+      }
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    routeObserver.subscribe(this, ModalRoute.of(context)!);
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPopNext() {
+    _refreshUserData();
+    _refreshMyAquariumInfo();
+  }
+
+  void _refreshMyAquariumInfo() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    final aquariumModel = Provider.of<AquariumModel>(context, listen: false);
+    if (userModel.id != 0) {
+      await aquariumModel.fetchAquariumInfo(userModel.id);
+      setState(() {}); // 화면 갱신
+    }
+  }
+
+  void _refreshUserData() async {
+    final userModel = Provider.of<UserModel>(context, listen: false);
+    await userModel.fetchUserInfo();
+    // 필요한 Provider들도 갱신해야 한다면 여기에 추가해서 호출
+
+    // setState()를 호출할 경우 UI 갱신 여부 확인
+    setState(() {});
+  }
+
+  LatLng? _userCenter;
+
+  void onBottomNavTap(int newIndex) async {
     setState(() {
       bottomNavIndex = newIndex;
       pageIndex = newIndex;
     });
+    if (newIndex == 2 && _userCenter == null) {
+      final location = await _getCurrentLocation();
+      setState(() {
+        _userCenter = location;
+      });
+    }
+  }
+
+  Future<LatLng?> _getCurrentLocation() async {
+    var status = await Permission.location.request();
+    if (!status.isGranted) return null;
+
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+
+    return LatLng(position.latitude, position.longitude);
   }
 
   void showCollectionPage() {
-    // 도감 탭
     setState(() {
-      pageIndex = 2;
+      pageIndex = 1;
     });
+  }
+
+  String _formatPrice(int price) {
+    return price.toString().replaceAllMapped(
+      RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+      (match) => '${match[1]},',
+    );
   }
 
   @override
@@ -66,73 +152,147 @@ class _TheWaterState extends State<TheWater> {
         return true;
       },
       child: Scaffold(
+        resizeToAvoidBottomInset: false,//카메라 버튼 고정
         drawer: Drawer(
           child: ListView(
             children: [
               const DrawerHeader(
-                decoration: BoxDecoration(color: Colors.blue),
-                child: Text("Header"),
+                decoration: BoxDecoration(color: Color(0XFF176B87)),
+                child: Text("그물", style: TextStyle(fontSize: 30)),
               ),
               ListTile(
-                title: const Text("물고기 판별하러 가기"),
+                title: const Text("회원가입"),
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen(),
-                    ),
-                  );
+                  Navigator.pushNamed(context, '/signup');
                 },
               ),
-              ListTile(
-                title: const Text("모델 화면 2"),
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const ModelScreen2(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                title: Text("로그인하러 가기"),
-                onTap: () {
-                  Navigator.pushNamed(context, '/login');
-                },
-              ),
+              if (!Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그인"),
+                  onTap: () {
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                ),
+              if (Provider.of<UserModel>(context).isLoggedIn)
+                ListTile(
+                  title: const Text("로그아웃"),
+                  onTap: () {
+                    Provider.of<UserModel>(
+                      context,
+                      listen: false,
+                    ).logout(context);
+                    Navigator.pushReplacementNamed(context, '/login');
+                  },
+                ),
             ],
           ),
         ),
         body: IndexedStack(
           index: pageIndex,
-          children: const [FirstPage(), SecondPage(), CollectionPage()],
+          children: [
+            FirstPage(userComment: userComment, formatPrice: _formatPrice),
+            SecondPage(), //도김
+            ThirdPage(center: _userCenter),
+            FourthPage(), //챗봇
+            CollectionPage(),
+          ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => ModelScreen2()),
-            );
-          },
-          child: const Icon(
-            Icons.camera_alt,
-            color: Color.fromRGBO(255, 255, 255, 1),
+        floatingActionButton: Padding(
+          padding: const EdgeInsets.only(top: 20.0),
+          child: FloatingActionButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ModelScreen2()),
+              );
+            },
+            child: const Icon(
+              Icons.camera_alt,
+              color: Color.fromRGBO(255, 255, 255, 1),
+            ),
           ),
         ),
+
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: bottomNavIndex,
           onTap: onBottomNavTap,
-          selectedItemColor: Colors.blue,
+          selectedItemColor: Color(0XFFA5C8B8),
           unselectedItemColor: Colors.grey,
           showSelectedLabels: false,
           showUnselectedLabels: false,
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.grey[100],
-          items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.home), label: ""),
-            BottomNavigationBarItem(icon: Icon(Icons.map), label: ""),
+          items: [
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 0
+                        ? 'assets/image/어항 클릭.png'
+                        : 'assets/image/어항.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(right: 50.0, top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 1
+                        ? 'assets/image/도감클릭.png'
+                        : 'assets/image/도감.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              label: "",
+            ), //도감 아이콘
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(left: 50.0, top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 2
+                        ? 'assets/image/지도 클릭.png'
+                        : 'assets/image/지도.png',
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              label: "",
+            ),
+            BottomNavigationBarItem(
+              icon: Padding(
+                padding: const EdgeInsets.only(top: 0, bottom: 0),
+                child: Opacity(
+                  opacity: 0.6,
+                  child: Image.asset(
+                    bottomNavIndex == 3
+                        ? 'assets/image/챗봇 클릭.png'
+                        : 'assets/image/챗봇.png',
+
+                    width: 27,
+                    height: 27,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+              label: "",
+            ), //챗봇
           ],
         ),
       ),
@@ -141,7 +301,10 @@ class _TheWaterState extends State<TheWater> {
 }
 
 class FirstPage extends StatelessWidget {
-  const FirstPage({Key? key}) : super(key: key);
+  final String? userComment;
+  final String Function(int) formatPrice;
+  const FirstPage({Key? key, this.userComment, required this.formatPrice})
+    : super(key: key);
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -149,42 +312,34 @@ class FirstPage extends StatelessWidget {
         child: Container(
           decoration: const BoxDecoration(
             image: DecorationImage(
-              image: AssetImage('assets/image/background.png'),
+              image: AssetImage('assets/image/background.gif'),
               fit: BoxFit.cover,
             ),
           ),
-          child: const mainPage(),
+          child: MainPage(userComment: userComment, formatPrice: formatPrice),
         ),
       ),
     );
   }
 }
 
-class mainPage extends StatefulWidget {
-  const mainPage({Key? key}) : super(key: key);
+class MainPage extends StatefulWidget {
+  final String? userComment;
+  final String Function(int) formatPrice;
+  const MainPage({super.key, this.userComment, required this.formatPrice});
   @override
-  _mainPageState createState() => _mainPageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class FallingFish {
-  final String imagePath;
-  double top;
-  bool landed;
-
-  FallingFish({required this.imagePath, this.top = -100, this.landed = false});
-}
-
-class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
-  // --- 물고기 이동/정지 관련 ---
-  List<SwimmingFish> swimmingFishes = [];
-  late Timer _timer;
-  double time = 0.0;
-
+class _MainPageState extends State<MainPage> with TickerProviderStateMixin {
+  late FishSwimmingManager fishManager;
+  bool fishManagerInitialized = false;
   bool showMoreMenu = false;
 
   late AnimationController _menuController;
   late List<Animation<Offset>> _slideAnimations;
   late List<Animation<double>> _fadeAnimations;
+  List<GuestBookEntry> guestBookEntries = [];
 
   final List<Map<String, String>> menuItems = [
     {"label": "어항", "icon": "assets/icon/어항.png"},
@@ -194,102 +349,205 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
     {"label": "공유", "icon": "assets/icon/카카오공유아이콘.png"},
   ];
 
-  List<FallingFish> fallingFishes = [];
+  // 수족관에 추가된 물고기 imagePath를 저장하는 집합
+  Set<String> _selectedFish = {};
 
   @override
   void initState() {
     super.initState();
     _initMenuAnimation();
-    _startFishMovement();
-  }
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final fishModel = Provider.of<FishModel>(context, listen: false);
+      await fishModel.getFishCardList();
 
-  void _startFishMovement() {
-    _timer = Timer.periodic(const Duration(milliseconds: 30), (timer) {
+      fishManager = FishSwimmingManager(
+        tickerProvider: this,
+        context: context,
+        update: () {
+          if (mounted) setState(() {});
+        },
+      );
+      fishManager.startFishMovement();
+
+      final visibleFishList =
+          fishModel.fishCardList
+              .where((fish) => fish["hasVisible"] == true)
+              .toList();
+
       setState(() {
-        final screenWidth = MediaQuery.of(context).size.width;
-        time += 0.05;
-
-        for (var fish in swimmingFishes) {
-          // 테스트코드 확인후 지우길바람
-          fish.y += sin(time) * 0.5;
-          fish.x += fish.moveRight ? fish.speed : -fish.speed;
-          fish.angle = fish.moveRight ? 0 : 3.14159;
-
-          if (fish.x > screenWidth - 80 || fish.x < 10) {
-            fish.moveRight = !fish.moveRight;
-          }
-        }
+        fishManagerInitialized = true;
       });
+
+      for (var fish in visibleFishList) {
+        var fishName = fish["fishName"];
+        String path;
+        if (fishName == "문어" ||
+            fishName == "감성돔" ||
+            fishName == "문절망둑" ||
+            fishName == "광어" ||
+            fishName == "농어" ||
+            fishName == "볼락" ||
+            fishName == "성대" ||
+            fishName == "복섬" ||
+            fishName == "숭어" ||
+            fishName == "우럭") {
+          path = "assets/image/$fishName.gif";
+        } else {
+          path = "assets/image/$fishName.png";
+        }
+        fishManager.addFallingFish(path, fishName);
+
+        await Future.delayed(const Duration(milliseconds: 500));
+      }
     });
   }
 
-  void _openFishSelectModal() {
+  //Provider.of<CounterProvider>(context).count
+
+  void _openGuestBookModal() async {
+    final guestBookProvider = Provider.of<GuestBookProvider>(
+      context,
+      listen: false,
+    );
+    try {
+      List<GuestBookEntry> fetchedEntries =
+          (await guestBookProvider.fetchMyGuestBook())
+              .map<GuestBookEntry>((data) => GuestBookEntry.fromJson(data))
+              .toList();
+      setState(() {
+        guestBookEntries = fetchedEntries;
+      });
+    } catch (e) {
+      debugPrint("방명록 데이터를 불러오는데 실패했습니다: $e");
+    }
+
+    final double topOffset = 200;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          height: screenHeight - topOffset,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: GuestBookModal(entries: guestBookEntries),
+          ),
+        );
+      },
+    );
+  }
+
+  void _openRankingModal() {
+    final double topOffset = 200;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return Container(
+          height: screenHeight - topOffset,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          child: RankingModal(),
+        );
+      },
+    );
+  }
+
+  void _openFishSelectModal() async {
+    final fishModel = Provider.of<FishModel>(context, listen: false);
+
+    // 최신 서버 데이터 가져오기 (중요!)
+    await fishModel.getFishCardList();
+    final fishCardList = fishModel.fishCardList;
+
+    final fishDataList =
+        fishCardList
+            .map(
+              (card) => {
+                "id": card["id"],
+                "fishName": card["fishName"],
+                "hasVisible": card["hasVisible"] ?? false,
+              },
+            )
+            .toList();
+
+    final fishImages =
+        fishDataList
+            .map((data) => "assets/image/${data["fishName"]}.png")
+            .toList();
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
-      builder: (_) => FishSelectModal(onFishSelected: _addFallingFish),
+      builder:
+          (_) => FishSelectModal(
+            fishDataList: fishDataList,
+            fishImages: fishImages,
+            selectedFish:
+                fishDataList
+                    .where((fish) => fish["hasVisible"])
+                    .map((fish) => "assets/image/${fish["fishName"]}.png")
+                    .toSet(),
+            onToggleFish: (
+              String path,
+              int fishId,
+              bool currentHasVisible,
+            ) async {
+              setState(() {
+                String fishName = path.split('/').last.split('.').first;
+                if (fishName == "문어" ||
+                    fishName == "감성돔" ||
+                    fishName == "문절망둑" ||
+                    fishName == "광어" ||
+                    fishName == "농어" ||
+                    fishName == "볼락" ||
+                    fishName == "성대" ||
+                    fishName == "복섬" ||
+                    fishName == "숭어" ||
+                    fishName == "우럭") {
+                  // 물고기 추후 추가 예정 gif 로 변환한 것들
+                  path = "assets/image/${fishName}.gif";
+                }
+                if (currentHasVisible) {
+                  fishManager.removeFishWithFishingLine(path);
+                  _selectedFish.remove(path);
+                } else {
+                  fishManager.addFallingFish(path, fishName);
+                  _selectedFish.add(path);
+                }
+                debugPrint("선택된 물고기 목록 : $_selectedFish");
+              });
+
+              await fishModel.toggleFishVisibility(fishId);
+
+              final userModel = Provider.of<UserModel>(context, listen: false);
+              final aquariumModel = Provider.of<AquariumModel>(
+                context,
+                listen: false,
+              );
+              await aquariumModel.fetchAquariumInfo(userModel.id);
+            },
+          ),
     );
-  }
-
-  void _addFallingFish(String imagePath) {
-    final newFish = FallingFish(imagePath: imagePath);
-    fallingFishes.add(newFish);
-    _animateFishFall(newFish);
-  }
-
-  void _animateFishFall(FallingFish fish) {
-    const double targetY = 400;
-    const double baseSpeed = 20;
-    Timer.periodic(const Duration(milliseconds: 16), (timer) {
-      setState(() {
-        double progress = (fish.top / targetY).clamp(0.0, 1.0);
-        double currentSpeed = baseSpeed * (1 - progress); // 감속
-        if (fish.top <= targetY - 2) {
-          // 떨어지는 값 맞춤 수영로직 연결 조건
-          fish.top += currentSpeed;
-        } else {
-          fish.landed = true;
-          timer.cancel();
-
-          final random = Random();
-          swimmingFishes.add(
-            SwimmingFish(
-              imagePath: fish.imagePath,
-              x: MediaQuery.of(context).size.width / 2 - 40,
-              y: fish.top,
-              moveRight: random.nextBool(),
-              speed: 1.2 + random.nextDouble(),
-            ),
-          );
-          fallingFishes.remove(fish);
-        }
-      });
-    });
-  }
-
-  List<Widget> _buildSwimmingFishes() {
-    return swimmingFishes.map((fish) {
-      return Positioned(
-        top: fish.y,
-        left: fish.x,
-        child: Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.rotationY(fish.angle),
-          child: Image.asset(fish.imagePath, width: 80),
-        ),
-      );
-    }).toList();
-  }
-
-  List<Widget> _buildFallingFishes() {
-    return fallingFishes.map((fish) {
-      return Positioned(
-        top: fish.top,
-        left: MediaQuery.of(context).size.width / 2 - 40,
-        child: Image.asset(fish.imagePath, width: 80),
-      );
-    }).toList();
   }
 
   void _initMenuAnimation() {
@@ -329,7 +587,7 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _timer.cancel();
+    fishManager.dispose();
     _menuController.dispose();
     super.dispose();
   }
@@ -338,9 +596,9 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // 상단 UI: 유저 정보, 수족관 가치 등
         Column(
           children: [
-            // 유저 정보 및 상단 UI
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
@@ -356,57 +614,110 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                       const SizedBox(width: 10),
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "조태공",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                        children: [
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => const MyPageScreen(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              Provider.of<UserModel>(context).nickname,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
-                          Text("이번달 누적 : n마리", style: TextStyle(fontSize: 14)),
+                          Consumer<AquariumModel>(
+                            builder: (context, aquarium, _) {
+                              return Text(
+                                '수족관 가치 : ${widget.formatPrice(aquarium.totalPrice)}원',
+                                style: const TextStyle(fontSize: 15),
+                              );
+                            },
+                          ),
                         ],
                       ),
                     ],
                   ),
-                  Row(
-                    children: const [
-                      Text("today", style: TextStyle(fontSize: 12)),
-                      SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Row(
+                        children: [
+                          const Text("Today ", style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 5),
+                          Consumer<AquariumModel>(
+                            builder: (context, aquariumModel, child) {
+                              return Text(
+                                '${aquariumModel.visitCount}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 10),
-                      Icon(Icons.favorite_border, color: Colors.blue),
-                      SizedBox(width: 5),
-                      Text(
-                        "n",
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      const SizedBox(height: 0.1),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          /// 좋아요 로직
+                          Consumer<AquariumModel>(
+                            builder: (context, aquariumModel, child) {
+                              return Row(
+                                children: [
+                                  GestureDetector(
+                                    onTap: () async {
+                                      await aquariumModel.toggleLikeAquarium();
+                                    },
+                                    child: Icon(
+                                      aquariumModel.likedByMe
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
+                                      color:
+                                          aquariumModel.likedByMe
+                                              ? Color(0XFFf0A8A8)
+                                              : Colors.grey,
+                                      size: 16.0,
+                                    ),
+                                    // onPressed: () async {
+                                    //   await aquariumModel.toggleLikeAquarium();
+                                    // },
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    '${aquariumModel.likeCount}',
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
             ),
-            const Divider(color: Colors.grey),
 
-            // 수족관 가치 + "더 많은.."
+            const Divider(color: Colors.grey),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  const Text(
-                    "수족관 가치 : 3,600,000원",
-                    style: TextStyle(fontSize: 18),
-                  ),
                   GestureDetector(
                     onTap: () {
                       setState(() {
@@ -429,12 +740,26 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
                 ],
               ),
             ),
-
-
           ],
         ),
-
         // 펼쳐지는 메뉴
+        if (fishManagerInitialized) ...fishManager.buildFallingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildSwimmingFishes(),
+        if (fishManagerInitialized) ...fishManager.buildRemovalAnimations(),
+
+        if (showMoreMenu)
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () {
+                setState(() {
+                  showMoreMenu = false;
+                  _menuController.reverse();
+                });
+              },
+              child: Container(color: Colors.transparent),
+            ),
+          ),
+
         Positioned(
           top: 120,
           right: 16,
@@ -443,13 +768,10 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             child: _buildStaggeredMenu(),
           ),
         ),
-        ..._buildFallingFishes(),
-        ..._buildSwimmingFishes(),
+        // 물고기 애니메이션 위젯들
       ],
     );
   }
-
-
 
   Widget _buildStaggeredMenu() {
     return Column(
@@ -479,6 +801,12 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             if (label == "어항") {
               _openFishSelectModal();
             }
+            if (label == "방명록") {
+              _openGuestBookModal();
+            }
+            if (label == "랭킹") {
+              _openRankingModal();
+            }
 
             debugPrint("$label 메뉴 클릭");
 
@@ -500,72 +828,6 @@ class _mainPageState extends State<mainPage> with TickerProviderStateMixin {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class FishSelectModal extends StatelessWidget {
-  final void Function(String) onFishSelected;
-
-  FishSelectModal({Key? key, required this.onFishSelected}) : super(key: key);
-
-  final List<String> fishImages = [
-    'assets/image/samchi.png',
-    'assets/image/moona.png',
-    'assets/image/gapojinga.png',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: MediaQuery.of(context).size.width,
-      padding: const EdgeInsets.only(top: 12, left: 16, right: 16, bottom: 16),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // 👉 핸들바
-          Container(
-            width: 40,
-            height: 5,
-            decoration: BoxDecoration(
-              color: Colors.grey[400],
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-          const SizedBox(height: 12), // 핸들과 콘텐츠 사이 간격
-          // 👉 물고기 리스트
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 20,
-            runSpacing: 10,
-            children:
-                fishImages.map((path) {
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                      onFishSelected(path);
-                    },
-                    child: Container(
-                      width: 90,
-                      height: 90,
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: const Color.fromARGB(255, 225, 225, 225),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Image.asset(path),
-                    ),
-                  );
-                }).toList(),
-          ),
-        ],
       ),
     );
   }
