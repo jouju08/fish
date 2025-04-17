@@ -15,7 +15,7 @@
 | 손재민 | FE       | - |     -     |
 | 이국건 | Infra/FE | - |     -     |
 | 이수정 | FE/BE    | - |     -     |
-| 정주하 | AI       | - |     -     |
+| 정주하 | AI/FE    | - |     -     |
 | 조윤장 | AI/Data  | - |     -     |
 | 황치운 | AI/BE    | - |     -     |
 
@@ -50,6 +50,8 @@
 ![Matplotlib](https://img.shields.io/badge/Matplotlib-%23ffffff.svg?style=for-the-badge&logo=Matplotlib&logoColor=black)
 ![Keras](https://img.shields.io/badge/Keras-%23D00000.svg?style=for-the-badge&logo=Keras&logoColor=white)
 ![ChatGPT](https://img.shields.io/badge/chatGPT-74aa9c?style=for-the-badge&logo=openai&logoColor=white)
+![LangChain](https://img.shields.io/badge/LangChain-1C3C3C?style=for-the-badge&logo=langchain&logoColor=white)
+![Redis](https://img.shields.io/badge/redis-%23DD0031.svg?style=for-the-badge&logo=redis&logoColor=white)
 
 ### Infra
 ![jenkins](https://img.shields.io/badge/Jenkins-D24939?style=for-the-badge&logo=Jenkins&logoColor=white)
@@ -144,6 +146,7 @@
 
 - Open AI를 활용한 챗봇
 - 낚시 컨셉에 맞게 프롬프트하여 제작
+- RAG 기반의 LLM 모델로 낚시 관련 전문 지식을 제공
 
 ---
 
