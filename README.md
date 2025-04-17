@@ -74,8 +74,9 @@
 - 동적인 물고기 움직임 구현
 
 ### 📖물고기 도감
-<img src="docs/asset/도감.gif" width="600"/>
-<img src="docs/asset/도감.png" width="600"/>
+<img src="docs/asset/도감.gif" width="450"/>
+<img src="docs/asset/도감.png" width="450"/>
+
 - 수집한 물고기 정보 저장 (어종 및 사진, 크기 환경 등)
 - 수집한 물고기를 확인
 
@@ -84,7 +85,8 @@
 ### 🎣물고기종 분류 및 길이 측정
 
 #### 물고기 분류
-<img src="docs/asset/길이측정%20영상.gif" width="600"/>
+<img src="docs/asset/길이측정%20영상.gif" width="450"/>
+
 - AR기술을 활용한 가늠자없는 길이측정
 - ResNet50 AI를 활용하여 약 26종의 물고기 판별
 - 데이터 증강기법 사용
@@ -92,20 +94,25 @@
 
 #### 데이터
 <img src="docs/asset/data.png" width="450"/>
+
 - 필터링 후 총 3228장의 이미지 학습
 
 #### 길이측정
 <img src="docs/asset/data_label.png" width="450"/>
+
 - 데이터 라벨링 mask polygon 지정
 
 <img src="docs/asset/mask.png" width="300"/>
 <img src="docs/asset/mask2.png" width="300"/>
+
 - Yolov8 Instance Segmentation을 이용해 윤곽 검출
 
 <img src="docs/asset/길이측정픽셀.png" width="450"/>
+
 - 물고기 길이 픽셀 측정
 
 <img src="docs/asset/수식.png" width="300"/>
+
 - AR기반 카메라와 물고기간 거리를 구해 실측거리 계산
 - 가늠자 없는 Only Cam방식
 
@@ -113,9 +120,11 @@
 
 #### OnDevice
 <img src="docs/asset/QAT.png" width="450"/>
+
 - 양자화 인지 학습 진행
 
 <img src="docs/asset/TFLite.png" width="450"/>
+
 - TFLite 변환
 
 ---
@@ -123,6 +132,7 @@
 ### 🚩낚시 포인트 정보 제공 (지도 형식)
 <img src="docs/asset/낚시포인트.gif" width="600"/>
 <img src="docs/asset/낚시포인트환경.png" width="600"/>
+
 - 포인트 별 물때, 날씨, 수온, 출몰 어종 등 낚시에 필요한 정보 제공
 - 낚시 포인트 공유 기능
 - 나만의 낚시포인트 저장(환경 정보 제공)
@@ -131,6 +141,7 @@
 
 ### 🤖챗봇
 <img src="docs/asset/챗봇.gif" width="600"/>
+
 - Open AI를 활용한 챗봇
 - 낚시 컨셉에 맞게 프롬프트하여 제작
 
