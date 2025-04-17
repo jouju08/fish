@@ -130,8 +130,8 @@
 ---
 
 ### 🚩낚시 포인트 정보 제공 (지도 형식)
-<img src="docs/asset/낚시포인트.gif" width="600"/>
-<img src="docs/asset/낚시포인트환경.png" width="600"/>
+<img src="docs/asset/낚시포인트.gif" width="450"/>
+<img src="docs/asset/낚시포인트환경.png" width="450"/>
 
 - 포인트 별 물때, 날씨, 수온, 출몰 어종 등 낚시에 필요한 정보 제공
 - 낚시 포인트 공유 기능
@@ -140,7 +140,7 @@
 ---
 
 ### 🤖챗봇
-<img src="docs/asset/챗봇.gif" width="600"/>
+<img src="docs/asset/챗봇.gif" width="450"/>
 
 - Open AI를 활용한 챗봇
 - 낚시 컨셉에 맞게 프롬프트하여 제작
@@ -167,7 +167,7 @@
 ### [📖Sequence Diagram & Idea Board](https://www.figma.com/board/gpobQfMnjRWzcn9z3rZtBo/-%ED%8A%B9%ED%99%94-%ED%98%91%EC%97%85%EB%B3%B4%EB%93%9C?node-id=0-1&p=f&t=7M8H351F2Qwb2Ra1-0)
 
 ### 💾ERD
-<img src="docs/asset/erd.png" width="600"/>
+<img src="docs/asset/erd.png" width="800"/>
 
 ---
 
